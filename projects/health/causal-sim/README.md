@@ -122,18 +122,29 @@ Models are organised as a 3-level drill-down — **Domain → Disease → Model*
 ├── Parkinson's   └ Smoking & the collider trap
 └── Migraine      └ Stress, sleep & the mediator
 🎗️ Oncology
-├── Melanoma      └ Sunscreen confounding (sign flip)
-└── Lung cancer   └ Smoking · Fisher's confounder
+├── Melanoma         └ Sunscreen confounding (sign flip)
+├── Lung cancer      └ Smoking · Fisher's confounder
+└── Cervical cancer  └ HPV vaccine (Sweden cohort, 2020)
 🫀 Cardiometabolic
 ├── Stroke        └ BP → arterial damage
-└── Heart disease ├ HRT · the WHI reversal   └ Statins → LDL → CHD
+├── Heart disease ├ HRT · the WHI reversal   └ Statins → LDL → CHD
+├── Obesity       └ Semaglutide → CV events (SELECT, 2023)
+└── Vitamin D     └ VITAL null result (RCT overturns observational)
 🦠 Infectious Disease
-└── Cholera       └ Snow's natural experiment (1854)
+├── Cholera   └ Snow's natural experiment (1854)
+└── COVID-19  └ Vaccine & the Simpson's-paradox trap
 👶 Perinatal
 └── Infant mortality   └ The birthweight paradox
 ⚖️ Society & Policy
 └── Admissions    └ Berkeley admissions (Simpson's paradox)
 ```
+
+**17 models across 6 domains.** The Researcher-mode evidence is anchored in landmark trials and
+meta-analyses (2019–2025 where relevant) — SELECT (semaglutide), VITAL (vitamin D), the Swedish HPV
+cohort, the COVID-19 vaccine RCT, BPLTTC 2021, the CTT statin meta-analyses, and the anti-amyloid
+trials — and was **adversarially fact-checked** for effect sizes, citations, and identification
+status before shipping. Teacher and Researcher modes cover the **same diagrams** (the toggle only
+changes the framing), so there is full parity between them.
 
 ## How it works (architecture)
 

@@ -148,6 +148,7 @@
   <i><span class="swatch" style="background:#7c5cff"></span>mediator</i>
   <i><span class="swatch" style="background:#ff6b6b"></span>outcome</i>
   <i><span class="swatch" style="background:#9aa4bf"></span>latent confounder</i>
+  <i><span class="swatch" style="background:#8fb3d9"></span>measured confounder</i>
   <i>— solid = causal · ┄ dashed = confounding · ✂ = you cut it</i>
 </div>
 
@@ -444,6 +445,79 @@ const M_BERKELEY = {
   x:"GEN", y:"ADM", mediator:"DEPT", adjust:["DEPT"], oracleKind:"direct",
 };
 
+const M_SEMA = {
+  id:"cm_sema", name:"Semaglutide → CV events (SELECT)", escape:"frontdoor",
+  rung:"Front-door · mediation (mostly direct)",
+  lesson:`In obesity, <b>semaglutide</b> cuts <b>heart attacks & strokes</b>. Is it just the
+    <b>weight loss</b>? Decompose it: a slice runs through weight loss, but a large part is
+    <b>weight-loss-independent</b>. Front-door through weight loss captures only the mediated slice.`,
+  nodes:[
+    { id:"SEMA",label:"Semaglutide",   x:.16,y:.5, type:"treatment" },
+    { id:"WL",  label:"Weight\nloss",  x:.5, y:.5, type:"mediator" },
+    { id:"MACE",label:"CV events\n(MACE)", x:.84,y:.5, type:"outcome" },
+  ],
+  edges:[
+    { from:"SEMA",to:"WL",  w:.70, kind:"causal" },
+    { from:"WL",  to:"MACE",w:-.30,kind:"causal" },
+    { from:"SEMA",to:"MACE",w:-.40,kind:"bypass", label:"weight-independent" },
+  ],
+  x:"SEMA", y:"MACE", mediator:"WL",
+};
+const M_VITD = {
+  id:"cm_vitd", name:"Vitamin D → disease (VITAL null)", escape:"rct",
+  rung:"Latent confounder · RCT shows null",
+  lesson:`Healthy, outdoorsy people have <b>more vitamin D</b> and <b>less disease</b> — so vitamin D
+    looks protective. But that's the <b>lifestyle</b>, not the vitamin. Randomize a supplement and the
+    effect vanishes. The classic observational-hope, RCT-null story.`,
+  nodes:[
+    { id:"HL", label:"Healthy lifestyle\n(sun, activity)", x:.5,y:.16, type:"latent" },
+    { id:"VD", label:"Vitamin D",  x:.2,y:.66, type:"treatment" },
+    { id:"DIS",label:"Cancer /\nCVD", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"HL",to:"VD", w:.70, kind:"confound" },
+    { from:"HL",to:"DIS",w:-.80,kind:"confound" },
+    { from:"VD",to:"DIS",w:.00, kind:"causal" },
+  ],
+  x:"VD", y:"DIS", mediator:null,
+};
+const M_HPV = {
+  id:"onc_hpv", name:"HPV vaccine → cervical cancer", escape:"backdoor",
+  rung:"Back-door · observational cohort",
+  lesson:`Girls who get the <b>HPV vaccine</b> get far less <b>cervical cancer</b>. But the same girls
+    tend to <b>screen more / seek care</b>, which also lowers cancer. Adjust for that measured common
+    cause to separate the vaccine's own effect from health-seeking behaviour.`,
+  nodes:[
+    { id:"SCR",label:"Screening /\nhealth-seeking", x:.5,y:.16, type:"confounder" },
+    { id:"HPV",label:"HPV\nvaccine", x:.2,y:.66, type:"treatment" },
+    { id:"CC", label:"Cervical\ncancer", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"SCR",to:"HPV",w:.50, kind:"confound" },
+    { from:"SCR",to:"CC", w:-.60,kind:"confound" },
+    { from:"HPV",to:"CC", w:-.70,kind:"causal" },
+  ],
+  x:"HPV", y:"CC", mediator:null, adjust:["SCR"],
+};
+const M_COVID = {
+  id:"inf_covid", name:"COVID vaccine & the Simpson trap", escape:"backdoor",
+  rung:"Back-door · Simpson's paradox by age",
+  lesson:`In raw counts, <b>vaccinated</b> people sometimes seem to suffer <i>more</i> <b>severe COVID</b>
+    — because the <b>old</b> were vaccinated first <i>and</i> at higher risk. Adjust for <b>age</b> and the
+    vaccine's strong protection reappears. The same Simpson's trap that fooled headlines.`,
+  nodes:[
+    { id:"AGE",label:"Age", x:.5,y:.16, type:"confounder" },
+    { id:"VAX",label:"COVID\nvaccine", x:.2,y:.66, type:"treatment" },
+    { id:"SEV",label:"Severe\nCOVID", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"AGE",to:"VAX",w:1.0, kind:"confound" },
+    { from:"AGE",to:"SEV",w:1.5, kind:"confound" },
+    { from:"VAX",to:"SEV",w:-.70,kind:"causal" },
+  ],
+  x:"VAX", y:"SEV", mediator:null, adjust:["AGE"],
+};
+
 // --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
 const TAXONOMY = [
   { domain:"Neurology", icon:"🧠", diseases:[
@@ -452,15 +526,19 @@ const TAXONOMY = [
       { disease:"Migraine",    models:[ M_MIG_MED ] },
   ]},
   { domain:"Oncology", icon:"🎗️", diseases:[
-      { disease:"Melanoma",    models:[ M_MEL_CONF ] },
-      { disease:"Lung cancer", models:[ M_ONC_LUNG ] },
+      { disease:"Melanoma",        models:[ M_MEL_CONF ] },
+      { disease:"Lung cancer",     models:[ M_ONC_LUNG ] },
+      { disease:"Cervical cancer", models:[ M_HPV ] },
   ]},
   { domain:"Cardiometabolic", icon:"🫀", diseases:[
-      { disease:"Stroke", models:[ M_STROKE_MED ] },
+      { disease:"Stroke",        models:[ M_STROKE_MED ] },
       { disease:"Heart disease", models:[ M_HRT, M_STATIN ] },
+      { disease:"Obesity",       models:[ M_SEMA ] },
+      { disease:"Vitamin D",     models:[ M_VITD ] },
   ]},
   { domain:"Infectious Disease", icon:"🦠", diseases:[
-      { disease:"Cholera", models:[ M_CHOLERA ] },
+      { disease:"Cholera",  models:[ M_CHOLERA ] },
+      { disease:"COVID-19", models:[ M_COVID ] },
   ]},
   { domain:"Perinatal", icon:"👶", diseases:[
       { disease:"Infant mortality", models:[ M_BIRTHWEIGHT ] },
@@ -476,11 +554,11 @@ TAXONOMY.forEach(d=>d.diseases.forEach(dis=>dis.models.forEach(m=>{ CASES[m.id]=
 // strength → badge colour; honest about what is established vs hypothesised.
 const EVIDENCE = {
   alz_coleman:{ status:"Hypothesis · not identified", strength:"weak",
-    real:"Links between stress granules and NCT in AD are largely <b>correlational</b>. The strongest interventional SG→NCT result (Zhang 2018) is in ALS/FTD, not AD; acute-stress work (Vanneste 2022) <i>dissociated</i> SG from NCT. At least six documented paths let SG affect AD without passing through NCT.",
-    ident:"Strict <b>front-door identification fails</b> (bypass paths). No point causal estimate is warranted — the defensible output is a <b>bounded proportion-mediated under explicit assumptions</b>, not a single number.",
+    real:"Links between stress granules and NCT in AD are largely <b>correlational</b>. The strongest interventional SG→NCT result (Zhang 2018) is in ALS/FTD, not AD; Vanneste (2022) showed stress-induced NCT deficits can occur <b>independent of stress granules</b> (SGs not necessary). Multiple paths let SG affect AD without passing through NCT.",
+    ident:"Strict <b>front-door identification fails</b> (SG is not the sole route). No point causal estimate is warranted — the defensible output is a <b>bounded proportion-mediated under explicit assumptions</b>, not a single number.",
     cites:["Coleman et al. 2025, Alz & Dementia","Morgan et al. 2022, Front Aging Neurosci","Zhang et al. 2018, Cell","Vanneste et al. 2022, Biomedicines"] },
   alz_amyloid:{ status:"Partially identified · RCT", strength:"moderate",
-    real:"Anti-amyloid <b>RCTs</b> (lecanemab CLARITY-AD; donanemab) slow decline modestly (~25–35% on some scales), lending causal support to the amyloid axis — though absolute clinical effects are small and contested.",
+    real:"Anti-amyloid <b>RCTs</b> slow decline modestly: lecanemab ~27% on CDR-SB (CLARITY-AD); donanemab ~36% on CDR-SB / ~35% on iADRS in intermediate-tau patients (less in the full population). Absolute clinical effects are small and contested.",
     ident:"Amyloid removal is randomised, so <i>that step</i> is identified; the full cascade to phenotype is not.",
     cites:["van Dyck et al. 2023, NEJM","Sims et al. 2023, JAMA"] },
   alz_convergent:{ status:"Conceptual framing", strength:"weak",
@@ -488,25 +566,25 @@ const EVIDENCE = {
     ident:"A framing device for the upstream-input level — no single identified effect.",
     cites:["Eftekharzadeh et al. 2018, Neuron","Bansal et al. 2025, eLife"] },
   pd_collider:{ status:"Robust association · causal contested", strength:"moderate",
-    real:"Meta-analyses find smokers have ~40–60% <b>lower</b> Parkinson's risk (RR≈0.5). Whether this is protective, reverse causation, or selection/collider bias is <b>unresolved</b>; Mendelian-randomization results are mixed.",
-    ident:"The inverse association is real; its causal status is disputed.",
+    real:"Meta-analyses find smokers have ~40–60% <b>lower</b> Parkinson's risk (RR≈0.5). The leading explanations are <b>reverse causation / prodromal effects</b> (e.g., easier smoking cessation years before diagnosis) rather than true protection; selection/collider bias is also proposed; Mendelian-randomization is mixed.",
+    ident:"Robust association, causal status unresolved. <i>(This app uses it to illustrate collider bias — one of the proposed mechanisms.)</i>",
     cites:["Li et al. 2015, meta-analysis","Breckenridge et al. 2016, PLoS ONE"] },
   mig_med:{ status:"Observational", strength:"weak",
     real:"Stress and poor sleep are among the most commonly <b>reported</b> migraine triggers, but the mediation split is not rigorously identified.",
     ident:"Trigger reports are associational; controlled mediation estimates are lacking.",
     cites:["Kelman 2007, Cephalalgia"] },
   mel_conf:{ status:"RCT-identified", strength:"strong",
-    real:"The randomized <b>Nambour trial</b> found regular sunscreen use roughly <b>halved</b> invasive melanoma over long-term follow-up. Observational positive associations are confounded by sun exposure / skin type.",
-    ident:"Randomisation identifies the (protective) effect; the naive observational sign is confounding.",
+    real:"The randomized <b>Nambour trial</b> cut <b>total</b> melanoma ~50% (HR 0.50) and <b>invasive</b> melanoma ~73% (HR 0.27, on just 3 vs 11 cases) over 10-year follow-up. Observational positive associations are confounded by sun exposure / skin type.",
+    ident:"Randomisation identifies the (protective) effect; the naive observational sign is confounding. (Invasive estimate rests on few events.)",
     cites:["Green et al. 2011, J Clin Oncol"] },
   onc_lung:{ status:"Causal · overwhelming", strength:"strong",
     real:"Heavy smoking raises lung-cancer risk roughly <b>15–30×</b>, with dose-response, reversibility on cessation, and mechanism. Fisher's constitutional-confounder hypothesis was not borne out.",
     ident:"Among the most firmly <b>identified</b> effects in all of epidemiology.",
     cites:["Doll & Hill 1954, BMJ","US Surgeon General 1964"] },
   stroke_med:{ status:"RCT-identified", strength:"strong",
-    real:"Randomized blood-pressure lowering cuts stroke by ~<b>30–40%</b>; arterial/vascular damage is a well-supported mediator.",
+    real:"Randomized blood-pressure lowering reduces stroke ~<b>13% per 5 mmHg</b> systolic — so ~30–40% with larger reductions; arterial/vascular damage is a well-supported mediator.",
     ident:"The BP→stroke effect is identified by antihypertensive RCTs; the mediated fraction is estimated, not exact.",
-    cites:["Ettehad et al. 2016, Lancet","SPRINT 2015, NEJM"] },
+    cites:["Blood Pressure Lowering Treatment Trialists' Collaboration 2021, Lancet","SPRINT 2015, NEJM"] },
   cm_hrt:{ status:"RCT-identified · reversal", strength:"strong",
     real:"Observational cohorts suggested hormone therapy <i>protected</i> the heart; the <b>WHI randomized trial (2002)</b> found increased coronary/stroke risk in the studied population — the canonical <b>healthy-user confounding</b> reversal. A 'timing hypothesis' nuances younger initiators.",
     ident:"Identified by RCT; the observational estimate was confounded.",
@@ -527,6 +605,22 @@ const EVIDENCE = {
     real:"The 1973 Berkeley data showed a lower female admit rate overall, but after accounting for <b>department</b>, no systematic bias remained — women applied to more competitive departments.",
     ident:"Adjusting for department (a measured back-door) resolves the aggregate Simpson's reversal.",
     cites:["Bickel, Hammel & O'Connell 1975, Science"] },
+  cm_sema:{ status:"RCT-identified · mechanism open", strength:"strong",
+    real:"In <b>SELECT</b> (Lincoff et al., NEJM 2023; ~17,600 adults with overweight/obesity and cardiovascular disease but no diabetes), semaglutide cut major cardiovascular events <b>20%</b> (HR 0.80, 95% CI 0.72–0.90). STEP trials show ~15% weight loss — yet the benefit appeared early and <b>largely independent of how much weight was lost</b>.",
+    ident:"The MACE effect is <b>RCT-identified</b>; the mediation question (weight loss vs direct effects) is not — current evidence leans toward a substantial weight-loss-independent effect.",
+    cites:["Lincoff et al. 2023, NEJM (SELECT)","Wilding et al. 2021, NEJM (STEP 1)"] },
+  cm_vitd:{ status:"RCT-identified · null", strength:"strong",
+    real:"<b>VITAL</b> (Manson et al., NEJM 2019; ~25,900 adults) found vitamin D 2000 IU/day did <b>not</b> reduce cancer (HR 0.96) or major cardiovascular events (HR 0.97); the fracture sub-study (LeBoff et al., NEJM 2022) was also null — overturning positive observational signals.",
+    ident:"<b>RCT-identified null.</b> Caveats: a largely vitamin-D-replete population, and a secondary signal for cancer <i>mortality</i> in later follow-up.",
+    cites:["Manson et al. 2019, NEJM (VITAL)","LeBoff et al. 2022, NEJM"] },
+  onc_hpv:{ status:"Observational cohort · strong", strength:"moderate",
+    real:"A Swedish nationwide cohort of ~1.7 million (Lei et al., NEJM 2020) linked quadrivalent HPV vaccination to ~<b>88% lower</b> invasive cervical cancer when given <b>before age 17</b> (adjusted IRR 0.12) and ~53% at ages 17–30.",
+    ident:"<b>Observational</b> — adjusted for measured confounders, but residual confounding (healthy-vaccinee behaviour, age-related prior exposure) remains; RCT-grade HPV evidence is on precancer endpoints.",
+    cites:["Lei et al. 2020, NEJM"] },
+  inf_covid:{ status:"RCT-identified · Simpson trap", strength:"strong",
+    real:"The pivotal RCT (Polack et al., NEJM 2020; ~43,500) showed <b>95%</b> efficacy against symptomatic COVID-19 (95% CI 90.3–97.6); protection against severe disease is strongest in later large effectiveness studies. Crude vaccinated-vs-unvaccinated counts can <b>reverse</b> this when age isn't stratified.",
+    ident:"Efficacy is <b>RCT-identified</b>; the misleading crude comparison is <b>confounding by age</b> (a Simpson's-paradox / non-collapsibility effect), not a true reversal.",
+    cites:["Polack et al. 2020, NEJM (BNT162b2)"] },
 };
 function evidenceHTML(c){
   const e=EVIDENCE[c.id]; if(!e) return `<span class="pill">${c.rung}</span><br><br>${c.lesson}`;
@@ -640,7 +734,7 @@ function entailedInterval(c, K=600){
 
 // --- Rendering -------------------------------------------------------------
 const svg = document.getElementById("graph");
-const COLORS = { treatment:"#5a8dff", mediator:"#7c5cff", outcome:"#ff6b6b", latent:"#9aa4bf", collider:"#f0c050" };
+const COLORS = { treatment:"#5a8dff", mediator:"#7c5cff", outcome:"#ff6b6b", latent:"#9aa4bf", collider:"#f0c050", confounder:"#8fb3d9" };
 const px=f=>f*W, py=f=>f*H;
 const nodeById=(c,id)=>c.nodes.find(n=>n.id===id);
 const lblOf=(c,id)=>nodeById(c,id).label.replace(/\n/g," ");
