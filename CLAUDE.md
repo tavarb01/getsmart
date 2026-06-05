@@ -2,21 +2,46 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Status
+## What this repo is
 
-This repository (`getsmart`) is currently **empty** — there is no source code, build
-configuration, dependency manifest, or documentation yet. This file is a placeholder to be
-expanded once the codebase is established.
+`getsmart` is a personal **learning monorepo**: one Git repo holding many small, independent
+projects grouped by category under `projects/`. It is owned by a beginner, so favor clarity,
+small steps, and runnable results over cleverness or heavy tooling.
 
-## When code is added
+## Structure
 
-Once initial project files exist, replace this placeholder with concrete guidance covering:
+- `projects/<category>/<project>/` — each project is self-contained with its own `README.md`
+  describing how to run it. Categories: `games`, `learn`, `science`, `tech`, `cpg`, `health`,
+  `personal`, `private`.
+- `sandbox/` — throwaway experiments; no expectation of polish.
+- `templates/` — starter scaffolds to copy when beginning a new project.
+- Projects are **independent**. There is no repo-wide build, package manager, or shared
+  dependency graph — treat each project's folder as its own little world.
 
-- **Build / run / test commands** — including how to run a single test
-- **Lint and formatting commands**
-- **High-level architecture** — the big-picture structure that requires reading multiple
-  files to understand (entry points, module boundaries, data flow)
-- **Project-specific conventions** — anything non-obvious that an AI assistant should follow
+## Working in this repo
 
-To regenerate this file from the actual codebase, run `/init` after the first project files
-are committed.
+- Before adding code, place it in the right `projects/<category>/` folder (or `sandbox/`).
+  A new project = a new subfolder + its own `README.md` with run instructions.
+- Keep each project runnable with the **fewest possible steps**. Prefer zero-install
+  approaches (e.g. a single HTML file, or a stdlib-only Python script) unless the project
+  genuinely needs more.
+- There are no repo-level build/lint/test commands. Per-project commands belong in that
+  project's `README.md`.
+
+## Current projects
+
+### projects/games/flappy-bird
+A complete Flappy Bird clone in a single `index.html` (HTML5 canvas + vanilla JS, no
+dependencies, no build step).
+- **Run:** open `index.html` in a browser, or `python3 -m http.server 8000` from the folder.
+- **Architecture:** classic game loop — `requestAnimationFrame(loop)` calls `update()` (gravity,
+  pipe scrolling, collision, scoring) then `draw()` (canvas render). All state lives in a few
+  top-level variables (`bird`, `pipes`, `score`, `state`). Gameplay constants (`GRAVITY`,
+  `FLAP`, `PIPE_GAP`, `SPEED`, `PIPE_SPACING`) are grouped at the top of the script for easy
+  tuning.
+
+## Conventions
+
+- Every project folder has a `README.md` with a "Run it" section.
+- Keep `private/` for low-stakes personal code only; genuinely sensitive work belongs in a
+  separate private repository, and secrets/keys should never be committed anywhere.
