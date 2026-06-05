@@ -42,8 +42,20 @@ each field carries its own **Area → Topic → Model** drill-down.
   Every AI claim was adversarially fact-checked (Kohavi 2020, Caruana 2015, Zech 2018, Blake–Nosko–
   Tadelis 2015, Mangel–Samaniego 1984).
 
-> **Roadmap:** two more fields are designed and queued — **🌍 Climate & Environment** and
-> **🧩 Mind, Society & the Human Sciences** — each restricted to DAG-honest models (no faked Nash
+- **🛒 Business · CPG & Consumer Health** — causal thinking across the commercial funnel:
+  - *Marketing* — does the campaign actually lift sales? (geo-holdout RCT vs marketing-mix
+    confounding) · the demand curve that slopes the wrong way (price endogeneity, cost-shock IV)
+  - *Sales* — do sales-rep visits drive sales? (detailing vs account-targeting confound) · does the
+    loyalty program create loyalty? (heavy-buyer self-selection, adjust for prior spend)
+  - *Supply & Availability* — the stockout that "boosted" sales (demand confound, supply-shock natural
+    experiment) · is the cheap co-packer really worse? (product-mix confounding)
+
+  DAG-honest only — no bullwhip/feedback or pricing-equilibrium models. Anchored to the
+  marketing-science literature (Gordon et al. 2019, Nevo 2001, Leenheer et al. 2007) and
+  adversarially fact-checked; the supplier case is flagged as an illustrative example.
+
+> **Roadmap:** two more fields are designed and queued — **🧩 Mind, Society & the Human Sciences**
+> (next), then **🌍 Climate & Environment** — each restricted to DAG-honest models (no faked Nash
 > equilibria or feedback loops) and each fact-checked before shipping.
 
 ## What you can play with

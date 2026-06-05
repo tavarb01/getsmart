@@ -829,6 +829,128 @@ const AI_TAX = [
   ]},
 ];
 
+// ===========================================================================
+// FIELD 5 — Business · Consumer Goods & Consumer Health (marketing/sales/supply)
+// ===========================================================================
+const M_ADLIFT = {
+  id:"biz_adlift", name:"Does the campaign actually lift sales?", escape:"rct",
+  rung:"Latent confounder · randomized geo holdout",
+  lesson:`Your marketing-mix model says the <b>ad campaign</b> drove huge <b>sales</b>. But you spend
+    more in <b>peak-demand</b> seasons — when sales rise anyway. That demand confounder inflates ad ROI.
+    Randomize a <b>geo holdout</b> (dark markets) to measure true incremental lift.`,
+  nodes:[
+    { id:"U", label:"Seasonal\ndemand", x:.5, y:.16, type:"latent" },
+    { id:"AD",label:"Ad\ncampaign", x:.2, y:.66, type:"treatment" },
+    { id:"SAL",label:"Sales", x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"AD",w:.60,kind:"confound" }, { from:"U",to:"SAL",w:.70,kind:"confound" },
+    { from:"AD",to:"SAL",w:.08,kind:"causal" },
+  ],
+  x:"AD", y:"SAL", mediator:null,
+};
+const M_PRICE = {
+  id:"biz_price", name:"The demand curve that slopes the wrong way", escape:"iv",
+  rung:"Instrument · cost-shock for price",
+  lesson:`Plot <b>price</b> vs <b>units sold</b> across weeks and demand looks like it <i>rises</i> with
+    price — because <b>market demand</b> drives both (you charge more when shoppers are hot).
+    Instrument price with an <b>input-cost shock</b> to recover the true downward-sloping elasticity.`,
+  nodes:[
+    { id:"Z", label:"Input-cost\nshock", x:.13, y:.32, type:"instrument" },
+    { id:"U", label:"Market\ndemand", x:.63, y:.16, type:"latent" },
+    { id:"PR",label:"Price", x:.42, y:.66, type:"treatment" },
+    { id:"QTY",label:"Units\nsold", x:.85, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"Z",to:"PR",w:.70,kind:"causal" },
+    { from:"U",to:"PR",w:.70,kind:"confound" }, { from:"U",to:"QTY",w:.90,kind:"confound" },
+    { from:"PR",to:"QTY",w:-.30,kind:"causal" },
+  ],
+  x:"PR", y:"QTY", mediator:null, iv:"Z",
+};
+const M_DETAIL = {
+  id:"biz_detail", name:"Do sales-rep visits drive sales?", escape:"rct",
+  rung:"Latent confounder · randomize detailing",
+  lesson:`Pharmacies that get more <b>rep visits</b> sell more product — so detailing works? But reps
+    <b>target high-potential accounts</b> (unmeasured), so visits chase sales rather than cause them.
+    Randomize call plans to separate the rep's real effect from smart targeting.`,
+  nodes:[
+    { id:"U", label:"Account\npotential", x:.5, y:.16, type:"latent" },
+    { id:"REP",label:"Rep\nvisits", x:.2, y:.66, type:"treatment" },
+    { id:"SAL",label:"Product\nsales", x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"REP",w:.70,kind:"confound" }, { from:"U",to:"SAL",w:.70,kind:"confound" },
+    { from:"REP",to:"SAL",w:.10,kind:"causal" },
+  ],
+  x:"REP", y:"SAL", mediator:null,
+};
+const M_LOYALTY = {
+  id:"biz_loyalty", name:"Does the loyalty program create loyalty?", escape:"backdoor",
+  rung:"Back-door · adjust for prior spend",
+  lesson:`<b>Loyalty members</b> spend far more than non-members — proof the program works? No:
+    <b>heavy buyers</b> self-select into the program. But you <i>can</i> measure their
+    <b>prior spend</b>. Adjust for it (a back-door you observe) and the real lift shrinks dramatically.`,
+  nodes:[
+    { id:"PRI",label:"Prior\nspend", x:.5,y:.16, type:"confounder" },
+    { id:"LOY",label:"Loyalty\nmember", x:.2,y:.66, type:"treatment" },
+    { id:"SPD",label:"Annual\nspend", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"PRI",to:"LOY",w:.90,kind:"confound" }, { from:"PRI",to:"SPD",w:1.2,kind:"confound" },
+    { from:"LOY",to:"SPD",w:.10,kind:"causal" },
+  ],
+  x:"LOY", y:"SPD", mediator:null, adjust:["PRI"],
+};
+const M_STOCKOUT = {
+  id:"biz_stockout", name:"The stockout that 'boosted' sales", escape:"natural",
+  rung:"Natural experiment · supply disruption",
+  lesson:`In the data, stores with more <b>stockouts</b> post <i>higher</i> <b>category sales</b> —
+    so out-of-stocks are fine? No: busy, high-<b>demand</b> stores both sell more <i>and</i> run out
+    more. A random <b>warehouse disruption</b> hit some stores as-if-at-random — revealing the true cost.`,
+  nodes:[
+    { id:"U",  label:"Store\ndemand", x:.5, y:.16, type:"latent" },
+    { id:"OOS",label:"Stockout", x:.2, y:.66, type:"treatment" },
+    { id:"CAT",label:"Category\nsales", x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"OOS",w:.60,kind:"confound" }, { from:"U",to:"CAT",w:.80,kind:"confound" },
+    { from:"OOS",to:"CAT",w:-.25,kind:"causal" },
+  ],
+  x:"OOS", y:"CAT", mediator:null,
+};
+const M_SUPPLIER = {
+  id:"biz_supplier", name:"Is the cheap co-packer really worse?", escape:"backdoor",
+  rung:"Back-door · adjust for product complexity",
+  lesson:`Switch to the <b>cheaper co-packer</b> and <b>complaint rates</b> jump — fire them? But the
+    cheap line was handed the <b>complex, seasonal SKUs</b> that draw complaints regardless. Adjust for
+    product complexity (a back-door you can measure) and the supplier's true effect is small.`,
+  nodes:[
+    { id:"CPX",label:"Product\ncomplexity", x:.5,y:.16, type:"confounder" },
+    { id:"CHP",label:"Cheaper\nco-packer", x:.2,y:.66, type:"treatment" },
+    { id:"CMP",label:"Complaint\nrate", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"CPX",to:"CHP",w:.80,kind:"confound" }, { from:"CPX",to:"CMP",w:1.0,kind:"confound" },
+    { from:"CHP",to:"CMP",w:.08,kind:"causal" },
+  ],
+  x:"CHP", y:"CMP", mediator:null, adjust:["CPX"],
+};
+const BIZ_TAX = [
+  { domain:"Marketing", icon:"📣", diseases:[
+      { disease:"Ad incrementality", models:[ M_ADLIFT ] },
+      { disease:"Price & elasticity", models:[ M_PRICE ] },
+  ]},
+  { domain:"Sales", icon:"🤝", diseases:[
+      { disease:"Salesforce detailing", models:[ M_DETAIL ] },
+      { disease:"Loyalty programs",     models:[ M_LOYALTY ] },
+  ]},
+  { domain:"Supply & Availability", icon:"📦", diseases:[
+      { disease:"Stockouts",      models:[ M_STOCKOUT ] },
+      { disease:"Supplier quality", models:[ M_SUPPLIER ] },
+  ]},
+];
+
 // --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
 const HEALTH_TAX = [
   { domain:"Neurology", icon:"🧠", diseases:[
@@ -867,6 +989,7 @@ const FIELDS = [
   { id:"health", name:"Health & Life Sciences", icon:"🧬", taxonomy: HEALTH_TAX },
   { id:"econ",   name:"Economics & Policy",      icon:"📈", taxonomy: ECON_TAX },
   { id:"ai",     name:"AI & Data Science",        icon:"🤖", taxonomy: AI_TAX },
+  { id:"biz",    name:"Business · CPG & Health",   icon:"🛒", taxonomy: BIZ_TAX },
 ];
 let curField = 0;
 let TAXONOMY = FIELDS[curField].taxonomy;   // active field's taxonomy (reassigned on field switch)
@@ -964,6 +1087,30 @@ const EVIDENCE = {
     real:"In WWII, Abraham Wald argued bomber armor belonged where <b>returning</b> planes were <i>not</i> hit: aircraft hit in those areas didn't come back, so survivors' holes mark the survivable spots. (His formal work estimated vulnerability from survivor data; the bullet-hole story is the popular retelling.)",
     ident:"Survival is a collider; analyzing only returners — selecting on the outcome — is the textbook selection bias.",
     cites:["Wald 1943, Statistical Research Group memoranda","Mangel & Samaniego 1984, JASA"] },
+  biz_adlift:{ status:"RCT-identified · MMM overstates", strength:"strong",
+    real:"Randomized advertising experiments show observational <b>marketing-mix models systematically overstate ad ROI</b>, because firms spend more when demand is already high. Gordon et al. (2019) found observational methods badly mismatched the experimental truth at Facebook scale.",
+    ident:"A randomized geo holdout (or ghost-ad) identifies incremental lift; MMM regressions are confounded by demand/seasonality.",
+    cites:["Gordon, Zettelmeyer, Bhargava & Chapsky 2019, Marketing Science"] },
+  biz_price:{ status:"Instrument · price endogeneity", strength:"strong",
+    real:"<b>Price is endogenous</b> — set higher when demand is hot — so naive price–quantity regressions bias elasticity toward zero (or positive). Cost-shifters instrument price to recover true downward-sloping demand. Nevo's cereal study is the canonical CPG application.",
+    ident:"Cost-shock instruments satisfy relevance + exclusion, identifying elasticity (BLP-style demand estimation).",
+    cites:["Nevo 2001, Econometrica (cereal)","Berry, Levinsohn & Pakes 1995, Econometrica"] },
+  biz_detail:{ status:"Targeting confound · identified by RCT", strength:"moderate",
+    real:"Sales-rep <b>detailing</b> looks highly effective, but reps <b>target high-potential accounts</b>, so observational estimates conflate the rep's effect with smart targeting. The endogeneity of marketing-mix variables is well-documented.",
+    ident:"Randomized call plans identify the true effect; naive response models overstate it absent the targeting control.",
+    cites:["Manchanda, Rossi & Chintagunta 2004, Marketing Science"] },
+  biz_loyalty:{ status:"Back-door · self-selection", strength:"moderate",
+    real:"Raw comparisons overstate <b>loyalty-program</b> impact because <b>heavy buyers self-select</b> into membership. Controlling for prior purchasing shrinks the apparent effect substantially.",
+    ident:"Prior spend is a measurable back-door; adjusting for it (or randomizing enrollment) identifies the real incremental lift.",
+    cites:["Leenheer, van Heerde, Bijmolt & Smidts 2007, Intl. J. of Research in Marketing"] },
+  biz_stockout:{ status:"Natural experiment · demand confound", strength:"moderate",
+    real:"Retail <b>out-of-stocks</b> average ~8% worldwide and cause lost sales plus brand/store switching — but high-demand SKUs/stores stock out <i>more</i> while selling more, confounding naive comparisons. A supply shock isolates the true cost.",
+    ident:"An as-if-random supply disruption approximates do(stockout); the raw correlation is confounded by store/SKU demand.",
+    cites:["Gruen, Corsten & Bharadwaj 2002, worldwide OOS study","Anderson, Fitzsimons & Simester 2006, Management Science"] },
+  biz_supplier:{ status:"Illustrative · confounding example", strength:"weak",
+    real:"A teaching illustration: a <b>cheaper co-packer</b> can look worse if it's assigned the <b>complex, complaint-prone SKUs</b>. The simulated numbers are illustrative — the lesson is that confounding by product mix can frame an innocent supplier.",
+    ident:"Product complexity is a measurable back-door; adjusting for it isolates the supplier's true effect. (No single canonical study; this is a structural illustration.)",
+    cites:["Illustrative example · confounding by product mix"] },
   econ_minwage:{ status:"Natural experiment · contested magnitude", strength:"moderate",
     real:"Card & Krueger (1994) compared fast-food jobs across the <b>NJ–PA border</b> when NJ raised its minimum wage: employment did <b>not</b> fall (if anything rose), overturning the textbook supply-demand prediction. Naive cross-sectional correlations are confounded by local economic conditions.",
     ident:"The border design approximates as-if-random assignment (difference-in-differences). The exact magnitude of minimum-wage employment effects is still debated, but small/near-zero effects are well-supported.",
