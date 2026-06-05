@@ -238,6 +238,17 @@
     line-height:1.3; }
   .impl-why { margin-top:12px; padding-top:10px; border-top:1px dashed #2a3760;
     font-size:12.5px; line-height:1.5; color:#cfe3ff; }
+  /* ===== Boardroom mode brief ===== */
+  .bd-block { background:#101a30; border:1px solid var(--line); border-left:3px solid #c4a44a;
+    border-radius:9px; padding:9px 13px; margin-bottom:9px; font-size:13px; line-height:1.6; color:#cdd6e6; }
+  .bd-block b { color:#e7ecf5; }
+  .bd-lab { font-size:9.5px; text-transform:uppercase; letter-spacing:1.5px; color:#c4a44a; font-weight:800; margin-bottom:4px; }
+  .bd-row { display:flex; gap:9px; }
+  .bd-note { background:#15241c; border:1px solid #10b98140; border-radius:9px; padding:10px 13px;
+    font-size:12.5px; line-height:1.6; color:#bfe8cf; }
+  .bd-note b { color:#e7ecf5; }
+  @media (max-width:520px){ .bd-row{ flex-direction:column; gap:0; } }
+
   /* ===== Title-bar right cluster + Learn launcher ===== */
   .tbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   .tut-launch { background:linear-gradient(135deg,#3a2f12,#1b2a44); border:1px solid #c4a44a66;
@@ -305,7 +316,7 @@
     <div class="tbar-right">
       <button class="tut-launch" id="tutBtn">🎓 Learn</button>
       <span class="seg" id="modeSeg">
-        <button data-m="teacher" class="on">👩‍🏫 Teacher</button><button data-m="researcher">🔬 Researcher</button>
+        <button data-m="teacher" class="on">👩‍🏫 Teacher</button><button data-m="researcher">🔬 Researcher</button><button data-m="boardroom">💼 Boardroom</button>
       </span>
     </div>
   </div>
@@ -1792,14 +1803,57 @@ function implicationsHTML(c){
     + `<div class="impl-why">🎓 <b>Why the exercise is good science:</b> ${E.why}</div>`;
 }
 
+// --- Boardroom mode: the executive register — the decision + what it's worth,
+//     in plain English (no standard deviations). Computed from the live numbers.
+const BOARD_NOTES = {
+  ai_adholdout:`<b>$ at stake:</b> on a $20M paid-search budget, if attribution credits ads with the sales they "drove," little of it is truly <i>incremental</i> — a randomized <b>holdout</b> can free most of that spend with no revenue loss. (This is the real eBay finding.)`,
+  ai_absimpson:`<b>$ at stake:</b> ship "B" off the aggregate and you may ship the <i>loser</i>. The pooled winner can reverse inside every segment — segment (or randomize allocation) before you roll out.`,
+  biz_adlift:`<b>$ at stake:</b> a marketing-mix model that over-credits the campaign can justify doubling a budget that isn't working. A <b>geo-holdout</b> costs a few "dark" markets and returns the real lift.`,
+  biz_loyalty:`<b>$ at stake:</b> if members "spend far more," most of that is <i>who joined</i>, not the program. Budget the perks against the true incremental lift — not the headline multiple.`,
+  biz_price:`<b>$ at stake:</b> the data can make demand look price-insensitive — until a cost-shock test reveals real elasticity and a price hike craters volume.`,
+};
+function bChip(tone,label){ const c={red:"#ef4444",amber:"#f59e0b",green:"#10b981"}[tone];
+  return `<span style="display:inline-block;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${c};background:${c}1c;border:1px solid ${c}55;border-radius:6px;padding:4px 10px">${label}</span>`; }
+function boardroomHTML(c){
+  const r=lastRead||{}, dash=r.observed, truth=r.oracle;
+  const ms=mediationSplit(c), bypass=(c.edges.some(e=>e.kind==="bypass"))||(ms&&Math.abs(ms.direct)>0.02);
+  let trap, move, conf;
+  if(c.conditionOn){ trap=`a <b>collider</b> — the report is filtering on <b>${lblOf(c,c.conditionOn)}</b>, a shared <i>effect</i>, which manufactures the pattern.`;
+    move=`Stop selecting on ${lblOf(c,c.conditionOn)} — and don't reward a metric that selects on it. Look at the whole population.`; conf="High (once you stop conditioning)"; }
+  else if(c.escape==="backdoor"){ trap=`a <b>confounder</b> — <b>${(c.adjust||[]).map(id=>lblOf(c,id)).join(", ")}</b> drives both sides and pads the raw number.`;
+    move=`Segment by / adjust for it before committing budget. Solid <i>if</i> you've caught the right confounders.`; conf="Medium-high"; }
+  else if(c.escape==="iv"){ trap=`<b>confounding</b> a head-to-head can't remove — only the as-if-random nudge from <b>${c.iv?lblOf(c,c.iv):"the instrument"}</b> does.`;
+    move=`Lean on the natural experiment / instrument; pressure-test that it's clean. Read it as a local effect.`; conf="Medium"; }
+  else if(c.escape==="rct"||c.escape==="natural"){ trap=`an <b>unmeasured</b> common cause no dashboard can adjust away — only a randomized (or as-if-random) test settles it.`;
+    move=`Run the holdout / experiment. Until then, treat the dashboard number as unproven.`; conf=(c.escape==="rct"&&!cut.has(c.x))?"Low until you test it":"High (randomized)"; }
+  else if(c.escape==="frontdoor"){ trap= bypass?`<b>hidden routes</b> the headline metric can't see — it captures only part of the effect.`:`an unmeasured confounder the mediated chain sidesteps.`;
+    move= bypass?`Treat the number as a <b>floor</b>; measure the bypass before sizing the prize.`:`Use the mediated chain — but defend the "only route" assumption.`; conf= bypass?"Medium — a floor":"Medium"; }
+  else { trap=`correlation that may not be causation.`; move=`Find the counterfactual before acting.`; conf="Medium"; }
+  if(uncert>1.5) conf="Low — assumptions are loose";
+  const fdash=fv(dash), ftruth=fv(truth); let gap, tone, call;
+  if(c.conditionOn && conditioning){ tone="red"; call="Don't act on this number — it's an artifact.";
+    gap=`The report (conditioned on ${lblOf(c,c.conditionOn)}) shows <b>${fdash}</b>, but that effect is <b>manufactured by selection</b>. The real effect is about <b>${ftruth}</b>.`; }
+  else if(Math.abs(truth)<0.06 && Math.abs(dash)>0.12){ tone="red"; call="Likely a mirage — prove it before you fund it.";
+    gap=`The dashboard credits a <b>${fdash}</b> effect; the de-confounded truth is <b>≈ zero</b> (${ftruth}). You'd be paying for something that isn't there.`; }
+  else if(truth!==0 && dash/truth<0){ tone="red"; call="The dashboard has the sign backwards.";
+    gap=`It reads <b>${fdash}</b>, but the true effect runs the <i>other way</i> (<b>${ftruth}</b>). Acting on it pushes in the wrong direction.`; }
+  else if(truth!==0 && dash/truth>1.25){ const over=Math.round((dash/truth-1)*100); tone="amber"; call="Re-scope before committing budget.";
+    gap=`The dashboard <b>overstates</b> the effect by ~<b>${over}%</b> (it reads <b>${fdash}</b>; the truth is <b>${ftruth}</b>). A budget sized off the dashboard over-spends.`; }
+  else if(truth!==0 && dash/truth>0 && dash/truth<0.8){ tone="amber"; call="You're likely under-investing.";
+    gap=`The dashboard <b>understates</b> the effect (reads <b>${fdash}</b>; truth <b>${ftruth}</b>) — the opportunity is bigger than it looks.`; }
+  else { tone="green"; call="The read holds up — proceed, with the caveat noted.";
+    gap=`Dashboard <b>${fdash}</b> vs. true <b>${ftruth}</b> — broadly aligned here.`; }
+  const note=BOARD_NOTES[c.id];
+  return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px;flex-wrap:wrap">${bChip(tone,"The call")}<span style="font-weight:700;color:#e7ecf5;font-size:14px">${call}</span></div>
+    <div class="bd-block"><div class="bd-lab">The gap</div>${gap}</div>
+    <div class="bd-row"><div class="bd-block" style="flex:1"><div class="bd-lab">The trap</div>${trap}</div>
+    <div class="bd-block" style="flex:1"><div class="bd-lab">Confidence</div><b style="color:#e7ecf5">${conf}</b></div></div>
+    <div class="bd-block"><div class="bd-lab">The move</div>${move}</div>
+    ${note?`<div class="bd-note">${note}</div>`:""}`;
+}
+
 function updateReadout(){
   const c=CASES[curId];
-  document.getElementById("lesson").innerHTML = mode==="researcher"
-    ? evidenceHTML(c)
-    : `<span class="pill">${c.rung}</span><br><br>${c.lesson}`;
-  document.getElementById("modeHint").textContent = mode==="researcher"
-    ? "Honest about the evidence: the panel shows real findings & whether the effect is identified. The simulated numbers below are a structural illustration."
-    : "Intuition first: the simulation math is exact; the numbers are illustrative, not measured.";
   document.getElementById("condWrap").style.display = c.conditionOn ? "flex" : "none";
 
   // simulate observational data once; reuse for every estimator
@@ -1815,21 +1869,33 @@ function updateReadout(){
   lastRead = { observed, est: est?est.val:null, oracle: iv.eff.med,
     conditioning, estIsDo: c.escape==="rct" && cut.has(c.x) };
 
+  // top panel — register depends on mode (boardroom needs the numbers above)
+  document.getElementById("lesson").innerHTML =
+      mode==="researcher" ? evidenceHTML(c)
+    : mode==="boardroom"  ? boardroomHTML(c)
+    : `<span class="pill">${c.rung}</span><br><br>${c.lesson}`;
+  document.getElementById("modeHint").textContent =
+      mode==="researcher" ? "Honest about the evidence: the panel shows real findings & whether the effect is identified. The simulated numbers below are a structural illustration."
+    : mode==="boardroom"  ? "Boardroom view: the decision and what it's worth — the gap between the dashboard and the truth. Figures are illustrative; the gap is the point."
+    : "Intuition first: the simulation math is exact; the numbers are illustrative, not measured.";
+
   // build metric rows
   const rows = [];
-  rows.push(metricRow("Observed association", "data", observed, "obs",
-    conditioning ? "with the collider conditioned on" : "naive regression on the data"));
-  if(est) rows.push(metricRow(est.label, est.tag, est.val, "est", est.sub));
-  const orLabel = c.oracleKind==="direct" ? "Model-entailed direct effect" : "Model-entailed effect";
-  rows.push(`<div class="mrow oracle"><div><div class="k">${orLabel}<span class="tag god">◆ model</span></div>
-    <div class="ksub">implied by assumptions · 90% range <span class="rng">[${fmt(iv.eff.lo)}, ${fmt(iv.eff.hi)}]</span></div></div>
+  const board = mode==="boardroom";
+  rows.push(metricRow(board?"Dashboard read":"Observed association", "data", observed, "obs",
+    board?"what the raw report shows":(conditioning ? "with the collider conditioned on" : "naive regression on the data")));
+  if(est) rows.push(metricRow(board?"Causal read":est.label, est.tag, est.val, "est", board?"the honest, de-biased number":est.sub));
+  const orLabel = board?"True effect (a clean test)":(c.oracleKind==="direct" ? "Model-entailed direct effect" : "Model-entailed effect");
+  rows.push(`<div class="mrow oracle"><div><div class="k">${orLabel}<span class="tag god">◆ ${board?"truth":"model"}</span></div>
+    <div class="ksub">${board?"what a clean experiment would show":`implied by assumptions · 90% range <span class="rng">[${fmt(iv.eff.lo)}, ${fmt(iv.eff.hi)}]</span>`}</div></div>
     <div class="v oracle">${fmt(iv.eff.med)}</div></div>`);
   if(mode==="researcher") rows.unshift(`<div class="metnote">↓ structural illustration only — these use illustrative parameters, not the effect sizes in the evidence panel above</div>`);
+  if(board) rows.unshift(`<div class="metnote">↓ illustrative figures — the point is the <b>gap</b> between the dashboard and the truth, and the decision it changes</div>`);
   document.getElementById("metrics").innerHTML = rows.join("");
 
   // proportion-mediated as a RANGE under the assumed ranges (genuine mediation only)
   const pmWrap=document.getElementById("pmWrap");
-  if(iv.pm && c.escape==="frontdoor"){
+  if(iv.pm && c.escape==="frontdoor" && mode!=="boardroom"){
     pmWrap.style.display="block";
     const cl=v=>Math.max(0,Math.min(100,v));
     const lo=cl(iv.pm.lo*100), hi=cl(iv.pm.hi*100), md=cl(iv.pm.med*100);

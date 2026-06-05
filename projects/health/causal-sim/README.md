@@ -8,6 +8,11 @@ New here? Tap **🎓 Learn** in the header for a 4-minute, no-math primer — a 
 Ladder of Causation, confounders, the `do()` operator, the three numbers, and how to read the
 sandbox (general teaching; no domain expertise assumed).
 
+Three lenses on every model, via the header toggle: **👩‍🏫 Teacher** (intuition), **🔬 Researcher**
+(real-world evidence + citations), and **💼 Boardroom** — the decision and what it's worth in plain
+English (the call, the gap between the dashboard and the truth, the trap, and the move; no standard
+deviations). Figures are illustrative — the *gap* is the point.
+
 ## Run it
 
 No install, no build. Either:
