@@ -5,50 +5,104 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Causal-Sim — a Book of Why playground</title>
 <style>
-  :root { color-scheme: dark; }
+  :root {
+    color-scheme: dark;
+    --bg:#0b1220; --panel:#0f1830; --line:#20304f; --line2:#2a3a5e;
+    --ink:#e6e8ee; --chip:#16203a;
+  }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; min-height: 100%;
-    background: #0b1220; color: #e6e8ee;
+    background: var(--bg); color: var(--ink);
     font-family: system-ui, -apple-system, sans-serif;
     -webkit-text-size-adjust: 100%;
   }
-  header { padding: 14px 16px 4px; }
-  h1 { font-size: 20px; margin: 0; }
-  .sub { opacity: .65; font-size: 13px; margin: 2px 0 0; }
+  body { display: flex; flex-direction: column; }
+  .topbar { order: 0; }
+  .stage   { order: 1; }   /* graph is the hero — sits right under the sticky nav */
+  #modeHint { order: 2; }
+  details.intro { order: 3; }
 
-  details.intro { margin: 8px 16px 0; background:#0f1830; border:1px solid #20304f; border-radius:12px; padding:8px 14px; }
-  details.intro > summary { cursor:pointer; font-size:13.5px; font-weight:600; color:#bcd0ff; }
+  /* ---- Sticky compact top bar: title + mode + 3 nav strips ---------------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(11,18,32,.94);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 4px 18px -10px rgba(0,0,0,.7);
+  }
+  .titlebar { display:flex; align-items:center; gap:10px; padding: 8px 14px 4px; }
+  h1 { font-size: 17px; margin: 0; white-space:nowrap; letter-spacing:.2px; }
+  .titlebar .seg { margin-left:auto; }
+  .sub { opacity: .62; font-size: 12.5px; margin: 0 14px 4px; line-height:1.35; }
+  @media (max-width: 640px) { .sub { display:none; } }
+
+  /* Compact horizontally-scrollable chip strips replace the 3 tall nav rows */
+  .nav { padding: 2px 0 5px; display:flex; flex-direction:column; gap:1px; }
+  .navrow {
+    display: flex; gap: 6px; align-items: center;
+    overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    padding: 3px 14px; scroll-padding-left: 30px;
+  }
+  .navrow::-webkit-scrollbar { display:none; }
+  .navrow.models.single { padding-top:0; padding-bottom:2px; }
+  .navlabel {
+    font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em;
+    opacity: .45; flex: none; font-weight: 800; align-self:center;
+    position: sticky; left: 0; width: 12px; overflow:visible;
+    background: linear-gradient(90deg, var(--bg) 55%, transparent);
+    padding: 4px 10px 4px 0; z-index:1; text-align:left;
+  }
+  /* keep injected buttons inline within the scroll strip */
+  #domains, #diseases, #models { display: contents; }
+  .pill-btn {
+    background: var(--chip); border: 1px solid var(--line2); color: #cdd6f4;
+    padding: 7px 13px; border-radius: 999px; font-size: 13px; cursor: pointer;
+    white-space: nowrap; flex: none; min-height: 34px; line-height:1.2;
+    -webkit-tap-highlight-color: transparent; transition: background .12s, border-color .12s, transform .08s;
+  }
+  .pill-btn:active { transform: scale(.96); }
+  .pill-btn.active { background: #2b4a8b; border-color: #4f7adf; color: #fff; }
+  .navrow.domains .pill-btn { font-size: 12.5px; padding: 6px 12px; min-height:32px; }
+  .navrow.domains .pill-btn.active { background: #2b6a8b; border-color: #4fb0df; box-shadow: 0 0 0 1px #4fb0df inset; }
+  .navrow.diseases .pill-btn { background:#121b34; }
+  .navrow.models .pill-btn { font-size: 12.5px; }
+  .navrow.models .pill-btn.active { background: #6a3a8b; border-color: #a05fdf; }
+  .navrow.models.single { padding-left: 14px; }
+  .navrow.models.single .navlabel { display:none; }
+  .navrow.models.single .pill-btn {
+    background: transparent; border-color: transparent; opacity:.6;
+    font-size:11.5px; padding: 2px 0; min-height:0; cursor:default;
+  }
+  .navrow.models.single .pill-btn::before { content:"◆ "; opacity:.7; }
+
+  details.intro { margin: 10px 14px 0; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:8px 14px; }
+  details.intro > summary { cursor:pointer; font-size:13px; font-weight:600; color:#bcd0ff; }
   .intro .body { font-size:13px; line-height:1.6; opacity:.92; margin-top:8px; }
   .intro .body b { color:#ffd58a; }
   .intro ol { margin:6px 0 0; padding-left:18px; } .intro li { margin:4px 0; }
-  .intro .oracle-note { margin-top:8px; font-size:12.5px; opacity:.8; border-top:1px solid #20304f; padding-top:8px; }
+  .intro .oracle-note { margin-top:8px; font-size:12.5px; opacity:.8; border-top:1px solid var(--line); padding-top:8px; }
   .dia { color:#7fe0a6; }
 
-  .nav { padding: 8px 16px 0; }
-  .navrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
-  .navlabel { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; opacity: .45; width: 64px; flex: none; }
-  .pill-btn { background: #16203a; border: 1px solid #2a3a5e; color: #cdd6f4; padding: 7px 12px; border-radius: 999px; font-size: 13px; cursor: pointer; }
-  .pill-btn.active { background: #2b4a8b; border-color: #4f7adf; color: #fff; }
-  .navrow.domains .pill-btn.active { background: #2b6a8b; border-color: #4fb0df; }
-  .navrow.models .pill-btn { font-size: 12.5px; padding: 6px 11px; }
-  .navrow.models .pill-btn.active { background: #6a3a8b; border-color: #a05fdf; }
-
-  .legend { font-size: 11.5px; opacity: .7; display: flex; gap: 14px; flex-wrap: wrap; padding: 2px 16px 0; }
-  .legend i { font-style: normal; }
+  .legend { font-size: 11px; opacity: .68; display: flex; gap: 11px; flex-wrap: wrap; padding: 7px 13px 11px; border-top:1px solid var(--line); }
+  .legend i { font-style: normal; white-space:nowrap; }
   .swatch { display:inline-block; width:10px; height:10px; border-radius:50%; vertical-align:middle; margin-right:4px;}
+  .graphpanel { overflow:hidden; }
+  .graphpanel svg { border-radius:14px 14px 0 0; }
 
-  .stage { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 8px 12px 24px; }
-  @media (min-width: 860px) { .stage { grid-template-columns: 1.4fr 1fr; padding: 8px 16px 28px; } }
+  .stage { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 10px 12px 24px; }
+  @media (min-width: 860px) { .stage { grid-template-columns: 1.4fr 1fr; padding: 12px 16px 28px; align-items:start; } }
 
   .panel { background: #0f1830; border: 1px solid #20304f; border-radius: 14px; }
   svg { width: 100%; height: auto; display: block; border-radius: 14px; }
 
   .controls { padding: 12px 14px; display: flex; flex-direction: column; gap: 11px; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  button.act { background: #2b6a3a; border: 1px solid #3e9c55; color: #eafff0; padding: 9px 14px; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; }
-  button.ghost { background: #1a2540; border: 1px solid #2a3a5e; color: #cdd6f4; padding: 9px 12px; border-radius: 10px; font-size: 13px; cursor: pointer; }
-  label.toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; opacity: .9; }
+  button.act { background: #2b6a3a; border: 1px solid #3e9c55; color: #eafff0; padding: 11px 18px; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; min-height:44px; -webkit-tap-highlight-color:transparent; }
+  button.ghost { background: #1a2540; border: 1px solid #2a3a5e; color: #cdd6f4; padding: 11px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; min-height:44px; -webkit-tap-highlight-color:transparent; }
+  label.toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; opacity: .9; min-height:44px; }
+  label.toggle input { width:18px; height:18px; }
 
   .lesson { font-size: 13px; line-height: 1.5; }
   .lesson b { color: #ffd58a; }
@@ -60,8 +114,9 @@
   .mrow .v { font-size:21px; font-weight:700; white-space:nowrap; }
   .v.obs { color:#ff8f6b; } .v.est { color:#6bd1ff; } .v.oracle { color:#9fe6b0; }
   .mrow.oracle { border-style:dashed; border-color:#3c6b4e; background:#0a1a12; }
-  .seg { display:inline-flex; border:1px solid #2a3a5e; border-radius:8px; overflow:hidden; }
-  .seg button { background:#16203a; color:#cdd6f4; border:0; padding:6px 11px; font-size:12px; cursor:pointer; }
+  .seg { display:inline-flex; border:1px solid var(--line2); border-radius:9px; overflow:hidden; flex:none; }
+  .seg button { background:var(--chip); color:#cdd6f4; border:0; padding:7px 11px; font-size:12px; cursor:pointer; white-space:nowrap; min-height:34px; -webkit-tap-highlight-color:transparent; }
+  #modeSeg button { font-size:12.5px; padding:6px 10px; }
   .seg button.on { background:#3a4f86; color:#fff; }
   .pmtrack { position:relative; height:14px; border-radius:7px; background:#1a2540; overflow:hidden; margin-top:2px; }
   .pmband { position:absolute; top:0; bottom:0; background:rgba(124,92,255,.55); }
@@ -94,16 +149,23 @@
 </style>
 </head>
 <body>
-<header>
-  <h1>🧭 Causal-Sim</h1>
-  <p class="sub">An interactive <i>Book of Why</i> playground — tap a node to <b>do()</b> it and watch correlation turn into causation.</p>
-  <div class="moderow">
+<div class="topbar">
+  <div class="titlebar">
+    <h1>🧭 Causal-Sim</h1>
     <span class="seg" id="modeSeg">
       <button data-m="teacher" class="on">👩‍🏫 Teacher</button><button data-m="researcher">🔬 Researcher</button>
     </span>
-    <span class="modehint" id="modeHint"></span>
   </div>
-</header>
+  <p class="sub">A <i>Book of Why</i> playground — tap a node to <b>do()</b> it and watch correlation turn into causation.</p>
+
+  <div class="nav">
+    <div class="navrow domains"><span class="navlabel" aria-label="Domain">▚</span><span id="domains"></span></div>
+    <div class="navrow diseases"><span class="navlabel" aria-label="Disease">▸</span><span id="diseases"></span></div>
+    <div class="navrow models"><span class="navlabel" aria-label="Model">◆</span><span id="models"></span></div>
+  </div>
+</div>
+
+<p class="modehint" id="modeHint" style="margin:8px 16px 0"></p>
 
 <details class="intro">
   <summary>ℹ︎ Behind the scenes — how each simulation actually works</summary>
@@ -137,23 +199,18 @@
   </div>
 </details>
 
-<div class="nav">
-  <div class="navrow domains"><span class="navlabel">Domain</span><span id="domains" style="display:contents"></span></div>
-  <div class="navrow diseases"><span class="navlabel">Disease</span><span id="diseases" style="display:contents"></span></div>
-  <div class="navrow models"><span class="navlabel">Model</span><span id="models" style="display:contents"></span></div>
-</div>
-
-<div class="legend">
-  <i><span class="swatch" style="background:#5a8dff"></span>treatment</i>
-  <i><span class="swatch" style="background:#7c5cff"></span>mediator</i>
-  <i><span class="swatch" style="background:#ff6b6b"></span>outcome</i>
-  <i><span class="swatch" style="background:#9aa4bf"></span>latent confounder</i>
-  <i><span class="swatch" style="background:#8fb3d9"></span>measured confounder</i>
-  <i>— solid = causal · ┄ dashed = confounding · ✂ = you cut it</i>
-</div>
-
 <div class="stage">
-  <div class="panel"><svg id="graph" viewBox="0 0 720 460" preserveAspectRatio="xMidYMid meet"></svg></div>
+  <div class="panel graphpanel">
+    <svg id="graph" viewBox="0 0 720 460" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend">
+      <i><span class="swatch" style="background:#5a8dff"></span>treatment</i>
+      <i><span class="swatch" style="background:#7c5cff"></span>mediator</i>
+      <i><span class="swatch" style="background:#ff6b6b"></span>outcome</i>
+      <i><span class="swatch" style="background:#9aa4bf"></span>latent confounder</i>
+      <i><span class="swatch" style="background:#8fb3d9"></span>measured confounder</i>
+      <i>— solid causal · ┄ confounding · ✂ cut</i>
+    </div>
+  </div>
 
   <div class="panel controls">
     <div class="lesson" id="lesson"></div>
@@ -958,8 +1015,11 @@ function buildNav(){
   const diseases=TAXONOMY[curDomain].diseases;
   diseases.forEach((dis,si)=> sW.appendChild(pill(dis.disease, si===curDisease, ()=>{
     curDisease=si; curId=diseases[si].models[0].id; resetState(); buildNav(); render(); })));
-  diseases[curDisease].models.forEach(m=> mW.appendChild(pill(m.name, m.id===curId, ()=>{
+  const models = diseases[curDisease].models;
+  models.forEach(m=> mW.appendChild(pill(m.name, m.id===curId, ()=>{
     curId=m.id; resetState(); buildNav(); render(); })));
+  // single-model diseases: render the model row as an unobtrusive caption, not chips
+  document.querySelector(".navrow.models").classList.toggle("single", models.length<=1);
 }
 function pill(label,active,onclick){ const b=document.createElement("button");
   b.className="pill-btn"+(active?" active":""); b.textContent=label; b.onclick=onclick; return b; }
