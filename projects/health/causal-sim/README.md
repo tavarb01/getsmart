@@ -54,9 +54,20 @@ each field carries its own **Area → Topic → Model** drill-down.
   marketing-science literature (Gordon et al. 2019, Nevo 2001, Leenheer et al. 2007) and
   adversarially fact-checked; the supplier case is flagged as an illustrative example.
 
-> **Roadmap:** two more fields are designed and queued — **🧩 Mind, Society & the Human Sciences**
-> (next), then **🌍 Climate & Environment** — each restricted to DAG-honest models (no faked Nash
-> equilibria or feedback loops) and each fact-checked before shipping.
+- **🧩 Mind, Society & the Human Sciences** — the replication-crisis epicenter:
+  - *Psychology* — why talented people seem like jerks (Berkson's collider) · the marshmallow test
+    re-examined (self-control vs family-background confounding)
+  - *Society & Policy* — does health insurance make you healthier? (Oregon Medicaid lottery RCT) ·
+    does prison cause more crime? (random judge-leniency IV)
+  - *Health & Behavior* — is moderate drinking good for you? (the alcohol J-curve vs Mendelian
+    randomization) · does coffee cause pancreatic cancer? (a smoking-confounded phantom)
+
+  Adversarially fact-checked (Berkson 1946, Watts–Duncan–Quan 2018, Finkelstein 2012/Baicker 2013,
+  Aizer–Doyle 2015, Holmes 2014, MacMahon 1981).
+
+> **Roadmap:** one field remains — **🌍 Climate & Environment** (warming attribution, carbon-tax
+> difference-in-differences, pollution regression-discontinuity) — DAG-honest and fact-checked
+> before shipping.
 
 ## What you can play with
 

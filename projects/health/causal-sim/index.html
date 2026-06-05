@@ -951,6 +951,129 @@ const BIZ_TAX = [
   ]},
 ];
 
+// ===========================================================================
+// FIELD 6 — Mind, Society & the Human Sciences (the replication-crisis epicenter)
+// ===========================================================================
+const M_BERKSON = {
+  id:"mind_berkson", name:"Why are talented people such jerks?", escape:"collider",
+  rung:"Collider · Berkson's selection paradox",
+  lesson:`Among people you'd <b>date</b> (or actors who get <b>cast</b>), <b>talent</b> and <b>niceness</b>
+    look negatively related — talented ones seem meaner. But the two are independent in the world.
+    "Worth your attention" is a <b>collider</b>: selecting on it manufactures the trade-off.`,
+  nodes:[
+    { id:"TAL",label:"Talent", x:.18, y:.52, type:"treatment" },
+    { id:"SEL",label:"You date /\nnotice them", x:.5, y:.24, type:"collider" },
+    { id:"NIC",label:"Niceness", x:.82, y:.52, type:"outcome" },
+  ],
+  edges:[
+    { from:"TAL",to:"SEL",w:.90,kind:"causal" }, { from:"NIC",to:"SEL",w:.90,kind:"causal" },
+  ],
+  x:"TAL", y:"NIC", mediator:null, conditionOn:"SEL",
+};
+const M_MARSHMALLOW = {
+  id:"mind_marshmallow", name:"The marshmallow test, re-examined", escape:"backdoor",
+  rung:"Back-door · adjust for family background",
+  lesson:`Kids with more <b>self-control</b> (waiting for two marshmallows) do better as <b>adults</b> —
+    so willpower is destiny? The 2018 replication says: mostly <b>family background</b>. Affluent kids
+    both wait <i>and</i> succeed. Adjust for background and the famous effect <b>shrinks sharply</b>.`,
+  nodes:[
+    { id:"BG", label:"Family\nbackground", x:.5,y:.16, type:"confounder" },
+    { id:"SC", label:"Child\nself-control", x:.2,y:.66, type:"treatment" },
+    { id:"SUC",label:"Adult\nsuccess", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"BG",to:"SC",w:.70,kind:"confound" }, { from:"BG",to:"SUC",w:.90,kind:"confound" },
+    { from:"SC",to:"SUC",w:.05,kind:"causal" },
+  ],
+  x:"SC", y:"SUC", mediator:null, adjust:["BG"],
+};
+const M_MEDICAID = {
+  id:"mind_medicaid", name:"Does health insurance make you healthier?", escape:"rct",
+  rung:"Latent confounder · the Oregon lottery",
+  lesson:`In raw data, people on <b>Medicaid</b> often look <i>worse off</i> — because the
+    <b>poorest and sickest</b> end up on it. You can't fully measure need. Oregon ran a real
+    <b>lottery</b> for limited slots: a true randomized experiment on a welfare-state question.`,
+  nodes:[
+    { id:"U", label:"Poverty &\nbaseline need", x:.5, y:.16, type:"latent" },
+    { id:"MED",label:"Medicaid\ncoverage", x:.2, y:.66, type:"treatment" },
+    { id:"OUT",label:"Health &\nfinances", x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"MED",w:.60,kind:"confound" }, { from:"U",to:"OUT",w:-.70,kind:"confound" },
+    { from:"MED",to:"OUT",w:.15,kind:"causal" },
+  ],
+  x:"MED", y:"OUT", mediator:null,
+};
+const M_INCARCERATION = {
+  id:"mind_incarceration", name:"Does prison cause more crime?", escape:"iv",
+  rung:"Instrument · random judge leniency",
+  lesson:`Comparing the <b>incarcerated</b> to the not is hopeless — the <b>severity</b> of the case
+    drives both prison <i>and</i> reoffending. But defendants are randomly assigned <b>judges</b> of
+    differing leniency: an instrument. It reveals prison can be <b>criminogenic</b>.`,
+  nodes:[
+    { id:"Z", label:"Judge\nleniency", x:.13, y:.32, type:"instrument" },
+    { id:"U", label:"Crime\nseverity", x:.63, y:.16, type:"latent" },
+    { id:"INC",label:"Incarcerated", x:.42, y:.66, type:"treatment" },
+    { id:"REO",label:"Reoffends", x:.85, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"Z",to:"INC",w:.70,kind:"causal" },
+    { from:"U",to:"INC",w:.60,kind:"confound" }, { from:"U",to:"REO",w:.60,kind:"confound" },
+    { from:"INC",to:"REO",w:.20,kind:"causal" },
+  ],
+  x:"INC", y:"REO", mediator:null, iv:"Z",
+};
+const M_ALCOHOL = {
+  id:"mind_alcohol", name:"Is moderate drinking good for you?", escape:"iv",
+  rung:"Instrument · Mendelian randomization",
+  lesson:`Decades of studies show moderate <b>drinkers</b> have <i>less</i> <b>heart disease</b> — the
+    famous J-curve. But <b>healthy-lifestyle</b> and 'sick-quitter' bias confound it. A gene variant
+    that changes alcohol metabolism is assigned <i>as-if-at-random</i> at conception — nature's IV.`,
+  nodes:[
+    { id:"Z", label:"Alcohol-gene\nvariant", x:.13, y:.32, type:"instrument" },
+    { id:"U", label:"Healthy\nlifestyle", x:.63, y:.16, type:"latent" },
+    { id:"ALC",label:"Alcohol\nintake", x:.42, y:.66, type:"treatment" },
+    { id:"RISK",label:"Heart\nrisk", x:.85, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"Z",to:"ALC",w:.60,kind:"causal" },
+    { from:"U",to:"ALC",w:.50,kind:"confound" }, { from:"U",to:"RISK",w:-.60,kind:"confound" },
+    { from:"ALC",to:"RISK",w:.15,kind:"causal" },
+  ],
+  x:"ALC", y:"RISK", mediator:null, iv:"Z",
+};
+const M_COFFEE = {
+  id:"mind_coffee", name:"Does coffee cause pancreatic cancer?", escape:"collider",
+  rung:"Collider · control-selection bias",
+  lesson:`A 1981 study set off a scare: <b>coffee</b> drinkers had more <b>pancreatic cancer</b>. But it
+    survived adjusting for smoking — the flaw was who got picked as <b>controls</b>: hospital patients
+    with GI trouble, who'd <i>cut back</i> on coffee. Selecting the comparison group on a coffee-related
+    condition <b>manufactured</b> the link.`,
+  nodes:[
+    { id:"COF",label:"Coffee", x:.18, y:.52, type:"treatment" },
+    { id:"SEL",label:"In the\ncase-control study", x:.5, y:.24, type:"collider" },
+    { id:"PC", label:"Pancreatic\ncancer", x:.82, y:.52, type:"outcome" },
+  ],
+  edges:[
+    { from:"COF",to:"SEL",w:-.90,kind:"causal" }, { from:"PC",to:"SEL",w:.90,kind:"causal" },
+  ],
+  x:"COF", y:"PC", mediator:null, conditionOn:"SEL",
+};
+const MIND_TAX = [
+  { domain:"Psychology", icon:"🧠", diseases:[
+      { disease:"Berkson's paradox", models:[ M_BERKSON ] },
+      { disease:"Marshmallow test",  models:[ M_MARSHMALLOW ] },
+  ]},
+  { domain:"Society & Policy", icon:"🏛️", diseases:[
+      { disease:"Health insurance", models:[ M_MEDICAID ] },
+      { disease:"Incarceration",    models:[ M_INCARCERATION ] },
+  ]},
+  { domain:"Health & Behavior", icon:"🍷", diseases:[
+      { disease:"Alcohol J-curve", models:[ M_ALCOHOL ] },
+      { disease:"Coffee scare",    models:[ M_COFFEE ] },
+  ]},
+];
+
 // --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
 const HEALTH_TAX = [
   { domain:"Neurology", icon:"🧠", diseases:[
@@ -990,6 +1113,7 @@ const FIELDS = [
   { id:"econ",   name:"Economics & Policy",      icon:"📈", taxonomy: ECON_TAX },
   { id:"ai",     name:"AI & Data Science",        icon:"🤖", taxonomy: AI_TAX },
   { id:"biz",    name:"Business · CPG & Health",   icon:"🛒", taxonomy: BIZ_TAX },
+  { id:"mind",   name:"Mind & Society",            icon:"🧩", taxonomy: MIND_TAX },
 ];
 let curField = 0;
 let TAXONOMY = FIELDS[curField].taxonomy;   // active field's taxonomy (reassigned on field switch)
@@ -1087,6 +1211,30 @@ const EVIDENCE = {
     real:"In WWII, Abraham Wald argued bomber armor belonged where <b>returning</b> planes were <i>not</i> hit: aircraft hit in those areas didn't come back, so survivors' holes mark the survivable spots. (His formal work estimated vulnerability from survivor data; the bullet-hole story is the popular retelling.)",
     ident:"Survival is a collider; analyzing only returners — selecting on the outcome — is the textbook selection bias.",
     cites:["Wald 1943, Statistical Research Group memoranda","Mangel & Samaniego 1984, JASA"] },
+  mind_berkson:{ status:"Collider · selection paradox", strength:"strong",
+    real:"The negative correlation between, say, talent and niceness (or looks and competence) among a <b>selected</b> group is a classic <b>Berkson's paradox</b>: traits independent in the population become anti-correlated once you condition on a common effect (being noticed, hired, dated).",
+    ident:"Selection is a collider; the spurious association is created by conditioning on it — the fix is simply <i>not</i> to.",
+    cites:["Berkson 1946, Biometrics Bulletin"] },
+  mind_marshmallow:{ status:"Back-door · confounded by SES", strength:"strong",
+    real:"The 2018 conceptual replication (Watts, Duncan & Quan) found that childhood delay-of-gratification predicts adult outcomes far more <b>weakly</b> once <b>family background</b> is controlled — much of Mischel's celebrated effect was confounding.",
+    ident:"Family background is a measurable back-door; adjusting for it shrinks the self-control effect substantially.",
+    cites:["Watts, Duncan & Quan 2018, Psychological Science","Mischel et al. 1989, Science"] },
+  mind_medicaid:{ status:"RCT-identified (lottery)", strength:"strong",
+    real:"Oregon's <b>randomized Medicaid lottery</b> showed coverage improved <b>financial security and mental health</b> (~30% less depression), but produced <b>no statistically significant change in physical-health biomarkers</b> at two years (the trial was underpowered for those) — a nuanced, genuinely causal result.",
+    ident:"The lottery randomizes coverage, identifying its effects; naive 'insured vs uninsured' comparisons are confounded by need.",
+    cites:["Finkelstein et al. 2012, QJE","Baicker et al. 2013, NEJM"] },
+  mind_incarceration:{ status:"Instrument (judge) · identified", strength:"strong",
+    real:"Using <b>random assignment of more- vs less-lenient judges</b> as an instrument, Aizer & Doyle (2015) found juvenile <b>incarceration increases</b> later reoffending and lowers high-school completion — prison can be criminogenic, the opposite of the naive deterrence story.",
+    ident:"Judge leniency is as-if-random (relevance + exclusion), identifying incarceration's causal effect.",
+    cites:["Aizer & Doyle 2015, QJE","Kling 2006, American Economic Review"] },
+  mind_alcohol:{ status:"Instrument (Mendelian) · identified", strength:"strong",
+    real:"The protective 'J-curve' for moderate drinking is confounded by healthy-lifestyle and <b>'sick-quitter'</b> bias. <b>Mendelian randomization</b> — using an alcohol-metabolism gene variant as a natural instrument — finds alcohol is <b>not cardioprotective</b> and is harmful on balance.",
+    ident:"The gene variant is randomized at conception (Mendel's law), instrumenting lifetime intake free of lifestyle confounding.",
+    cites:["Holmes et al. 2014, BMJ","Stockwell et al. 2016, J. Studies on Alcohol & Drugs"] },
+  mind_coffee:{ status:"Collider · control-selection bias", strength:"strong",
+    real:"MacMahon et al. (1981) reported <b>coffee</b> as a pancreatic-cancer risk, but the association <b>persisted after adjusting for smoking</b> and failed to replicate. The leading explanation is <b>control-selection bias</b>: controls were patients with GI conditions who had reduced their coffee — a comparison group selected on a coffee-related trait.",
+    ident:"Conditioning on study selection (a collider) manufactured the link; adjusting for smoking does <i>not</i> remove it. A cautionary tale in case-control design.",
+    cites:["MacMahon et al. 1981, NEJM"] },
   biz_adlift:{ status:"RCT-identified · MMM overstates", strength:"strong",
     real:"Benchmarking 15 large Facebook RCTs, Gordon et al. (2019) found observational <b>marketing-mix models typically misstate ad ROI — usually overstating it</b> — because firms spend more when demand is already high, making ad exposure endogenous.",
     ident:"A randomized geo holdout (or ghost-ad) identifies incremental lift; MMM regressions are confounded by demand/seasonality.",
