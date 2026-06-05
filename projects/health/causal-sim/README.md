@@ -4,6 +4,10 @@ An interactive **Book of Why** playground. Build intuition for Judea Pearl's cau
 *doing* it: tap a node to `do()` an intervention and watch a spurious correlation collapse into
 the true causal effect.
 
+New here? Tap **🎓 Learn** in the header for a 4-minute, no-math primer — a slide-deck tour of the
+Ladder of Causation, confounders, the `do()` operator, the three numbers, and how to read the
+sandbox (general teaching; no domain expertise assumed).
+
 ## Run it
 
 No install, no build. Either:

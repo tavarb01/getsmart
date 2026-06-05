@@ -238,15 +238,76 @@
     line-height:1.3; }
   .impl-why { margin-top:12px; padding-top:10px; border-top:1px dashed #2a3760;
     font-size:12.5px; line-height:1.5; color:#cfe3ff; }
+  /* ===== Title-bar right cluster + Learn launcher ===== */
+  .tbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .tut-launch { background:linear-gradient(135deg,#3a2f12,#1b2a44); border:1px solid #c4a44a66;
+    color:#e8d9a8; font-weight:700; font-size:12px; padding:7px 13px; border-radius:999px; cursor:pointer;
+    -webkit-tap-highlight-color:transparent; transition:border-color .15s, transform .08s; }
+  .tut-launch:active { transform:scale(.96); }
+  .tut-launch:hover { border-color:#c4a44a; }
+
+  /* ===== Tutorial overlay ("Learn") ===== */
+  #tutorial { position:fixed; inset:0; z-index:1000; background:#0b0f1a; color:#e2e8f0;
+    display:none; flex-direction:column; }
+  #tutorial.open { display:flex; }
+  #tutorial .tut-ambient { position:fixed; top:-200px; right:-200px; width:480px; height:480px;
+    border-radius:50%; background:radial-gradient(circle,#c4a44a0e,transparent 70%); pointer-events:none; }
+  .tut-top { display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:11px 16px; border-bottom:1px solid #1e293b; background:#0b0f1aee; backdrop-filter:blur(8px); z-index:2; }
+  .tut-dots { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+  .tut-dots button { height:7px; width:7px; border-radius:4px; border:none; cursor:pointer; padding:0;
+    background:#475569; transition:all .3s; }
+  .tut-dots button.on { width:24px; background:#c4a44a; }
+  .tut-dots button.seen { background:#c4a44a; opacity:.5; }
+  .tut-count { font-size:11px; color:#94a3b8; letter-spacing:1px; white-space:nowrap; }
+  .tut-close { background:none; border:1px solid #1e293b; color:#94a3b8; border-radius:8px;
+    width:32px; height:32px; cursor:pointer; font-size:15px; flex:none; }
+  .tut-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .tut-body { max-width:680px; margin:0 auto; padding:30px 22px 100px; }
+  .tut-bottom { display:flex; justify-content:space-between; gap:12px; padding:12px 16px;
+    border-top:1px solid #1e293b; background:#0b0f1aee; backdrop-filter:blur(8px); }
+  .tut-bottom button { padding:11px 22px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; }
+  .tut-prev { background:#1a2234; border:1px solid #1e293b; color:#e2e8f0; }
+  .tut-next { background:#c4a44a; border:none; color:#0b0f1a; }
+  .tut-bottom button:disabled { opacity:.4; cursor:default; }
+  .tut-slide { animation:tutFade .45s ease; }
+  @keyframes tutFade { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+  .tut-kicker { font-size:10px; text-transform:uppercase; letter-spacing:4px; color:#c4a44a; font-weight:700; margin-bottom:13px; }
+  .tut-h { font-family:Georgia,'Iowan Old Style','Palatino Linotype','Times New Roman',serif; font-weight:700; color:#f3f0e6; line-height:1.14; }
+  .tut-h1 { font-size:34px; margin:0 0 14px; }
+  .tut-h2 { font-size:25px; margin:0 0 6px; }
+  .tut-rule { width:46px; height:3px; background:#c4a44a; border-radius:2px; margin:0 0 22px; }
+  .tut-p { font-size:15px; line-height:1.75; color:#aeb7c7; margin:0 0 16px; }
+  .tut-p b, .tut-p strong { color:#e7ecf5; }
+  .tut-chips { display:flex; gap:10px; flex-wrap:wrap; }
+  .tut-chip { background:#1a2234; border:1px solid #2a3550; border-radius:10px; padding:11px 15px; font-size:13px; color:#aeb7c7; }
+  .tut-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px; }
+  .tut-card { background:#141b2e; border:1px solid #233152; border-radius:12px; padding:15px 17px; }
+  .tut-card .lab { font-size:10px; text-transform:uppercase; letter-spacing:2px; font-weight:700; margin-bottom:7px; }
+  .tut-card .txt { font-size:13px; line-height:1.62; color:#aeb7c7; }
+  .tut-card .txt b { color:#e7ecf5; }
+  .tut-num { font-size:30px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .tut-row { display:flex; align-items:center; gap:14px; }
+  .tut-quote { background:linear-gradient(135deg,#1a1a2e,#15241c); border:1px solid #c4a44a33; border-radius:12px;
+    padding:19px 20px; text-align:center; font-family:Georgia,serif; font-size:16px; line-height:1.7; color:#e9edf5; margin-top:4px; }
+  .tut-step { display:flex; gap:12px; align-items:flex-start; margin-bottom:13px; }
+  .tut-step .nbox { min-width:26px; height:26px; border-radius:7px; background:#c4a44a; color:#0b0f1a;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex:none; }
+  .tut-step .stxt { font-size:13.5px; line-height:1.6; color:#aeb7c7; }
+  .tut-step .stxt b { color:#e7ecf5; }
+  @media (max-width:520px){ .tut-grid2{grid-template-columns:1fr;} .tut-h1{font-size:27px;} .tut-h2{font-size:21px;} }
 </style>
 </head>
 <body>
 <div class="topbar">
   <div class="titlebar">
     <h1>🧭 Causal-Sim</h1>
-    <span class="seg" id="modeSeg">
-      <button data-m="teacher" class="on">👩‍🏫 Teacher</button><button data-m="researcher">🔬 Researcher</button>
-    </span>
+    <div class="tbar-right">
+      <button class="tut-launch" id="tutBtn">🎓 Learn</button>
+      <span class="seg" id="modeSeg">
+        <button data-m="teacher" class="on">👩‍🏫 Teacher</button><button data-m="researcher">🔬 Researcher</button>
+      </span>
+    </div>
   </div>
   <p class="sub">A <i>Book of Why</i> playground — tap a node to <b>do()</b> it and watch correlation turn into causation.</p>
 
@@ -1950,7 +2011,202 @@ document.querySelectorAll("#modeSeg button").forEach(b=> b.onclick=()=>{
   document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.toggle("on", x===b));
   updateReadout();
 });
+// ===========================================================================
+//  "Learn" — a slide-deck primer on causal thinking. General teaching only.
+//  Design inspired by classic dark slide decks: serif headings, progress dots,
+//  fadeUp, the Ladder of Causation, watching-vs-doing, the discipline criteria.
+// ===========================================================================
+const _LADDER = `<svg viewBox="0 0 460 244" style="width:100%;max-width:430px;display:block;margin:2px auto 16px">
+  <text x="114" y="14" fill="#475569" font-size="8" text-anchor="middle" font-family="monospace">↑ each rung needs more proof</text>
+  <line x1="78" y1="22" x2="78" y2="228" stroke="#2a3550" stroke-width="2.6"/>
+  <line x1="150" y1="22" x2="150" y2="228" stroke="#2a3550" stroke-width="2.6"/>
+  <line x1="78" y1="54" x2="150" y2="54" stroke="#22d3ee" stroke-width="2.4"/>
+  <rect x="44" y="44" width="30" height="20" rx="3" fill="#22d3ee22" stroke="#22d3ee"/>
+  <text x="59" y="58" fill="#22d3ee" font-size="9" text-anchor="middle" font-weight="700" font-family="monospace">R3</text>
+  <text x="166" y="50" fill="#f3f0e6" font-size="15" font-weight="700">Counterfactual</text>
+  <text x="166" y="67" fill="#94a3b8" font-size="9.5">Imagine — what if it had been different?</text>
+  <line x1="78" y1="128" x2="150" y2="128" stroke="#c4a44a" stroke-width="2.4"/>
+  <rect x="44" y="118" width="30" height="20" rx="3" fill="#c4a44a22" stroke="#c4a44a"/>
+  <text x="59" y="132" fill="#c4a44a" font-size="9" text-anchor="middle" font-weight="700" font-family="monospace">R2</text>
+  <text x="166" y="124" fill="#f3f0e6" font-size="15" font-weight="700">Intervention</text>
+  <text x="166" y="141" fill="#94a3b8" font-size="9.5">Do — what happens if we act? P(Y | do X)</text>
+  <line x1="78" y1="202" x2="150" y2="202" stroke="#64748b" stroke-width="2.4"/>
+  <rect x="44" y="192" width="30" height="20" rx="3" fill="#64748b22" stroke="#64748b"/>
+  <text x="59" y="206" fill="#94a3b8" font-size="9" text-anchor="middle" font-weight="700" font-family="monospace">R1</text>
+  <text x="166" y="198" fill="#f3f0e6" font-size="15" font-weight="700">Association</text>
+  <text x="166" y="215" fill="#94a3b8" font-size="9.5">See — what happened? P(Y | X) · most AI stops here</text>
+</svg>`;
+const _FORK = `<svg viewBox="0 0 440 178" style="width:100%;max-width:400px;display:block;margin:4px auto 14px">
+  <defs><marker id="fkar" markerWidth="8" markerHeight="6" refX="6.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#c4a44a"/></marker></defs>
+  <rect x="166" y="8" width="108" height="38" rx="9" fill="#c4a44a18" stroke="#c4a44a"/>
+  <text x="220" y="32" fill="#f3f0e6" font-size="13" text-anchor="middle" font-weight="700">☀ Summer</text>
+  <line x1="196" y1="46" x2="100" y2="116" stroke="#c4a44a" stroke-width="2.2" marker-end="url(#fkar)"/>
+  <line x1="244" y1="46" x2="340" y2="116" stroke="#c4a44a" stroke-width="2.2" marker-end="url(#fkar)"/>
+  <rect x="18" y="118" width="132" height="40" rx="9" fill="#1a2234" stroke="#2a3550"/>
+  <text x="84" y="143" fill="#e2e8f0" font-size="12" text-anchor="middle" font-weight="700">🍦 Ice cream</text>
+  <rect x="290" y="118" width="132" height="40" rx="9" fill="#1a2234" stroke="#2a3550"/>
+  <text x="356" y="143" fill="#e2e8f0" font-size="12" text-anchor="middle" font-weight="700">Drownings</text>
+  <line x1="150" y1="138" x2="290" y2="138" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.7"/>
+  <text x="220" y="132" fill="#ef4444" font-size="10" text-anchor="middle">no causal link ✗</text>
+</svg>`;
+const _DO = `<svg viewBox="0 0 420 160" style="width:100%;max-width:380px;display:block;margin:6px auto 12px">
+  <defs>
+    <marker id="doar" markerWidth="8" markerHeight="6" refX="6.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#f59e0b"/></marker>
+    <marker id="dogr" markerWidth="8" markerHeight="6" refX="6.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="158" y="10" width="104" height="34" rx="8" fill="#47556922" stroke="#64748b"/>
+  <text x="210" y="32" fill="#cbd5e1" font-size="12" text-anchor="middle" font-weight="700">Confounder</text>
+  <rect x="34" y="108" width="96" height="34" rx="8" fill="#22d3ee18" stroke="#22d3ee"/>
+  <text x="82" y="130" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">X</text>
+  <rect x="290" y="108" width="96" height="34" rx="8" fill="#ef444418" stroke="#ef4444"/>
+  <text x="338" y="130" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">Y</text>
+  <line x1="226" y1="44" x2="322" y2="108" stroke="#475569" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#dogr)"/>
+  <line x1="194" y1="44" x2="98" y2="108" stroke="#475569" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.3"/>
+  <text x="132" y="78" font-size="15" fill="#ef4444">✂</text>
+  <line x1="130" y1="125" x2="286" y2="125" stroke="#f59e0b" stroke-width="2.4" marker-end="url(#doar)"/>
+  <text x="208" y="118" fill="#f59e0b" font-size="9.5" text-anchor="middle">the effect you want</text>
+  <text x="210" y="156" fill="#94a3b8" font-size="10" text-anchor="middle">do(X) = cut the arrows INTO X</text>
+</svg>`;
+
+const TUT = [
+// 0 — cover
+`<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:60vh;text-align:center">
+  <div class="tut-kicker">A Causal-Sim Primer</div>
+  <h1 class="tut-h tut-h1" style="max-width:560px">From Correlation<br>to <span style="color:#c4a44a">Cause</span></h1>
+  <p class="tut-p" style="max-width:470px">How to tell what actually <b>causes</b> what — and why a dashboard, or most "AI", usually can't. Four minutes, no math.</p>
+  <div class="tut-chips" style="justify-content:center;margin-top:4px">
+    <div class="tut-chip"><b style="color:#94a3b8">See</b> · what happened</div>
+    <div class="tut-chip"><b style="color:#c4a44a">Do</b> · what if we act</div>
+    <div class="tut-chip"><b style="color:#22d3ee">Imagine</b> · what if it differed</div>
+  </div>
+  <div style="margin-top:32px;font-size:12px;color:#475569">Swipe, or use → arrow keys</div>
+</div>`,
+// 1 — the gap
+`<div class="tut-kicker">Why it matters</div>
+<h2 class="tut-h tut-h2">Prediction ≠ Decision</h2><div class="tut-rule"></div>
+<p class="tut-p">Modern models <b>predict</b> beautifully. But prediction alone can't answer the questions that actually drive a decision:</p>
+<div class="tut-grid2">
+  <div class="tut-card"><div class="lab" style="color:#f59e0b">Why did it happen?</div><div class="txt">You see a number, not a reason.</div></div>
+  <div class="tut-card"><div class="lab" style="color:#f59e0b">What if we act?</div><div class="txt">Which lever actually <b>moves</b> the outcome?</div></div>
+  <div class="tut-card"><div class="lab" style="color:#f59e0b">Cause, or coincidence?</div><div class="txt">Did X cause Y — or do they just move together?</div></div>
+  <div class="tut-card"><div class="lab" style="color:#f59e0b">Can we prove it?</div><div class="txt">Logs show what was done — not <b>why</b> it worked.</div></div>
+</div>
+<div class="tut-quote">"Prediction tells you what's coming.<br>Causation tells you what to <span style="color:#c4a44a">do</span> about it."</div>`,
+// 2 — the ladder
+`<div class="tut-kicker">The big idea</div>
+<h2 class="tut-h tut-h2">The Ladder of Causation</h2><div class="tut-rule"></div>
+<p class="tut-p">Judea Pearl's three rungs. Each answers a different question — and each demands strictly more than the rung below. Most analytics never leaves Rung 1.</p>
+${_LADDER}
+<p class="tut-p" style="font-size:13.5px">This whole app lives on Rung 2: you <b>do()</b> an intervention and watch what changes. The leap from "what happened" to "what if we act" is the entire game.</p>`,
+// 3 — confounder / fork
+`<div class="tut-kicker">Correlation's favourite trick</div>
+<h2 class="tut-h tut-h2">The lurking common cause</h2><div class="tut-rule"></div>
+${_FORK}
+<p class="tut-p">Ice-cream sales and drownings rise together — every summer. But banning ice cream wouldn't save a single swimmer. <b>Summer</b> drives both; the ice-cream→drowning link is a <b>mirage</b>.</p>
+<div class="tut-quote" style="font-size:15px">A hidden <span style="color:#c4a44a">common cause</span> — a "confounder" — is the #1 reason data lies to you with a straight face.</div>`,
+// 4 — watching vs doing
+`<div class="tut-kicker">The one move that beats it</div>
+<h2 class="tut-h tut-h2">Watching vs. Doing</h2><div class="tut-rule"></div>
+<div class="tut-grid2">
+  <div class="tut-card" style="border-left:3px solid #f59e0b"><div class="lab" style="color:#f59e0b">Watching — P(Y | X)</div><div class="txt">Among people who <b>happen</b> to have high X, Y is high too. But maybe a confounder put them both there.</div></div>
+  <div class="tut-card" style="border-left:3px solid #22d3ee"><div class="lab" style="color:#22d3ee">Doing — P(Y | do X)</div><div class="txt">Reach in and <b>set</b> X — at random — breaking whatever usually causes it. Now any change in Y is X's doing.</div></div>
+</div>
+${_DO}
+<p class="tut-p" style="font-size:13.5px">That's the <b>do() operator</b>. A randomized trial does it in the world; a causal model does it on paper — if the assumptions hold. <b>In this app, tapping a node = do().</b></p>`,
+// 5 — the three numbers
+`<div class="tut-kicker">Reading the numbers</div>
+<h2 class="tut-h tut-h2">The lie, the truth, the honest peek</h2><div class="tut-rule"></div>
+<p class="tut-p">Every model shows three numbers. Here's what they really are — imagine "does smoking shorten life?":</p>
+<div style="display:flex;flex-direction:column;gap:11px">
+  <div class="tut-card tut-row" style="border-left:3px solid #ef4444"><div class="tut-num" style="color:#ef4444;min-width:72px" data-count="1.3" data-pre="+" data-dec="1">+0.0</div><div><div class="lab" style="color:#ef4444">Observed — the lie</div><div class="txt">The raw correlation. Padded by confounders. Usually <b>too big</b>.</div></div></div>
+  <div class="tut-card tut-row" style="border-left:3px solid #c4a44a"><div class="tut-num" style="color:#c4a44a;min-width:72px" data-count="0.6" data-pre="+" data-dec="1">+0.0</div><div><div class="lab" style="color:#c4a44a">Identified — the honest peek</div><div class="txt">What you can <b>recover from messy data</b> — often only part of the story.</div></div></div>
+  <div class="tut-card tut-row" style="border-left:3px solid #10b981"><div class="tut-num" style="color:#10b981;min-width:72px" data-count="1.0" data-pre="+" data-dec="1">+0.0</div><div><div class="lab" style="color:#10b981">True effect — the target</div><div class="txt">What a <b>clean experiment</b> would show. The truth usually sits in between.</div></div></div>
+</div>
+<div class="tut-quote" style="font-size:14px;margin-top:14px">The naive number over-counts. The honest estimate can under-count. The skill is knowing which you're holding.</div>`,
+// 6 — three traps
+`<div class="tut-kicker">Three shapes to know</div>
+<h2 class="tut-h tut-h2">Confounder · Mediator · Collider</h2><div class="tut-rule"></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+  <div class="tut-card" style="border-left:3px solid #c4a44a"><div class="lab" style="color:#c4a44a">Confounder — a shared CAUSE</div><div class="txt">Causes both X and Y (the summer "fork"). It fakes a link. <b>Fix: adjust for it.</b></div></div>
+  <div class="tut-card" style="border-left:3px solid #22d3ee"><div class="lab" style="color:#22d3ee">Mediator — the step in BETWEEN</div><div class="txt">The <b>how</b>: X → M → Y. Useful — but "control it away" and you erase the very effect you're measuring.</div></div>
+  <div class="tut-card" style="border-left:3px solid #ef4444"><div class="lab" style="color:#ef4444">Collider — a shared EFFECT</div><div class="txt">X and Y both point <i>into</i> it. Controlling for it <b>creates</b> a fake link. <b>Fix: leave it alone.</b></div></div>
+</div>
+<p class="tut-p" style="font-size:13px;margin-top:14px">Same arrows, opposite advice — which is exactly why you draw the graph <b>first</b>.</p>`,
+// 7 — how to read the sandbox
+`<div class="tut-kicker">Using this sandbox</div>
+<h2 class="tut-h tut-h2">How to play</h2><div class="tut-rule"></div>
+<div class="tut-step"><div class="nbox">1</div><div class="stxt">Pick a <b>Field → Area → Topic → Model</b> from the dropdowns up top.</div></div>
+<div class="tut-step"><div class="nbox">2</div><div class="stxt">Read the graph: circles are <b>variables</b>, arrows are <b>"causes"</b>. A dashed node is a confounder you can't measure.</div></div>
+<div class="tut-step"><div class="nbox">3</div><div class="stxt"><b>Tap a node to do() it</b> — sever its incoming arrows and watch correlation turn into causation.</div></div>
+<div class="tut-step"><div class="nbox">4</div><div class="stxt">Watch the three numbers and the "% mediated" bar respond.</div></div>
+<div class="tut-step"><div class="nbox">5</div><div class="stxt">Hit <b>🧠 Implications</b> for a plain-language, step-by-step read of what it all means.</div></div>
+<div class="tut-step"><div class="nbox">6</div><div class="stxt">Flip <b>👩‍🏫 Teacher / 🔬 Researcher</b> for intuition vs. real-world evidence and citations.</div></div>
+<div class="tut-quote" style="font-size:14px">Tap a node and watch the <b>lie collapse to the truth</b>. That snap <i>is</i> the idea.</div>`,
+// 8 — the discipline
+`<div class="tut-kicker">The discipline</div>
+<h2 class="tut-h tut-h2">What any "causal" claim must earn</h2><div class="tut-rule"></div>
+<div class="tut-step"><div class="nbox">1</div><div class="stxt"><b>Draw the assumptions.</b> Publish the graph; say what you assume — and what you're ignoring.</div></div>
+<div class="tut-step"><div class="nbox">2</div><div class="stxt"><b>Carry calibrated confidence.</b> When it says 90% sure, it's right ~90% of the time.</div></div>
+<div class="tut-step"><div class="nbox">3</div><div class="stxt"><b>Beat the naive baseline.</b> Show it finds something plain correlation demonstrably misses.</div></div>
+<div class="tut-step"><div class="nbox">4</div><div class="stxt"><b>Say what would change its mind.</b> Name the result that would refute it.</div></div>
+<div class="tut-step"><div class="nbox">5</div><div class="stxt"><b>Degrade gracefully.</b> When unsure, say so — and hand it to a human.</div></div>
+<div class="tut-quote">Name your assumptions. Find the counterfactual.<br>Prove it on <span style="color:#c4a44a">one narrow thing</span> — then earn the next.</div>`,
+];
+
+let tutN = 0;
+function tutAnimNums(){
+  document.querySelectorAll("#tutBody [data-count]").forEach(el=>{
+    const target=parseFloat(el.dataset.count), pre=el.dataset.pre||"", dec=el.dataset.dec?1:0, t0=performance.now();
+    (function step(t){ const p=Math.min((t-t0)/850,1), e=1-Math.pow(1-p,3);
+      el.textContent=pre+(target*e).toFixed(dec); if(p<1)requestAnimationFrame(step); })(performance.now());
+  });
+}
+function tutRender(){
+  document.getElementById("tutBody").innerHTML = `<div class="tut-slide">${TUT[tutN]}</div>`;
+  const dots=document.getElementById("tutDots"); dots.innerHTML="";
+  TUT.forEach((_,i)=>{ const b=document.createElement("button");
+    b.className = i===tutN?"on":(i<tutN?"seen":""); b.onclick=()=>{ tutN=i; tutRender(); }; dots.appendChild(b); });
+  document.getElementById("tutCount").textContent = (tutN+1)+" / "+TUT.length;
+  document.getElementById("tutPrev").disabled = tutN===0;
+  document.getElementById("tutNext").textContent = tutN===TUT.length-1 ? "Start exploring ✓" : "Next →";
+  document.getElementById("tutScroll").scrollTop = 0;
+  tutAnimNums();
+}
+function tutGo(d){ const n=tutN+d; if(n<0) return; if(n>=TUT.length){ tutClose(); return; } tutN=n; tutRender(); }
+function tutOpen(){ document.getElementById("tutorial").classList.add("open"); tutRender(); }
+function tutClose(){ document.getElementById("tutorial").classList.remove("open"); }
+document.getElementById("tutBtn").onclick = tutOpen;
+document.getElementById("tutClose").onclick = tutClose;
+document.getElementById("tutPrev").onclick = ()=>tutGo(-1);
+document.getElementById("tutNext").onclick = ()=>tutGo(1);
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("tutorial").classList.contains("open")) return;
+  if(e.key==="ArrowRight"||e.key===" "){ e.preventDefault(); tutGo(1); }
+  else if(e.key==="ArrowLeft") tutGo(-1);
+  else if(e.key==="Escape") tutClose();
+});
+(function(){ let tx=null; const ts=document.getElementById("tutScroll");
+  ts.addEventListener("touchstart", e=>{ tx=e.touches[0].clientX; }, {passive:true});
+  ts.addEventListener("touchend", e=>{ if(tx===null) return; const d=tx-e.changedTouches[0].clientX;
+    if(Math.abs(d)>55){ d>0?tutGo(1):tutGo(-1); } tx=null; }, {passive:true});
+})();
+
 buildNav(); render();
 </script>
+<div id="tutorial" aria-hidden="true">
+  <div class="tut-ambient"></div>
+  <div class="tut-top">
+    <div class="tut-dots" id="tutDots"></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="tut-count" id="tutCount"></span>
+      <button class="tut-close" id="tutClose" aria-label="Close tutorial">✕</button>
+    </div>
+  </div>
+  <div class="tut-scroll" id="tutScroll"><div class="tut-body" id="tutBody"></div></div>
+  <div class="tut-bottom">
+    <button class="tut-prev" id="tutPrev">← Back</button>
+    <button class="tut-next" id="tutNext">Next →</button>
+  </div>
+</div>
 </body>
 </html>
