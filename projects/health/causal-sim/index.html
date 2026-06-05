@@ -2031,19 +2031,25 @@ function fillSel(sel, items, current, label){ sel.innerHTML="";
   items.forEach((it,i)=>{ const o=document.createElement("option"); o.value=i;
     o.textContent=label(it); if(i===current) o.selected=true; sel.appendChild(o); }); }
 function buildNav(){
-  const tax=TAXONOMY, $=id=>document.getElementById(id);
+  const $=id=>document.getElementById(id);
+  // self-heal any stale indices so navigation can never throw / blank the UI
+  if(curField<0||curField>=FIELDS.length) curField=0;
+  const tax=TAXONOMY;
+  if(curDomain<0||curDomain>=tax.length) curDomain=0;
+  const diseases=tax[curDomain].diseases;
+  if(curDisease<0||curDisease>=diseases.length) curDisease=0;
+  const models=diseases[curDisease].models;
+  if(!models.some(m=>m.id===curId)) curId=models[0].id;
   fillSel($("selField"), FIELDS, curField, f=>f.icon+"  "+f.name);
   fillSel($("selArea"),  tax,    curDomain, d=>d.icon+"  "+d.domain);
-  const diseases=tax[curDomain].diseases;
   fillSel($("selTopic"), diseases, curDisease, dis=>dis.disease);
-  const models=diseases[curDisease].models;
   let mi=models.findIndex(m=>m.id===curId); if(mi<0)mi=0;
   fillSel($("selModel"), models, mi, m=>m.name);
   // a topic with a single model: hide the redundant Model dropdown
   $("selModel").closest(".navsel").style.display = models.length<=1 ? "none" : "";
 }
 function setField(fi){
-  if(fi===curField) return;
+  if(fi<0 || fi>=FIELDS.length || fi===curField) return;
   curField=fi; TAXONOMY=FIELDS[fi].taxonomy;
   curDomain=0; curDisease=0; curId=TAXONOMY[0].diseases[0].models[0].id;
   resetState(); buildNav(); render();
@@ -2059,13 +2065,16 @@ document.getElementById("implBtn").onclick=()=>{
   if(!open) ib.innerHTML = implicationsHTML(CASES[curId]);
 };
 document.getElementById("resetBtn").onclick=()=>{ cut=new Set(); render(); };
+// each handler ignores out-of-range / spurious change events (iOS fires a stray
+// change with a stale index when a <select>'s options are repopulated) so a
+// navigation can never throw mid-buildNav and blank the dropdowns + graph.
 document.getElementById("selField").onchange = e=> setField(+e.target.value);
-document.getElementById("selArea").onchange  = e=>{ curDomain=+e.target.value; curDisease=0;
-  curId=TAXONOMY[curDomain].diseases[0].models[0].id; resetState(); buildNav(); render(); };
-document.getElementById("selTopic").onchange = e=>{ curDisease=+e.target.value;
-  curId=TAXONOMY[curDomain].diseases[curDisease].models[0].id; resetState(); buildNav(); render(); };
-document.getElementById("selModel").onchange = e=>{ const ms=TAXONOMY[curDomain].diseases[curDisease].models;
-  curId=ms[+e.target.value].id; resetState(); buildNav(); render(); };
+document.getElementById("selArea").onchange  = e=>{ const i=+e.target.value, d=TAXONOMY[i]; if(!d) return;
+  curDomain=i; curDisease=0; curId=d.diseases[0].models[0].id; resetState(); buildNav(); render(); };
+document.getElementById("selTopic").onchange = e=>{ const i=+e.target.value, dis=TAXONOMY[curDomain].diseases[i]; if(!dis) return;
+  curDisease=i; curId=dis.models[0].id; resetState(); buildNav(); render(); };
+document.getElementById("selModel").onchange = e=>{ const ms=TAXONOMY[curDomain].diseases[curDisease].models, m=ms[+e.target.value]; if(!m) return;
+  curId=m.id; resetState(); buildNav(); render(); };
 document.getElementById("condChk").onchange=e=>{ conditioning=e.target.checked; render(); };
 document.querySelectorAll("#seg button").forEach(b=> b.onclick=()=>{
   uncert=parseFloat(b.dataset.s);
