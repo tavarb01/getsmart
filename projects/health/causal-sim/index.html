@@ -68,6 +68,11 @@
 
   .conclusion { font-size: 13.5px; line-height: 1.55; background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:12px; }
   .conclusion b { color:#9fe6b0; }
+  details.math { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:6px 12px; }
+  details.math summary { cursor:pointer; font-size:13px; opacity:.8; }
+  .mathbox { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; line-height:1.6; margin-top:8px; color:#c7d2f0; }
+  .mathline.dim { opacity:.6; }
+  .mathline .ind { color:#9d8bff; } .mathline .dir { color:#ffb168; }
   .hint { font-size:12px; opacity:.6; }
   .node-grp { cursor: pointer; }
 </style>
@@ -119,6 +124,11 @@
     </div>
 
     <div class="conclusion" id="conclusion"></div>
+
+    <details class="math">
+      <summary>▸ show the math (path tracing)</summary>
+      <div class="mathbox" id="mathBox"></div>
+    </details>
   </div>
 </div>
 
@@ -274,20 +284,89 @@ const M_MIG_MED = {
   x:"ST", y:"MIG", mediator:"SLP",
 };
 
+const M_ALZ_CONVERGENT = {
+  id:"alz_convergent", name:"Convergent inputs",
+  rung:"Rung 2 · A third structure",
+  lesson:`A rival to the single-mediator view (paper §6): <b>Aβ, tau, oxidative stress and
+    stress granules each independently disrupt NCT</b> — the shared bottleneck — which then
+    drives AD. Here stress granules reach AD <i>only</i> through NCT (100% mediated), but NCT is
+    also fed by the other inputs, so SG explains only <b>part</b> of the disease.
+    Convergent inputs, not a single root. <span class="pill">upstream-input level</span>`,
+  nodes:[
+    { id:"AB",  label:"Aβ",            x:.13, y:.20, type:"treatment" },
+    { id:"TAU", label:"Tau",           x:.13, y:.40, type:"treatment" },
+    { id:"OXI", label:"Oxidative\nstress", x:.13, y:.60, type:"treatment" },
+    { id:"SG",  label:"Stress\ngranules",  x:.13, y:.80, type:"treatment" },
+    { id:"NCT", label:"NCT\n(bottleneck)", x:.52, y:.50, type:"mediator" },
+    { id:"AD",  label:"AD",            x:.88, y:.50, type:"outcome" },
+  ],
+  edges:[
+    { from:"AB",  to:"NCT", w:.50, kind:"causal" },
+    { from:"TAU", to:"NCT", w:.50, kind:"causal" },
+    { from:"OXI", to:"NCT", w:.50, kind:"causal" },
+    { from:"SG",  to:"NCT", w:.60, kind:"causal" },
+    { from:"NCT", to:"AD",  w:.90, kind:"causal" },
+  ],
+  x:"SG", y:"AD", mediator:"NCT",
+};
+
+const M_ONC_LUNG = {
+  id:"onc_lung", name:"Smoking · Fisher's confounder",
+  rung:"Rung 2 · Confounding that can't explain it away",
+  lesson:`Fisher famously argued the <b>smoking → lung cancer</b> link might be a hidden
+    <b>genotype</b> causing both. Grant him the confounder: <b>do(smoking)</b> still leaves a large
+    causal effect. Confounding can bias an estimate, but here it cannot explain the effect away —
+    contrast melanoma, where it flipped the sign. <span class="pill">bias vs. explaining-away</span>`,
+  nodes:[
+    { id:"G",   label:"Genotype?\n(Fisher)", x:.5,  y:.16, type:"latent" },
+    { id:"SMK", label:"Smoking",             x:.2,  y:.66, type:"treatment" },
+    { id:"LC",  label:"Lung\ncancer",        x:.8,  y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"G",   to:"SMK", w:.30, kind:"confound" },
+    { from:"G",   to:"LC",  w:.30, kind:"confound" },
+    { from:"SMK", to:"LC",  w:.80, kind:"causal" },
+  ],
+  x:"SMK", y:"LC", mediator:null,
+};
+
+const M_INF_CHOLERA = {
+  id:"inf_cholera", name:"Snow's natural experiment (1854)",
+  rung:"Rung 2 · The founding story",
+  lesson:`<b>John Snow, 1854</b> — the founding story of causal inference. Cholera tracks the
+    <b>water source</b>, but <b>poverty/district</b> confounds both. Snow's insight: in
+    mixed-supply neighbourhoods the water company was assigned <i>as-if-at-random</i>, approximating
+    <b>do(water)</b> and breaking the confounder — the original natural experiment.
+    <span class="pill">natural experiment</span>`,
+  nodes:[
+    { id:"U",   label:"Poverty /\ndistrict",    x:.5,  y:.16, type:"latent" },
+    { id:"WS",  label:"Contaminated\nwater",    x:.2,  y:.66, type:"treatment" },
+    { id:"CHO", label:"Cholera",                x:.8,  y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",  to:"WS",  w:.40, kind:"confound" },
+    { from:"U",  to:"CHO", w:.50, kind:"confound" },
+    { from:"WS", to:"CHO", w:.70, kind:"causal" },
+  ],
+  x:"WS", y:"CHO", mediator:null,
+};
+
 // --- The taxonomy: Domain → Disease → Model(s) -----------------------------
 const TAXONOMY = [
-  { domain:"Neurodegeneration", icon:"🧠", diseases:[
-      { disease:"Alzheimer's", models:[ M_ALZ_COLEMAN, M_ALZ_AMYLOID ] },
+  { domain:"Neurology", icon:"🧠", diseases:[
+      { disease:"Alzheimer's", models:[ M_ALZ_COLEMAN, M_ALZ_AMYLOID, M_ALZ_CONVERGENT ] },
       { disease:"Parkinson's", models:[ M_PD_COLLIDER ] },
+      { disease:"Migraine",    models:[ M_MIG_MED ] },
   ]},
   { domain:"Oncology", icon:"🎗️", diseases:[
-      { disease:"Melanoma", models:[ M_MEL_CONF ] },
+      { disease:"Melanoma",    models:[ M_MEL_CONF ] },
+      { disease:"Lung cancer", models:[ M_ONC_LUNG ] },
   ]},
-  { domain:"Cardiovascular", icon:"🫀", diseases:[
+  { domain:"Cardiometabolic", icon:"🫀", diseases:[
       { disease:"Stroke", models:[ M_STROKE_MED ] },
   ]},
-  { domain:"Headache & Pain", icon:"🤕", diseases:[
-      { disease:"Migraine", models:[ M_MIG_MED ] },
+  { domain:"Infectious Disease", icon:"🦠", diseases:[
+      { disease:"Cholera", models:[ M_INF_CHOLERA ] },
   ]},
 ];
 
@@ -479,6 +558,37 @@ function updateReadout() {
 
   document.getElementById("conclusion").innerHTML = conclude(c, betaObs, betaCur, med);
   document.getElementById("condWrap").style.display = c.conditionOn ? "flex" : "none";
+  document.getElementById("mathBox").innerHTML = renderMath(c, med);
+}
+
+// Show the path-tracing arithmetic behind the causal effect.
+function renderMath(c, med) {
+  const all = paths(c, c.x, c.y, new Set());
+  const lbl = id => nodeById(c,id).label.replace(/\n/g," ");
+  let html = `<div class="mathline dim">do-effect = Σ over directed paths ${lbl(c.x)} → ${lbl(c.y)}</div>`;
+  if (!all.length) {
+    html += `<div class="mathline">(no directed path → causal effect = 0.000)</div>`;
+  }
+  for (const p of all) {
+    const via = c.mediator && p.nodes.includes(c.mediator);
+    const chain = p.nodes.map(lbl).join(" → ");
+    html += `<div class="mathline">${chain} = <b>${p.prod.toFixed(3)}</b> ` +
+            `<span class="${via?'ind':'dir'}">·${via?'indirect':'direct'}</span></div>`;
+  }
+  if (med && Math.abs(med.total) > 1e-6) {
+    html += `<div class="mathline" style="margin-top:6px">total = ${med.total.toFixed(3)} ` +
+            `&nbsp; indirect = <span class="ind">${med.indirect.toFixed(3)}</span> ` +
+            `&nbsp; direct = <span class="dir">${med.direct.toFixed(3)}</span></div>`;
+    html += `<div class="mathline">PM = indirect / total = <b>${(med.pm*100).toFixed(0)}%</b></div>`;
+  } else {
+    html += `<div class="mathline" style="margin-top:6px">total do-effect = <b>${causal(c,new Set()).toFixed(3)}</b></div>`;
+  }
+  if (cut.size) {
+    const ids = [...cut].map(lbl).join(", ");
+    html += `<div class="mathline dim" style="margin-top:6px">with your cut(s) on ${ids}: ` +
+            `effect = <b>${causal(c, cut).toFixed(3)}</b></div>`;
+  }
+  return html;
 }
 
 function fmt(x){ return (x>=0?"+":"") + x.toFixed(2); }

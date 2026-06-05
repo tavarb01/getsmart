@@ -16,26 +16,35 @@ Models are organised as a 3-level drill-down — **Domain → Disease → Model*
 grow without becoming a flat mess:
 
 ```
-Neurodegeneration
+🧠 Neurology
 ├── Alzheimer's
 │   ├── Coleman · SG → NCT        front-door criterion & mediation decomposition
-│   └── Amyloid cascade           a competing causal DAG for the same disease
-└── Parkinson's
-    └── Smoking & the collider trap   collider bias (Berkson's paradox)
-Oncology
-└── Melanoma
-    └── Sunscreen confounding      backdoor / common-cause confounding
-Cardiovascular
-└── Stroke
-    └── BP → arterial damage       proportion mediated
-Headache & Pain
+│   ├── Amyloid cascade           a competing DAG: NCT downstream of tau
+│   └── Convergent inputs         many causes share one bottleneck (NCT)
+├── Parkinson's
+│   └── Smoking & the collider trap   collider bias (Berkson's paradox)
 └── Migraine
     └── Stress, sleep & the mediator   controlled direct effect
+🎗️ Oncology
+├── Melanoma
+│   └── Sunscreen confounding      backdoor that flips the sign
+└── Lung cancer
+    └── Smoking · Fisher's confounder   confounding that can't explain it away
+🫀 Cardiometabolic
+└── Stroke
+    └── BP → arterial damage       proportion mediated
+🦠 Infectious Disease
+└── Cholera
+    └── Snow's natural experiment (1854)   the founding causal story
 ```
 
-Alzheimer's deliberately holds **two competing models** side by side: Coleman's stress-granule →
-NCT framework, and the amyloid cascade (where NCT sits *downstream* of tau). Same disease, same
-outcome — different graph, different place to intervene.
+Alzheimer's deliberately holds **three competing models** side by side — Coleman's stress-granule →
+NCT framework, the amyloid cascade (NCT *downstream* of tau), and a convergent-inputs model (many
+causes share the NCT bottleneck). Same disease, same outcome — different graph, different place to
+intervene.
+
+Tip: every model has a **"show the math" panel** that prints the actual directed paths, their
+products, and the proportion mediated, so the numbers are never a black box.
 
 ## How to use it
 
