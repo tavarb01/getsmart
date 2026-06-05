@@ -165,7 +165,7 @@
   <div class="nav">
     <div class="navrow fields"><span class="navlabel">Field</span><span id="fields"></span></div>
     <div class="navrow domains"><span class="navlabel">Area</span><span id="domains"></span></div>
-    <div class="navrow diseases"><span class="navlabel">Dx</span><span id="diseases"></span></div>
+    <div class="navrow diseases"><span class="navlabel">Topic</span><span id="diseases"></span></div>
     <div class="navrow models"><span class="navlabel">Model</span><span id="models"></span></div>
   </div>
 </div>
@@ -580,6 +580,133 @@ const M_COVID = {
   x:"VAX", y:"SEV", mediator:null, adjust:["AGE"],
 };
 
+// ===========================================================================
+// FIELD 2 — Economics & Public Policy (the "credibility revolution")
+// New escape type: iv  → instrument Z shifts X as-if-at-random; Wald recovers X→Y.
+// ===========================================================================
+const M_MINWAGE = {
+  id:"econ_minwage", name:"The minimum-wage showdown", escape:"iv",
+  rung:"Instrument · natural experiment",
+  lesson:`Textbook supply-demand says a higher <b>minimum wage</b> destroys <b>jobs</b>. But areas that
+    raise wages differ in their <b>local economy</b> — a confounder. Card & Krueger used the
+    <b>NJ–PA border</b> as an instrument: wages jumped on one side <i>as-if-at-random</i>.`,
+  nodes:[
+    { id:"Z", label:"NJ vs PA\n(border)",  x:.13, y:.32, type:"instrument" },
+    { id:"U", label:"Local economy\ntrend", x:.63, y:.16, type:"latent" },
+    { id:"MW",label:"Min-wage\nhike",       x:.42, y:.66, type:"treatment" },
+    { id:"EMP",label:"Fast-food\njobs",     x:.85, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"Z",to:"MW",w:.80,kind:"causal" },
+    { from:"U",to:"MW",w:.45,kind:"confound" }, { from:"U",to:"EMP",w:-.80,kind:"confound" },
+    { from:"MW",to:"EMP",w:-.05,kind:"causal" },
+  ],
+  x:"MW", y:"EMP", mediator:null, iv:"Z",
+};
+const M_DRAFT = {
+  id:"econ_draft", name:"The veteran earnings penalty", escape:"iv",
+  rung:"Instrument · draft lottery",
+  lesson:`Do <b>veterans</b> earn less because of <b>service</b> — or because of <i>who enlists</i>?
+    Self-selection (<b>civilian options</b>) confounds the comparison. Angrist used the
+    <b>draft-lottery number</b> as an instrument: a random nudge into service.`,
+  nodes:[
+    { id:"Z", label:"Draft lottery\nnumber", x:.13, y:.32, type:"instrument" },
+    { id:"U", label:"Civilian\noptions",     x:.63, y:.16, type:"latent" },
+    { id:"VET",label:"Veteran\nstatus",      x:.42, y:.66, type:"treatment" },
+    { id:"ERN",label:"Lifetime\nearnings",   x:.85, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"Z",to:"VET",w:.70,kind:"causal" },
+    { from:"U",to:"VET",w:.50,kind:"confound" }, { from:"U",to:"ERN",w:-.50,kind:"confound" },
+    { from:"VET",to:"ERN",w:-.12,kind:"causal" },
+  ],
+  x:"VET", y:"ERN", mediator:null, iv:"Z",
+};
+const M_SCHOOLING = {
+  id:"econ_school", name:"Does the degree pay, or the person?", escape:"iv",
+  rung:"Instrument · weak (quarter of birth)",
+  lesson:`More <b>schooling</b> correlates with higher <b>earnings</b> — but <b>ability</b> drives both
+    (ability bias). Angrist & Krueger used <b>quarter of birth</b> (compulsory-schooling laws) as an
+    instrument. Watch: the instrument here is deliberately <b>weak</b>.`,
+  nodes:[
+    { id:"Z", label:"Quarter of\nbirth",  x:.13, y:.32, type:"instrument" },
+    { id:"U", label:"Innate\nability",    x:.63, y:.16, type:"latent" },
+    { id:"SCH",label:"Years of\nschooling",x:.42, y:.66, type:"treatment" },
+    { id:"ERN",label:"Earnings",          x:.85, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"Z",to:"SCH",w:.30,kind:"causal" },
+    { from:"U",to:"SCH",w:.50,kind:"confound" }, { from:"U",to:"ERN",w:.60,kind:"confound" },
+    { from:"SCH",to:"ERN",w:.30,kind:"causal" },
+  ],
+  x:"SCH", y:"ERN", mediator:null, iv:"Z",
+};
+const M_CLASSSIZE = {
+  id:"econ_classsize", name:"Class size & achievement (STAR)", escape:"rct",
+  rung:"Latent confounder · randomize (STAR)",
+  lesson:`<b>Smaller classes</b> correlate with higher <b>test scores</b> — but wealthy
+    <b>districts</b> buy small classes <i>and</i> have higher-scoring kids. You can't measure all of
+    affluence. Tennessee's <b>STAR</b> experiment randomized class size to break it.`,
+  nodes:[
+    { id:"U", label:"District\naffluence", x:.5, y:.16, type:"latent" },
+    { id:"CS",label:"Small\nclass",        x:.2, y:.66, type:"treatment" },
+    { id:"ACH",label:"Test\nscores",       x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"CS",w:.60,kind:"confound" }, { from:"U",to:"ACH",w:.70,kind:"confound" },
+    { from:"CS",to:"ACH",w:.22,kind:"causal" },
+  ],
+  x:"CS", y:"ACH", mediator:null,
+};
+const M_MICROCREDIT = {
+  id:"econ_microcredit", name:"Microcredit's real effect", escape:"rct",
+  rung:"Latent confounder · randomize",
+  lesson:`The "microfinance miracle": <b>microloans</b> seem to lift <b>income</b>. But
+    <b>entrepreneurial drive</b> makes people both seek loans <i>and</i> earn more — an unmeasured
+    confounder. Randomize loan access (as J-PAL did) to find the real average effect.`,
+  nodes:[
+    { id:"U", label:"Entrepreneurial\ndrive", x:.5, y:.16, type:"latent" },
+    { id:"ML",label:"Microloan\naccess",      x:.2, y:.66, type:"treatment" },
+    { id:"INC",label:"Household\nincome",     x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"ML",w:.50,kind:"confound" }, { from:"U",to:"INC",w:.65,kind:"confound" },
+    { from:"ML",to:"INC",w:.05,kind:"causal" },
+  ],
+  x:"ML", y:"INC", mediator:null,
+};
+const M_DEWORMING = {
+  id:"econ_deworming", name:"Deworming & school attendance", escape:"rct",
+  rung:"Latent confounder · randomize",
+  lesson:`<b>Deworming</b> correlates with more <b>school attendance</b> — but healthier, better-resourced
+    <b>families</b> get both. Miguel & Kremer randomized deworming across schools: a rare case where the
+    RCT confirms a <i>large, cheap</i> effect (with spillovers to untreated kids).`,
+  nodes:[
+    { id:"U", label:"Family health\n& resources", x:.5, y:.16, type:"latent" },
+    { id:"DW",label:"Deworming\ntreatment",        x:.2, y:.66, type:"treatment" },
+    { id:"ATT",label:"School\nattendance",         x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"DW",w:.40,kind:"confound" }, { from:"U",to:"ATT",w:.50,kind:"confound" },
+    { from:"DW",to:"ATT",w:.25,kind:"causal" },
+  ],
+  x:"DW", y:"ATT", mediator:null,
+};
+const ECON_TAX = [
+  { domain:"Labor & Wages", icon:"💼", diseases:[
+      { disease:"Minimum wage", models:[ M_MINWAGE ] },
+      { disease:"Veterans",     models:[ M_DRAFT ] },
+  ]},
+  { domain:"Education", icon:"🎓", diseases:[
+      { disease:"Returns to schooling", models:[ M_SCHOOLING ] },
+      { disease:"Class size",           models:[ M_CLASSSIZE ] },
+  ]},
+  { domain:"Development", icon:"🌍", diseases:[
+      { disease:"Microcredit", models:[ M_MICROCREDIT ] },
+      { disease:"Deworming",   models:[ M_DEWORMING ] },
+  ]},
+];
+
 // --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
 const HEALTH_TAX = [
   { domain:"Neurology", icon:"🧠", diseases:[
@@ -616,6 +743,7 @@ const HEALTH_TAX = [
 // UI picks them up automatically — see buildFieldBar()/setField().
 const FIELDS = [
   { id:"health", name:"Health & Life Sciences", icon:"🧬", taxonomy: HEALTH_TAX },
+  { id:"econ",   name:"Economics & Policy",      icon:"📈", taxonomy: ECON_TAX },
 ];
 let curField = 0;
 let TAXONOMY = FIELDS[curField].taxonomy;   // active field's taxonomy (reassigned on field switch)
@@ -689,6 +817,30 @@ const EVIDENCE = {
     real:"A Swedish nationwide cohort of ~1.7 million (Lei et al., NEJM 2020) linked quadrivalent HPV vaccination to ~<b>88% lower</b> invasive cervical cancer when given <b>before age 17</b> (adjusted IRR 0.12) and ~53% at ages 17–30.",
     ident:"<b>Observational</b> — adjusted for measured confounders, but residual confounding (healthy-vaccinee behaviour, age-related prior exposure) remains; RCT-grade HPV evidence is on precancer endpoints.",
     cites:["Lei et al. 2020, NEJM"] },
+  econ_minwage:{ status:"Natural experiment · contested magnitude", strength:"moderate",
+    real:"Card & Krueger (1994) compared fast-food jobs across the <b>NJ–PA border</b> when NJ raised its minimum wage: employment did <b>not</b> fall (if anything rose), overturning the textbook supply-demand prediction. Naive cross-sectional correlations are confounded by local economic conditions.",
+    ident:"The border design approximates as-if-random assignment (difference-in-differences). The exact magnitude of minimum-wage employment effects is still debated, but small/near-zero effects are well-supported.",
+    cites:["Card & Krueger 1994, American Economic Review","Cengiz et al. 2019, QJE"] },
+  econ_draft:{ status:"Instrument (lottery) · identified", strength:"strong",
+    real:"Angrist (1990) used the <b>Vietnam draft-lottery number</b> as an instrument: <b>white veterans</b> earned roughly <b>15% less</b> than comparable non-veterans in the early 1980s (the effect for nonwhite veterans was small) — a causal penalty the naive comparison distorts because of who self-selects into service.",
+    ident:"The lottery number is as-if-random (satisfies IV relevance + exclusion); a canonical instrumental-variables result.",
+    cites:["Angrist 1990, American Economic Review"] },
+  econ_school:{ status:"Instrument (weak) · identified", strength:"moderate",
+    real:"Angrist & Krueger (1991) instrumented schooling with <b>quarter of birth</b> (compulsory-schooling laws): each extra year raised earnings ~<b>7–10%</b>, close to the naive estimate — implying ability bias is modest.",
+    ident:"Quarter-of-birth is plausibly exogenous but a <b>famously weak instrument</b> (Bound, Jaeger & Baker 1995), so IV estimates here are imprecise.",
+    cites:["Angrist & Krueger 1991, QJE","Bound, Jaeger & Baker 1995, JASA"] },
+  econ_classsize:{ status:"RCT-identified", strength:"strong",
+    real:"Tennessee's <b>Project STAR</b> randomly assigned students to small vs regular classes: small classes raised achievement (~<b>0.2 SD</b>), with larger gains for disadvantaged children. Observational class-size comparisons are confounded by district affluence.",
+    ident:"Randomization identifies the effect — the cleanest evidence on class size.",
+    cites:["Krueger 1999, QJE (Project STAR)"] },
+  econ_microcredit:{ status:"RCT-identified · modest", strength:"strong",
+    real:"Six coordinated RCTs (incl. Banerjee et al. 2015, Hyderabad) found microcredit's average effect on income/consumption was <b>modest at best</b> — far below the 'miracle' claims — though it raised business investment. The observational hype was largely selection.",
+    ident:"Randomized rollout identifies the effect; the cross-study consensus (Meager 2019) is small average impacts.",
+    cites:["Banerjee, Duflo, Glennerster & Kinnan 2015, AEJ: Applied","Meager 2019, AEJ: Applied"] },
+  econ_deworming:{ status:"RCT-identified · efficacy contested", strength:"moderate",
+    real:"Miguel & Kremer (2004) randomized school deworming in Kenya: it cut absenteeism and — via <b>spillovers</b> to untreated children — raised attendance very cheaply.",
+    ident:"RCT-identified for attendance; the <b>broader health and education benefits under mass treatment</b> are contested (Cochrane review, 2019). Long-run earnings follow-ups (Baird et al. 2016) are a separate thread.",
+    cites:["Miguel & Kremer 2004, Econometrica","Taylor-Robinson et al. 2019, Cochrane"] },
   inf_covid:{ status:"RCT-identified · Simpson trap", strength:"strong",
     real:"The pivotal RCT (Polack et al., NEJM 2020; ~43,500) showed <b>95%</b> efficacy against symptomatic COVID-19 (95% CI 90.3–97.6); protection against severe disease is strongest in later large effectiveness studies. Crude vaccinated-vs-unvaccinated counts can <b>reverse</b> this when age isn't stratified.",
     ident:"Efficacy is <b>RCT-identified</b>; the misleading crude comparison is <b>confounding by age</b> (a Simpson's-paradox / non-collapsibility effect), not a true reversal.",
@@ -806,7 +958,7 @@ function entailedInterval(c, K=600){
 
 // --- Rendering -------------------------------------------------------------
 const svg = document.getElementById("graph");
-const COLORS = { treatment:"#5a8dff", mediator:"#7c5cff", outcome:"#ff6b6b", latent:"#9aa4bf", collider:"#f0c050", confounder:"#8fb3d9" };
+const COLORS = { treatment:"#5a8dff", mediator:"#7c5cff", outcome:"#ff6b6b", latent:"#9aa4bf", collider:"#f0c050", confounder:"#8fb3d9", instrument:"#46c79a" };
 const px=f=>f*W, py=f=>f*H;
 const nodeById=(c,id)=>c.nodes.find(n=>n.id===id);
 const lblOf=(c,id)=>nodeById(c,id).label.replace(/\n/g," ");
@@ -939,6 +1091,8 @@ function identified(c, obs){
         val:partial(obs,c.y,c.x,c.adjust), sub:"back-door adjustment" };
     case "natural": { const d=sampleCols(c,new Set([c.x]),conditioning);
         return { label:"Natural experiment", tag:"data≈do", val:simpleSlope(d,c.x,c.y), sub:"as-if randomized assignment" }; }
+    case "iv": { const fs=simpleSlope(obs,c.iv,c.x), rf=simpleSlope(obs,c.iv,c.y);
+        return { label:`Instrument: ${lblOf(c,c.iv)}`, tag:"data≈do", val:rf/fs, sub:"Wald ratio  cov(Z,Y) / cov(Z,X)" }; }
     case "rct":
         if(cut.has(c.x)){ const d=sampleCols(c,cut,conditioning);
           return { label:"Randomized do()", tag:"data", val:simpleSlope(d,c.x,c.y), sub:"you randomized it" }; }
@@ -977,6 +1131,14 @@ function conclude(c, observed, est, oracle, med){
     return `You can't hand-randomize the water supply, but history did it for you: the natural
       experiment yields <b>${fmt(est.val)}</b>, recovering the model-entailed <b>${fmt(oracle)}</b>
       despite the poverty confounder. The original causal inference.`;
+  if(c.escape==="iv" && est){
+    const u=c.nodes.find(n=>n.type==="latent");
+    return `A head-to-head on <b>${lblOf(c,c.x)}</b> is confounded${u?` by <b>${u.label.replace(/\n/g," ")}</b>`:""} —
+      the naive <b>${fmt(observed)}</b> is biased. But <b>${lblOf(c,c.iv)}</b> shifts ${lblOf(c,c.x)}
+      <i>as-if-at-random</i>, so the instrument recovers <b>${fmt(est.val)}</b>, close to the
+      model-entailed <b>${fmt(oracle)}</b>. The natural-experiment move behind the
+      <b>credibility revolution</b>.`;
+  }
   if(c.escape==="rct"){
     if(!cut.size)
       return `The observed <b>${fmt(observed)}</b> is poisoned by a confounder you <i>cannot measure</i>.

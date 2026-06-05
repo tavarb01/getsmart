@@ -10,10 +10,35 @@ No install, no build. Either:
 - **Double-click / tap** `index.html`, **or**
 - Serve it: `python3 -m http.server 8000` from this folder, then open `http://localhost:8000`.
 
+## The Causal Ladder, everywhere
+
+The top level is a **Field** selector: the same three rungs of causal reasoning (see → do → imagine)
+applied across **epistemic domains** — domains of human knowledge. Switch fields with the tab bar;
+each field carries its own **Area → Topic → Model** drill-down.
+
+- **🧬 Health & Life Sciences** — the original 17 models (below).
+- **📈 Economics & Policy** — the *credibility revolution*. A new **instrumental-variable (`iv`)
+  estimator** shows how a natural experiment recovers a confounded effect via the Wald ratio
+  `cov(Z,Y)/cov(Z,X)`:
+  - *Labor & Wages* — the minimum-wage showdown (Card–Krueger border IV) · the veteran earnings
+    penalty (Angrist draft lottery)
+  - *Education* — does the degree pay or the person? (quarter-of-birth, a deliberately **weak**
+    instrument) · class size & achievement (Project STAR RCT)
+  - *Development* — microcredit's modest real effect (J-PAL RCTs) · deworming & attendance
+    (Miguel–Kremer RCT)
+
+  Every economics claim in Researcher mode was adversarially fact-checked against the primary
+  literature (Card–Krueger 1994, Angrist 1990, Angrist–Krueger 1991, Krueger 1999, Banerjee et al.
+  2015, Miguel–Kremer 2004).
+
+> **Roadmap:** three more fields are designed and queued — **🤖 AI & Data Science**, **🌍 Climate &
+> Environment**, **🧩 Mind, Society & the Human Sciences** — each restricted to DAG-honest models
+> (no faked Nash equilibria or feedback loops) and each fact-checked before shipping.
+
 ## What you can play with
 
-Models are organised as a 3-level drill-down — **Domain → Disease → Model** — so the library can
-grow without becoming a flat mess:
+Health models are organised as a 3-level drill-down — **Domain → Disease → Model** — so the library
+can grow without becoming a flat mess:
 
 ```
 🧠 Neurology
