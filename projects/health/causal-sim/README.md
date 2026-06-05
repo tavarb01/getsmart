@@ -69,9 +69,17 @@ answer key; that's precisely what makes causal inference hard.
 So this tool is honest about what it is: a demonstration of the *logic* of causal inference (which
 is real and verified), running on *invented parameters* (which are not). The transferable lesson is
 structural — *when* front-door under-counts, *how* a collider manufactures an artifact — never the
-specific numbers on screen. A point estimate of "the truth" is exactly what a careful analysis (see
-the Coleman/NCT perspective that inspired this) refuses to claim; the honest output is a **range
-under stated assumptions**, which the sensitivity mode is being built to show.
+specific numbers on screen.
+
+### Sensitivity mode: ranges, not points
+Because the strengths are assumptions, the model-entailed effect is reported as a **90% range under
+stated assumptions**, not a single number — exactly the discipline a careful analysis follows (a
+point estimate of "the truth" is what the Coleman/NCT perspective that inspired this deliberately
+refuses to claim). Each arrow carries a strength **± a range**; the app samples within those ranges
+and propagates the uncertainty to the effect and the proportion mediated. The **assumption-width**
+control (tight / stated / loose) widens or narrows every range at once, so you can see whether a
+conclusion is robust or fragile. Expand **"assumptions"** to read exactly what the interval is
+conditional on.
 
 ## The five escape routes from confounding
 

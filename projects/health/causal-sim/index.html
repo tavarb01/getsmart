@@ -60,6 +60,16 @@
   .mrow .v { font-size:21px; font-weight:700; white-space:nowrap; }
   .v.obs { color:#ff8f6b; } .v.est { color:#6bd1ff; } .v.oracle { color:#9fe6b0; }
   .mrow.oracle { border-style:dashed; border-color:#3c6b4e; background:#0a1a12; }
+  .seg { display:inline-flex; border:1px solid #2a3a5e; border-radius:8px; overflow:hidden; }
+  .seg button { background:#16203a; color:#cdd6f4; border:0; padding:6px 11px; font-size:12px; cursor:pointer; }
+  .seg button.on { background:#3a4f86; color:#fff; }
+  .pmtrack { position:relative; height:14px; border-radius:7px; background:#1a2540; overflow:hidden; margin-top:2px; }
+  .pmband { position:absolute; top:0; bottom:0; background:rgba(124,92,255,.55); }
+  .pmtick { position:absolute; top:-2px; bottom:-2px; width:2px; background:#fff; }
+  .rng { opacity:.8; font-size:11px; }
+  details.assume { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:6px 12px; }
+  details.assume summary { cursor:pointer; font-size:13px; opacity:.8; }
+  .assume .body { font-family:ui-monospace,Menlo,monospace; font-size:12px; line-height:1.6; margin-top:6px; color:#c7d2f0; }
   .tag { font-size:10px; padding:1px 5px; border-radius:5px; margin-left:6px; vertical-align:middle; }
   .tag.data { background:#143049; color:#8fd0ff; } .tag.god { background:#123322; color:#9fe6b0; }
   .metnote { font-size:11px; opacity:.6; margin:-2px 2px 0; }
@@ -107,7 +117,9 @@
     <div class="oracle-note"><span class="dia">◆</span> = <b>model-entailed</b>, not measured: it
       follows necessarily from the <i>assumed</i> strengths — change the assumptions and it changes.
       It is <b>not</b> ground truth about any real disease, and real research has no such answer key
-      (that's the whole difficulty). The strengths here are illustrative, not estimated from data.</div>
+      (that's the whole difficulty). The strengths here are illustrative, not estimated from data —
+      so the model-entailed effect is shown as a <b>range under stated assumptions</b>, and the
+      <b>assumption-width</b> control lets you see how robust (or fragile) each conclusion is.</div>
   </div>
 </details>
 
@@ -140,12 +152,24 @@
     </div>
     <p class="hint" id="hint">Tap any node to intervene — <b>do()</b> severs its incoming arrows.</p>
 
+    <div class="row">
+      <span class="hint">Assumption width:</span>
+      <span class="seg" id="seg">
+        <button data-s="0.4">tight</button><button data-s="1" class="on">stated</button><button data-s="2">loose</button>
+      </span>
+    </div>
+
     <div id="metrics" style="display:flex; flex-direction:column; gap:8px;"></div>
 
     <div id="pmWrap">
-      <div class="bar"><div class="ind" id="barInd"></div><div class="dir" id="barDir"></div></div>
-      <div class="barlbl"><span><span class="swatch" style="background:#7c5cff"></span>indirect (via mediator)</span><span id="pmTxt"></span></div>
+      <div class="pmtrack"><div class="pmband" id="pmBand"></div><div class="pmtick" id="pmTick"></div></div>
+      <div class="barlbl"><span>0% mediated</span><span id="pmTxt"></span><span>100%</span></div>
     </div>
+
+    <details class="assume">
+      <summary>▸ assumptions (each arrow's strength ± range)</summary>
+      <div class="body" id="assumeBox"></div>
+    </details>
 
     <div class="conclusion" id="conclusion"></div>
 
@@ -508,6 +532,32 @@ function oracleEffect(c){
   return causal(c, new Set());
 }
 
+// --- Sensitivity: parameters are ranges, conclusions are intervals ---------
+// Every arrow has an assumed strength ± a range. We don't claim to know the
+// number; we propagate the uncertainty and report what follows under it.
+let uncert = 1; // assumption-width scale: 0.4 tight · 1 stated · 2 loose
+const defaultU = kind => kind==="confound" ? .15 : kind==="bypass" ? .22 : .12;
+const edgeU = e => (e.u!=null ? e.u : defaultU(e.kind)) * uncert;
+function sampledCase(c){
+  return { ...c, edges: c.edges.map(e=>({ ...e, w: e.w + (Math.random()*2-1)*edgeU(e) })) };
+}
+function stats(a){
+  if(!a.length) return null;
+  a = a.slice().sort((x,y)=>x-y);
+  const q = p => a[Math.max(0, Math.min(a.length-1, Math.round(p*(a.length-1))))];
+  return { lo:q(.05), med:q(.5), hi:q(.95) };
+}
+function entailedInterval(c, K=600){
+  const eff=[], pm=[];
+  for(let k=0;k<K;k++){
+    const cc = sampledCase(c);
+    eff.push(oracleEffect(cc));
+    const m = mediationSplit(cc);
+    if(m && Math.abs(m.total)>1e-6) pm.push(m.pm);
+  }
+  return { eff: stats(eff), pm: stats(pm) };
+}
+
 // --- Rendering -------------------------------------------------------------
 const svg = document.getElementById("graph");
 const COLORS = { treatment:"#5a8dff", mediator:"#7c5cff", outcome:"#ff6b6b", latent:"#9aa4bf", collider:"#f0c050" };
@@ -579,7 +629,10 @@ function updateReadout(){
   // simulate observational data once; reuse for every estimator
   const obs   = sampleCols(c, new Set(), conditioning);
   const observed = simpleSlope(obs, c.x, c.y);
-  const oracle = c.conditionOn ? causal(c,new Set()) : oracleEffect(c);
+
+  // model-entailed effect as an INTERVAL under the assumed ranges
+  const iv = entailedInterval(c);
+  const oracle = c.conditionOn ? causal(c,new Set()) : iv.eff.med;  // median, for the prose
 
   // identified-from-data estimate, per escape route
   let est = identified(c, obs);
@@ -589,22 +642,32 @@ function updateReadout(){
   rows.push(metricRow("Observed association", "data", observed, "obs",
     conditioning ? "with the collider conditioned on" : "naive regression on the data"));
   if(est) rows.push(metricRow(est.label, est.tag, est.val, "est", est.sub));
-  rows.push(metricRow(c.oracleKind==="direct"?"Model-entailed direct effect":"Model-entailed effect", "god", oracle, "oracle",
-    "implied by the assumed strengths", true));
+  const orLabel = c.oracleKind==="direct" ? "Model-entailed direct effect" : "Model-entailed effect";
+  rows.push(`<div class="mrow oracle"><div><div class="k">${orLabel}<span class="tag god">◆ model</span></div>
+    <div class="ksub">implied by assumptions · 90% range <span class="rng">[${fmt(iv.eff.lo)}, ${fmt(iv.eff.hi)}]</span></div></div>
+    <div class="v oracle">${fmt(iv.eff.med)}</div></div>`);
   document.getElementById("metrics").innerHTML = rows.join("");
 
-  // mediation bar
-  const med=mediationSplit(c), pmWrap=document.getElementById("pmWrap");
-  if(med && Math.abs(med.total)>1e-6){
+  // proportion-mediated as a RANGE under the assumed ranges (genuine mediation only)
+  const pmWrap=document.getElementById("pmWrap");
+  if(iv.pm && c.escape==="frontdoor"){
     pmWrap.style.display="block";
-    const ip=Math.max(0,Math.min(100,100*med.indirect/med.total));
-    document.getElementById("barInd").style.width=ip+"%";
-    document.getElementById("barDir").style.width=(100-ip)+"%";
-    document.getElementById("pmTxt").textContent=`proportion mediated ≈ ${(med.pm*100).toFixed(0)}%`;
+    const cl=v=>Math.max(0,Math.min(100,v));
+    const lo=cl(iv.pm.lo*100), hi=cl(iv.pm.hi*100), md=cl(iv.pm.med*100);
+    document.getElementById("pmBand").style.left=lo+"%";
+    document.getElementById("pmBand").style.width=(hi-lo)+"%";
+    document.getElementById("pmTick").style.left=md+"%";
+    document.getElementById("pmTxt").textContent=`mediated ${lo.toFixed(0)}–${hi.toFixed(0)}% (median ${md.toFixed(0)}%)`;
   } else pmWrap.style.display="none";
 
-  document.getElementById("conclusion").innerHTML = conclude(c, observed, est, oracle, med);
-  document.getElementById("mathBox").innerHTML = renderMath(c, med);
+  // explicit assumptions list — what the interval is conditional on
+  document.getElementById("assumeBox").innerHTML = c.edges.map(e=>
+    `${lblOf(c,e.from)} → ${lblOf(c,e.to)}: ${e.w>=0?"+":""}${e.w.toFixed(2)} ± ${edgeU(e).toFixed(2)}`
+    + (e.kind==="confound"?'  <span class="rng">(latent)</span>':e.kind==="bypass"?'  <span class="rng">(bypass)</span>':'')
+  ).join("<br>");
+
+  document.getElementById("conclusion").innerHTML = conclude(c, observed, est, oracle, mediationSplit(c));
+  document.getElementById("mathBox").innerHTML = renderMath(c, mediationSplit(c));
 }
 
 function metricRow(label, tagKind, val, cls, sub, oracle){
@@ -725,6 +788,11 @@ function resetState(){ cut=new Set(); conditioning=false; document.getElementByI
 document.getElementById("runBtn").onclick=runModel;
 document.getElementById("resetBtn").onclick=()=>{ cut=new Set(); render(); };
 document.getElementById("condChk").onchange=e=>{ conditioning=e.target.checked; render(); };
+document.querySelectorAll("#seg button").forEach(b=> b.onclick=()=>{
+  uncert=parseFloat(b.dataset.s);
+  document.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on", x===b));
+  updateReadout();
+});
 buildNav(); render();
 </script>
 </body>
