@@ -1,0 +1,6 @@
+# Never commit uploaded source documents / private research PDFs.
+# (Reference material lives outside the repo; keep it that way.)
+*.pdf
+**/uploads/
+**/_private/
+.DS_Store

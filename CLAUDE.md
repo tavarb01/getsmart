@@ -40,6 +40,19 @@ dependencies, no build step).
   `FLAP`, `PIPE_GAP`, `SPEED`, `PIPE_SPACING`) are grouped at the top of the script for easy
   tuning.
 
+### projects/health/causal-sim
+An interactive "Book of Why" playground for Judea Pearl's causal inference, in a single
+`index.html` (SVG + vanilla JS, no dependencies, no build step).
+- **Run:** open `index.html` in a browser, or `python3 -m http.server 8000` from the folder.
+- **Architecture:** a tiny linear Structural Causal Model. Each case study is a DAG stored in the
+  `CASES` object (weighted `causal`/`bypass`/`confound` edges). `simulate()` Monte-Carlos the SCM
+  for the *observed* association; `paths()`/`causal()` trace directed paths for the *do*-effect;
+  `mediationSplit()` computes the proportion mediated. Clicking a node adds it to the `cut` set
+  (an intervention — its incoming edges are severed). Add case studies by extending `CASES`.
+- **Privacy note:** the Alzheimer's case is a teaching abstraction of the *published* Coleman et
+  al. (2025) framework. The user's unpublished manuscripts are reference-only and must never be
+  committed — see `.gitignore` (`*.pdf`, `**/uploads/`, `**/_private/`).
+
 ## Conventions
 
 - Every project folder has a `README.md` with a "Run it" section.
