@@ -388,6 +388,38 @@ const M_ALZ_COLEMAN = {
   ],
   x:"SG", y:"AD", mediator:"NCT",
 };
+const M_ALZ_BYPASS = {
+  id:"alz_bypass", name:"Coleman · the 6 bypass routes", escape:"frontdoor",
+  rung:"Front-door under-counts · 6 parallel bypass routes",
+  lesson:`The Coleman framework drawn <b>in full</b>. SG disrupts <b>NCT</b> (the central route) but also
+    reaches AD through <b>six routes that skip NCT</b> — tau aggregation, TDP-43 proteinopathy,
+    translational arrest, the integrated stress response, proteostasis failure and neuroinflammation.
+    Front-door through NCT recovers only the central route; the six mediators are the <i>leak</i>.
+    <i>(β's illustrative — swap in your effect sizes.)</i>`,
+  nodes:[
+    { id:"U",  label:"Aging /\nGenetics", x:.5,  y:.10, type:"latent" },
+    { id:"SG", label:"Stress\nGranules",  x:.07, y:.50, type:"treatment" },
+    { id:"NCT",label:"NCT\nDisruption",   x:.5,  y:.24, type:"mediator" },
+    { id:"AD", label:"AD\nphenotype",     x:.93, y:.50, type:"outcome" },
+    { id:"TAU",label:"Tau\naggreg.",      x:.24, y:.58, type:"mediator" },
+    { id:"TDP",label:"TDP-43",            x:.33, y:.74, type:"mediator" },
+    { id:"TRA",label:"Transl.\narrest",   x:.45, y:.85, type:"mediator" },
+    { id:"ISR",label:"ISR\n(eIF2α)",      x:.57, y:.85, type:"mediator" },
+    { id:"PRO",label:"Proteo-\nstasis",   x:.69, y:.74, type:"mediator" },
+    { id:"INF",label:"Neuro-\ninflamm.",  x:.78, y:.58, type:"mediator" },
+  ],
+  edges:[
+    { from:"U",  to:"SG", w:.55, kind:"confound" }, { from:"U", to:"AD", w:.70, kind:"confound" },
+    { from:"SG", to:"NCT",w:.70, kind:"causal" },   { from:"NCT",to:"AD", w:.90, kind:"causal" },
+    { from:"SG",to:"TAU",w:.40,kind:"causal" }, { from:"TAU",to:"AD",w:.30,kind:"causal" },
+    { from:"SG",to:"TDP",w:.30,kind:"causal" }, { from:"TDP",to:"AD",w:.20,kind:"causal" },
+    { from:"SG",to:"TRA",w:.25,kind:"causal" }, { from:"TRA",to:"AD",w:.15,kind:"causal" },
+    { from:"SG",to:"ISR",w:.25,kind:"causal" }, { from:"ISR",to:"AD",w:.15,kind:"causal" },
+    { from:"SG",to:"PRO",w:.30,kind:"causal" }, { from:"PRO",to:"AD",w:.15,kind:"causal" },
+    { from:"SG",to:"INF",w:.30,kind:"causal" }, { from:"INF",to:"AD",w:.20,kind:"causal" },
+  ],
+  x:"SG", y:"AD", mediator:"NCT",
+};
 const M_ALZ_AMYLOID = {
   id:"alz_amyloid", name:"Amyloid cascade", escape:"frontdoor",
   rung:"Front-door · clean chain (no bypass)",
@@ -1174,7 +1206,7 @@ const MIND_TAX = [
 // --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
 const HEALTH_TAX = [
   { domain:"Neurology", icon:"🧠", diseases:[
-      { disease:"Alzheimer's", models:[ M_ALZ_COLEMAN, M_ALZ_AMYLOID, M_ALZ_CONVERGENT ] },
+      { disease:"Alzheimer's", models:[ M_ALZ_COLEMAN, M_ALZ_BYPASS, M_ALZ_AMYLOID, M_ALZ_CONVERGENT ] },
       { disease:"Parkinson's", models:[ M_PD_COLLIDER ] },
       { disease:"Migraine",    models:[ M_MIG_MED ] },
   ]},
@@ -1224,6 +1256,10 @@ const EVIDENCE = {
     real:"Links between stress granules and NCT in AD are largely <b>correlational</b>. The strongest interventional SG→NCT result (Zhang 2018) is in ALS/FTD, not AD; Vanneste (2022) showed stress-induced NCT deficits can occur <b>independent of stress granules</b> (SGs not necessary). Multiple paths let SG affect AD without passing through NCT.",
     ident:"Strict <b>front-door identification fails</b> (SG is not the sole route). No point causal estimate is warranted — the defensible output is a <b>bounded proportion-mediated under explicit assumptions</b>, not a single number.",
     cites:["Coleman et al. 2025, Alz & Dementia","Morgan et al. 2022, Front Aging Neurosci","Zhang et al. 2018, Cell","Vanneste et al. 2022, Biomedicines"] },
+  alz_bypass:{ status:"Front-door under-counts · bounded", strength:"weak",
+    real:"Beyond NCT, SG and their core proteins reach AD through several <b>NCT-independent</b> routes documented in the neurodegeneration literature: TIA-1 seeds <b>tau aggregation</b>; SGs nucleate <b>TDP-43 proteinopathy</b>; chronic SGs cause <b>translational arrest</b> and sustain the <b>integrated stress response (eIF2α-P)</b>; aberrant persistent SGs impair <b>autophagy/proteostasis</b>; and SG-linked signalling feeds <b>neuroinflammation</b>. The six β's here are <i>illustrative</i> — swap in your effect sizes.",
+    ident:"Front-door through NCT identifies only the NCT-mediated share; the six bypass routes are <b>not</b> captured. The total do(SG)→AD effect needs the bypass β's, so the honest output is a <b>bounded proportion-mediated</b> (here ≈64% via NCT), not a point estimate.",
+    cites:["Coleman et al. 2025, Alz & Dementia","Wolozin & Ivanov 2019, Nat Rev Neurosci","Vanderweyde et al. 2016, J Neurosci"] },
   alz_amyloid:{ status:"Partially identified · RCT", strength:"moderate",
     real:"Anti-amyloid <b>RCTs</b> slow decline modestly: lecanemab ~27% on CDR-SB (CLARITY-AD); donanemab ~36% on CDR-SB / ~35% on iADRS in intermediate-tau patients (less in the full population). Absolute clinical effects are small and contested.",
     ident:"Amyloid removal is randomised, so <i>that step</i> is identified; the full cascade to phenotype is not.",
@@ -1595,6 +1631,13 @@ const IMPL_NOTES = {
     Aβ should not move AD. If anti-amyloid trials clear plaques yet barely move the phenotype, the data are
     <b>refuting boxes ②③</b> — the linear-cascade graph is wrong/incomplete, and you should revise toward a
     convergent or bypass structure.`,
+  alz_bypass:`Now the bypass is <b>explicit</b>: SG reaches AD through NCT <i>plus</i> six parallel routes.
+    The front-door estimate captures only the NCT share (≈64% here); the remaining ≈36% is the six
+    bypass mediators — so the deliverable is a <b>proportion-mediated with a band</b>, and the lever
+    question becomes <i>which routes to measure or block</i>. The highest-value experiments are the ones
+    that <b>zero out a bypass</b> (e.g. block tau aggregation downstream of SG and see whether the AD risk
+    through that arm collapses). Replace the illustrative β's with your meta-analytic effect sizes to turn
+    the band into <i>your</i> bound.`,
   alz_convergent:`NCT is a <b>convergent bottleneck</b> here: Aβ, tau, oxidative stress and SG each disrupt it.
     Front-door recovers SG's slice cleanly — but intervening on SG alone <b>caps the benefit at SG's share</b>
     of NCT disruption. The therapeutic implication: target the <b>bottleneck (NCT)</b>, not one upstream input.
@@ -1615,7 +1658,8 @@ function implByEscape(c, r){
   const Z = c.iv ? lblOf(c,c.iv) : "the instrument";
   const S = c.conditionOn ? lblOf(c,c.conditionOn) : "the collider";
   const U = ((c.nodes.find(n=>n.type==="latent")||{}).label||"a hidden cause").replace(/\n/g," ");
-  const bypass = c.edges.some(e=>e.kind==="bypass");
+  const _ms0 = mediationSplit(c);
+  const bypass = (c.edges.some(e=>e.kind==="bypass")) || (_ms0 && Math.abs(_ms0.direct) > 0.02);
   const obs=fv(r.observed), ora=fv(r.oracle);
   switch(c.escape){
     case "backdoor": return {
