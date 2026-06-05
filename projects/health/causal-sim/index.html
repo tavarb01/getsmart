@@ -17,13 +17,18 @@
   h1 { font-size: 20px; margin: 0; }
   .sub { opacity: .65; font-size: 13px; margin: 2px 0 0; }
 
+  details.intro { margin: 8px 16px 0; background:#0f1830; border:1px solid #20304f; border-radius:12px; padding:8px 14px; }
+  details.intro > summary { cursor:pointer; font-size:13.5px; font-weight:600; color:#bcd0ff; }
+  .intro .body { font-size:13px; line-height:1.6; opacity:.92; margin-top:8px; }
+  .intro .body b { color:#ffd58a; }
+  .intro ol { margin:6px 0 0; padding-left:18px; } .intro li { margin:4px 0; }
+  .intro .oracle-note { margin-top:8px; font-size:12.5px; opacity:.8; border-top:1px solid #20304f; padding-top:8px; }
+  .dia { color:#7fe0a6; }
+
   .nav { padding: 8px 16px 0; }
   .navrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
   .navlabel { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; opacity: .45; width: 64px; flex: none; }
-  .pill-btn {
-    background: #16203a; border: 1px solid #2a3a5e; color: #cdd6f4;
-    padding: 7px 12px; border-radius: 999px; font-size: 13px; cursor: pointer;
-  }
+  .pill-btn { background: #16203a; border: 1px solid #2a3a5e; color: #cdd6f4; padding: 7px 12px; border-radius: 999px; font-size: 13px; cursor: pointer; }
   .pill-btn.active { background: #2b4a8b; border-color: #4f7adf; color: #fff; }
   .navrow.domains .pill-btn.active { background: #2b6a8b; border-color: #4fb0df; }
   .navrow.models .pill-btn { font-size: 12.5px; padding: 6px 11px; }
@@ -34,33 +39,30 @@
   .swatch { display:inline-block; width:10px; height:10px; border-radius:50%; vertical-align:middle; margin-right:4px;}
 
   .stage { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 8px 12px 24px; }
-  @media (min-width: 820px) { .stage { grid-template-columns: 1.45fr 1fr; padding: 8px 16px 28px; } }
+  @media (min-width: 860px) { .stage { grid-template-columns: 1.4fr 1fr; padding: 8px 16px 28px; } }
 
   .panel { background: #0f1830; border: 1px solid #20304f; border-radius: 14px; }
   svg { width: 100%; height: auto; display: block; border-radius: 14px; }
 
-  .controls { padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .controls { padding: 12px 14px; display: flex; flex-direction: column; gap: 11px; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  button.act {
-    background: #2b6a3a; border: 1px solid #3e9c55; color: #eafff0;
-    padding: 9px 14px; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600;
-  }
-  button.ghost {
-    background: #1a2540; border: 1px solid #2a3a5e; color: #cdd6f4;
-    padding: 9px 12px; border-radius: 10px; font-size: 13px; cursor: pointer;
-  }
+  button.act { background: #2b6a3a; border: 1px solid #3e9c55; color: #eafff0; padding: 9px 14px; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; }
+  button.ghost { background: #1a2540; border: 1px solid #2a3a5e; color: #cdd6f4; padding: 9px 12px; border-radius: 10px; font-size: 13px; cursor: pointer; }
   label.toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; opacity: .9; }
 
   .lesson { font-size: 13px; line-height: 1.5; }
   .lesson b { color: #ffd58a; }
   .pill { display: inline-block; background: #20304f; border-radius: 6px; padding: 1px 7px; font-size: 12px; }
 
-  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .metric { background: #0b1326; border: 1px solid #20304f; border-radius: 10px; padding: 10px; }
-  .metric .k { font-size: 11px; opacity: .6; text-transform: uppercase; letter-spacing: .04em; }
-  .metric .v { font-size: 22px; font-weight: 700; margin-top: 2px; }
-  .v.obs { color: #ff8f6b; }
-  .v.causal { color: #6bd1ff; }
+  .mrow { display:flex; justify-content:space-between; align-items:center; gap:10px;
+          background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:9px 12px; }
+  .mrow .k { font-size:12px; opacity:.78; } .mrow .ksub { font-size:11px; opacity:.5; }
+  .mrow .v { font-size:21px; font-weight:700; white-space:nowrap; }
+  .v.obs { color:#ff8f6b; } .v.est { color:#6bd1ff; } .v.oracle { color:#9fe6b0; }
+  .mrow.oracle { border-style:dashed; border-color:#3c6b4e; background:#0a1a12; }
+  .tag { font-size:10px; padding:1px 5px; border-radius:5px; margin-left:6px; vertical-align:middle; }
+  .tag.data { background:#143049; color:#8fd0ff; } .tag.god { background:#123322; color:#9fe6b0; }
+  .metnote { font-size:11px; opacity:.6; margin:-2px 2px 0; }
 
   .bar { height: 12px; border-radius: 6px; background: #1a2540; overflow: hidden; display: flex; }
   .bar .ind { background: #7c5cff; } .bar .dir { background: #ff9f43; }
@@ -70,9 +72,8 @@
   .conclusion b { color:#9fe6b0; }
   details.math { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:6px 12px; }
   details.math summary { cursor:pointer; font-size:13px; opacity:.8; }
-  .mathbox { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; line-height:1.6; margin-top:8px; color:#c7d2f0; }
-  .mathline.dim { opacity:.6; }
-  .mathline .ind { color:#9d8bff; } .mathline .dir { color:#ffb168; }
+  .mathbox { font-family: ui-monospace, Menlo, monospace; font-size:12px; line-height:1.6; margin-top:8px; color:#c7d2f0; }
+  .mathline.dim { opacity:.6; } .mathline .ind { color:#9d8bff; } .mathline .dir { color:#ffb168; }
   .hint { font-size:12px; opacity:.6; }
   .node-grp { cursor: pointer; }
 </style>
@@ -83,7 +84,32 @@
   <p class="sub">An interactive <i>Book of Why</i> playground — tap a node to <b>do()</b> it and watch correlation turn into causation.</p>
 </header>
 
-<!-- 3-level drill-down: Domain → Disease → Model -->
+<details class="intro">
+  <summary>ℹ︎ Behind the scenes — how each simulation actually works</summary>
+  <div class="body">
+    Every disease below is a <b>causal diagram</b> (a DAG): boxes are variables, arrows mean
+    "this nudges that," and each arrow has a hidden <b>strength</b>. Here's what the buttons do:
+    <ol>
+      <li><b>Virtual patients.</b> We generate thousands of simulated people — start each variable
+        as random noise, then push it through the arrows (<span class="dia">value = Σ strength × parent + noise</span>).
+        That stream of patients is our <b>observational data</b>.</li>
+      <li><b>Observed association.</b> We fit a plain regression on that data — exactly what an
+        epidemiologist does. It blends real cause with confounding, so it can mislead.</li>
+      <li><b>do() — a virtual RCT.</b> Tap a node to randomize it: we <b>cut its incoming arrows</b>
+        so nothing upstream can bias it. The association is now pure cause.</li>
+      <li><b>The true effect <span class="dia">◆</span>.</b> Because we built the world, we can read
+        the real answer straight off the arrows (multiply strengths along each directed path, then
+        add). No real scientist can do this — it's the answer key.</li>
+      <li><b>Escaping confounding with data alone.</b> The clever part: <b>front-door</b> (chain
+        X→mediator→Y) and <b>back-door</b> (adjust for a measured common cause) recover the true
+        effect from observational data <i>without</i> an RCT — the heart of Pearl's <i>Book of Why</i>.</li>
+    </ol>
+    <div class="oracle-note"><span class="dia">◆</span> = a "god move": it uses the hidden
+      ground-truth strengths only a simulator can know. Every number <i>without</i> ◆ is earned from
+      the simulated data, just like a real study.</div>
+  </div>
+</details>
+
 <div class="nav">
   <div class="navrow domains"><span class="navlabel">Domain</span><span id="domains" style="display:contents"></span></div>
   <div class="navrow diseases"><span class="navlabel">Disease</span><span id="diseases" style="display:contents"></span></div>
@@ -113,10 +139,7 @@
     </div>
     <p class="hint" id="hint">Tap any node to intervene — <b>do()</b> severs its incoming arrows.</p>
 
-    <div class="metrics">
-      <div class="metric"><div class="k">Observed association</div><div class="v obs" id="mObs">–</div></div>
-      <div class="metric"><div class="k">Causal effect (after do)</div><div class="v causal" id="mDo">–</div></div>
-    </div>
+    <div id="metrics" style="display:flex; flex-direction:column; gap:8px;"></div>
 
     <div id="pmWrap">
       <div class="bar"><div class="ind" id="barInd"></div><div class="dir" id="barDir"></div></div>
@@ -134,224 +157,255 @@
 
 <script>
 // ===========================================================================
-//  Causal-Sim — a tiny linear Structural Causal Model (SCM) sandbox.
-//  Cases are organised as a 3-level taxonomy:  Domain → Disease → Model.
-//  For each model (a DAG) we:
-//    1) Monte-Carlo simulate the SCM to get the OBSERVED association.
-//    2) Trace directed paths to get the TRUE causal (do) effect.
-//  Clicking a node = do(node): we cut its incoming edges (it becomes
-//  exogenous). That is exactly Pearl's surgical intervention.
+//  Causal-Sim — a linear Structural Causal Model (SCM) sandbox.
+//  Cases form a 3-level taxonomy: Domain → Disease → Model. For each model we:
+//    • simulate thousands of "patients" (Monte-Carlo)        → observational data
+//    • fit regressions on that data                          → Observed, Front-door, Back-door
+//    • trace directed paths through the *known* weights      → True effect (the oracle ◆)
+//  Clicking a node = do(node): cut its incoming edges (it becomes exogenous).
 // ===========================================================================
-
 const SVGNS = "http://www.w3.org/2000/svg";
 const W = 720, H = 460;
 
-// --- Model (case) definitions ----------------------------------------------
-// node.type: treatment | mediator | outcome | latent | collider
-// edge.kind: causal | bypass | confound   (confound edges are latent/dashed)
+// --- Model definitions -----------------------------------------------------
+// escape: how this case lets you recover truth → frontdoor | backdoor | rct | natural | collider
 const M_ALZ_COLEMAN = {
-  id:"alz_coleman", name:"Coleman · SG → NCT",
-  rung:"Rungs 2–3 · Intervention & Mediation",
-  lesson:`Coleman et al. (2025) propose chronic <b>stress granules (SG)</b> disrupt
-    <b>nucleocytoplasmic transport (NCT)</b>, which has the structural scope to explain why
-    ~91% of pathways go awry in AD. But SG also hits AD through <b>6 documented bypass paths</b>,
-    and <b>aging/genetics</b> confounds everything. The real question is the
-    <b>proportion mediated</b> through NCT. <span class="pill">front-door criterion</span>`,
+  id:"alz_coleman", name:"Coleman · SG → NCT", escape:"frontdoor",
+  rung:"Front-door · but bypass paths leak",
+  lesson:`Coleman et al. (2025): chronic <b>stress granules (SG)</b> disrupt
+    <b>nucleocytoplasmic transport (NCT)</b>, of the right scope to explain why ~91% of AD pathways
+    go awry. But SG also hits AD via <b>6 bypass paths</b>, and <b>aging</b> confounds both.
+    Watch front-door recover the NCT route — and <i>miss</i> the bypass.`,
   nodes:[
-    { id:"U",   label:"Aging /\nGenetics",   x:.5,  y:.14, type:"latent" },
-    { id:"SG",  label:"Stress\nGranules",    x:.16, y:.62, type:"treatment" },
-    { id:"NCT", label:"NCT\nDisruption",     x:.5,  y:.62, type:"mediator" },
-    { id:"AD",  label:"AD: 91%\nof pathways",x:.84, y:.62, type:"outcome" },
+    { id:"U",  label:"Aging /\nGenetics", x:.5,  y:.14, type:"latent" },
+    { id:"SG", label:"Stress\nGranules",  x:.16, y:.62, type:"treatment" },
+    { id:"NCT",label:"NCT\nDisruption",   x:.5,  y:.62, type:"mediator" },
+    { id:"AD", label:"AD: 91%\nof pathways",x:.84,y:.62, type:"outcome" },
   ],
   edges:[
-    { from:"U",  to:"SG",  w:.55, kind:"confound" },
-    { from:"U",  to:"AD",  w:.70, kind:"confound" },
-    { from:"SG", to:"NCT", w:.70, kind:"causal" },
-    { from:"NCT",to:"AD",  w:.90, kind:"causal" },
-    { from:"SG", to:"AD",  w:.35, kind:"bypass", label:"6 bypass paths" },
+    { from:"U",  to:"SG", w:.55, kind:"confound" }, { from:"U", to:"AD", w:.70, kind:"confound" },
+    { from:"SG", to:"NCT",w:.70, kind:"causal" },   { from:"NCT",to:"AD", w:.90, kind:"causal" },
+    { from:"SG", to:"AD", w:.35, kind:"bypass", label:"6 bypass paths" },
   ],
   x:"SG", y:"AD", mediator:"NCT",
 };
-
 const M_ALZ_AMYLOID = {
-  id:"alz_amyloid", name:"Amyloid cascade",
-  rung:"Rung 2 · A competing DAG",
-  lesson:`The dominant rival hypothesis is a different <b>structure</b> entirely:
-    <b>Aβ → plaques → tau hyper-P → NCT failure → AD</b>. Here NCT is <i>downstream</i> of tau,
-    the opposite of Coleman. Same disease, same outcome — a different causal graph implies a
-    different place to intervene. Compare this model with Coleman's next door.
-    <span class="pill">competing causal models</span>`,
+  id:"alz_amyloid", name:"Amyloid cascade", escape:"frontdoor",
+  rung:"Front-door · clean chain (no bypass)",
+  lesson:`The rival structure: <b>Aβ → plaques → tau → NCT → AD</b>, a single serial cascade with
+    no shortcut. Because the mediator chain is the <i>only</i> route, front-door recovers the whole
+    effect. Same disease as Coleman — different graph, different verdict.`,
   nodes:[
-    { id:"AGE", label:"Age",            x:.5,  y:.14, type:"latent" },
-    { id:"AB",  label:"Aβ\nproduction", x:.10, y:.62, type:"treatment" },
-    { id:"PLQ", label:"Amyloid\nplaques",x:.31, y:.62, type:"mediator" },
-    { id:"TAU", label:"Tau\nhyper-P",   x:.52, y:.62, type:"mediator" },
-    { id:"NCT", label:"NCT\nfailure",   x:.73, y:.62, type:"mediator" },
-    { id:"AD",  label:"AD\nphenotype",  x:.93, y:.62, type:"outcome" },
+    { id:"AGE",label:"Age",            x:.5,  y:.14, type:"latent" },
+    { id:"AB", label:"Aβ\nproduction", x:.10, y:.62, type:"treatment" },
+    { id:"PLQ",label:"Amyloid\nplaques",x:.31, y:.62, type:"mediator" },
+    { id:"TAU",label:"Tau\nhyper-P",   x:.52, y:.62, type:"mediator" },
+    { id:"NCT",label:"NCT\nfailure",   x:.73, y:.62, type:"mediator" },
+    { id:"AD", label:"AD\nphenotype",  x:.93, y:.62, type:"outcome" },
   ],
   edges:[
-    { from:"AGE",to:"AB",  w:.40, kind:"confound" },
-    { from:"AGE",to:"AD",  w:.50, kind:"confound" },
-    { from:"AB", to:"PLQ", w:.80, kind:"causal" },
-    { from:"PLQ",to:"TAU", w:.80, kind:"causal" },
-    { from:"TAU",to:"NCT", w:.70, kind:"causal" },
-    { from:"NCT",to:"AD",  w:.90, kind:"causal" },
+    { from:"AGE",to:"AB", w:.40, kind:"confound" }, { from:"AGE",to:"AD", w:.50, kind:"confound" },
+    { from:"AB", to:"PLQ",w:.80, kind:"causal" },   { from:"PLQ",to:"TAU",w:.80, kind:"causal" },
+    { from:"TAU",to:"NCT",w:.70, kind:"causal" },   { from:"NCT",to:"AD", w:.90, kind:"causal" },
   ],
   x:"AB", y:"AD", mediator:"TAU",
 };
-
-const M_PD_COLLIDER = {
-  id:"pd_collider", name:"Smoking & the collider trap",
-  rung:"Rung 1 trap · Collider bias",
-  lesson:`Smokers seem to get <i>less</i> <b>Parkinson's</b> — a famous "protective" link.
-    One culprit: <b>collider bias</b>. Smoking and Parkinson's are actually <b>independent</b>,
-    but both affect whether you end up <b>in a clinic study</b>. If you only analyse enrolled
-    patients (condition on the collider), a spurious negative link appears from nothing.
-    Toggle "condition on collider" and watch. <span class="pill">Berkson's paradox</span>`,
-  nodes:[
-    { id:"SMK", label:"Smoking",          x:.18, y:.32, type:"treatment" },
-    { id:"PD",  label:"Parkinson's",      x:.82, y:.32, type:"outcome" },
-    { id:"ENR", label:"In clinic\nstudy", x:.5,  y:.74, type:"collider" },
-  ],
-  edges:[
-    { from:"SMK", to:"ENR", w:.85, kind:"causal" },
-    { from:"PD",  to:"ENR", w:.85, kind:"causal" },
-  ],
-  x:"SMK", y:"PD", mediator:null, conditionOn:"ENR",
-};
-
-const M_MEL_CONF = {
-  id:"mel_conf", name:"Sunscreen confounding",
-  rung:"Rung 2 · Confounding",
-  lesson:`Naively, people who use more <b>sunscreen</b> get <i>more</i> <b>melanoma</b> — so
-    sunscreen causes cancer? No. <b>Sun exposure & fair skin</b> is a common cause driving both.
-    That backdoor path manufactures a fake positive correlation. <b>do(sunscreen)</b> closes it
-    and reveals the real (protective) effect. <span class="pill">backdoor / common cause</span>`,
-  nodes:[
-    { id:"SUN", label:"Sun exposure\n/ fair skin", x:.5,  y:.16, type:"latent" },
-    { id:"SS",  label:"Sunscreen\nuse",            x:.2,  y:.66, type:"treatment" },
-    { id:"MEL", label:"Melanoma",                  x:.8,  y:.66, type:"outcome" },
-  ],
-  edges:[
-    { from:"SUN", to:"SS",  w:.60, kind:"confound" },
-    { from:"SUN", to:"MEL", w:.80, kind:"confound" },
-    { from:"SS",  to:"MEL", w:-.30, kind:"causal" },
-  ],
-  x:"SS", y:"MEL", mediator:null,
-};
-
-const M_STROKE_MED = {
-  id:"stroke_med", name:"BP → arterial damage",
-  rung:"Rungs 2–3 · Mediation",
-  lesson:`<b>High blood pressure</b> raises <b>stroke</b> risk — but how much flows through
-    <b>arterial damage</b> (the mediator) versus directly? And <b>age</b> confounds both.
-    Intervene on BP to strip out age; intervene on arterial damage to block the indirect route
-    and read off the <b>direct effect</b>. <span class="pill">proportion mediated</span>`,
-  nodes:[
-    { id:"AGE", label:"Age",                  x:.5,  y:.14, type:"latent" },
-    { id:"BP",  label:"High Blood\nPressure", x:.16, y:.62, type:"treatment" },
-    { id:"ART", label:"Arterial\nDamage",     x:.5,  y:.62, type:"mediator" },
-    { id:"STR", label:"Stroke",               x:.84, y:.62, type:"outcome" },
-  ],
-  edges:[
-    { from:"AGE", to:"BP",  w:.50, kind:"confound" },
-    { from:"AGE", to:"STR", w:.50, kind:"confound" },
-    { from:"BP",  to:"ART", w:.60, kind:"causal" },
-    { from:"ART", to:"STR", w:.70, kind:"causal" },
-    { from:"BP",  to:"STR", w:.20, kind:"bypass" },
-  ],
-  x:"BP", y:"STR", mediator:"ART",
-};
-
-const M_MIG_MED = {
-  id:"mig_med", name:"Stress, sleep & the mediator",
-  rung:"Rung 3 · Intervene on the mediator",
-  lesson:`<b>Chronic stress</b> triggers <b>migraine</b> partly via <b>sleep loss</b> and partly
-    directly. You can't easily remove stress — but you <i>can</i> fix sleep.
-    <b>do(sleep loss)</b> blocks the indirect path; whatever remains is the <b>direct</b> route.
-    That's how mediation analysis guides what to actually treat.
-    <span class="pill">controlled direct effect</span>`,
-  nodes:[
-    { id:"ST",  label:"Chronic\nStress", x:.16, y:.46, type:"treatment" },
-    { id:"SLP", label:"Sleep\nLoss",     x:.5,  y:.46, type:"mediator" },
-    { id:"MIG", label:"Migraine",        x:.84, y:.46, type:"outcome" },
-  ],
-  edges:[
-    { from:"ST",  to:"SLP", w:.60, kind:"causal" },
-    { from:"SLP", to:"MIG", w:.60, kind:"causal" },
-    { from:"ST",  to:"MIG", w:.30, kind:"bypass" },
-  ],
-  x:"ST", y:"MIG", mediator:"SLP",
-};
-
 const M_ALZ_CONVERGENT = {
-  id:"alz_convergent", name:"Convergent inputs",
-  rung:"Rung 2 · A third structure",
-  lesson:`A rival to the single-mediator view (paper §6): <b>Aβ, tau, oxidative stress and
-    stress granules each independently disrupt NCT</b> — the shared bottleneck — which then
-    drives AD. Here stress granules reach AD <i>only</i> through NCT (100% mediated), but NCT is
-    also fed by the other inputs, so SG explains only <b>part</b> of the disease.
-    Convergent inputs, not a single root. <span class="pill">upstream-input level</span>`,
+  id:"alz_convergent", name:"Convergent inputs", escape:"frontdoor",
+  rung:"Front-door · a shared bottleneck",
+  lesson:`Many causes, one bottleneck (paper §6): <b>Aβ, tau, oxidative stress and SG each
+    independently disrupt NCT</b>, which drives AD. Stress granules reach AD only through NCT, so
+    front-door recovers SG's effect cleanly — but SG is just one input among several.`,
   nodes:[
-    { id:"AB",  label:"Aβ",            x:.13, y:.20, type:"treatment" },
-    { id:"TAU", label:"Tau",           x:.13, y:.40, type:"treatment" },
-    { id:"OXI", label:"Oxidative\nstress", x:.13, y:.60, type:"treatment" },
-    { id:"SG",  label:"Stress\ngranules",  x:.13, y:.80, type:"treatment" },
-    { id:"NCT", label:"NCT\n(bottleneck)", x:.52, y:.50, type:"mediator" },
-    { id:"AD",  label:"AD",            x:.88, y:.50, type:"outcome" },
+    { id:"AB", label:"Aβ",            x:.13, y:.20, type:"treatment" },
+    { id:"TAU",label:"Tau",           x:.13, y:.40, type:"treatment" },
+    { id:"OXI",label:"Oxidative\nstress",x:.13,y:.60, type:"treatment" },
+    { id:"SG", label:"Stress\ngranules",x:.13, y:.80, type:"treatment" },
+    { id:"NCT",label:"NCT\n(bottleneck)",x:.52,y:.50, type:"mediator" },
+    { id:"AD", label:"AD",            x:.88, y:.50, type:"outcome" },
   ],
   edges:[
-    { from:"AB",  to:"NCT", w:.50, kind:"causal" },
-    { from:"TAU", to:"NCT", w:.50, kind:"causal" },
-    { from:"OXI", to:"NCT", w:.50, kind:"causal" },
-    { from:"SG",  to:"NCT", w:.60, kind:"causal" },
-    { from:"NCT", to:"AD",  w:.90, kind:"causal" },
+    { from:"AB",to:"NCT",w:.50,kind:"causal" }, { from:"TAU",to:"NCT",w:.50,kind:"causal" },
+    { from:"OXI",to:"NCT",w:.50,kind:"causal" },{ from:"SG", to:"NCT",w:.60,kind:"causal" },
+    { from:"NCT",to:"AD", w:.90,kind:"causal" },
   ],
   x:"SG", y:"AD", mediator:"NCT",
 };
-
-const M_ONC_LUNG = {
-  id:"onc_lung", name:"Smoking · Fisher's confounder",
-  rung:"Rung 2 · Confounding that can't explain it away",
-  lesson:`Fisher famously argued the <b>smoking → lung cancer</b> link might be a hidden
-    <b>genotype</b> causing both. Grant him the confounder: <b>do(smoking)</b> still leaves a large
-    causal effect. Confounding can bias an estimate, but here it cannot explain the effect away —
-    contrast melanoma, where it flipped the sign. <span class="pill">bias vs. explaining-away</span>`,
+const M_PD_COLLIDER = {
+  id:"pd_collider", name:"Smoking & the collider trap", escape:"collider",
+  rung:"Collider bias · Berkson's paradox",
+  lesson:`Smokers seem to get <i>less</i> <b>Parkinson's</b>. But smoking & PD are truly
+    <b>independent</b> — they only share an effect: ending up <b>in a clinic study</b>. Analyse only
+    enrolled patients (condition on that collider) and a fake protective link appears from nothing.`,
   nodes:[
-    { id:"G",   label:"Genotype?\n(Fisher)", x:.5,  y:.16, type:"latent" },
-    { id:"SMK", label:"Smoking",             x:.2,  y:.66, type:"treatment" },
-    { id:"LC",  label:"Lung\ncancer",        x:.8,  y:.66, type:"outcome" },
+    { id:"SMK",label:"Smoking",         x:.18, y:.32, type:"treatment" },
+    { id:"PD", label:"Parkinson's",     x:.82, y:.32, type:"outcome" },
+    { id:"ENR",label:"In clinic\nstudy",x:.5,  y:.74, type:"collider" },
+  ],
+  edges:[ { from:"SMK",to:"ENR",w:.85,kind:"causal" }, { from:"PD",to:"ENR",w:.85,kind:"causal" } ],
+  x:"SMK", y:"PD", mediator:null, conditionOn:"ENR",
+};
+const M_MIG_MED = {
+  id:"mig_med", name:"Stress, sleep & the mediator", escape:"frontdoor",
+  rung:"Front-door · partial mediation",
+  lesson:`<b>Chronic stress</b> causes <b>migraine</b> partly via <b>sleep loss</b>, partly directly.
+    Front-door through sleep captures the sleep route; the remainder is the direct path. Useful when
+    you can treat the mediator (sleep) but not the cause (stress).`,
+  nodes:[
+    { id:"ST", label:"Chronic\nStress", x:.16, y:.46, type:"treatment" },
+    { id:"SLP",label:"Sleep\nLoss",     x:.5,  y:.46, type:"mediator" },
+    { id:"MIG",label:"Migraine",        x:.84, y:.46, type:"outcome" },
   ],
   edges:[
-    { from:"G",   to:"SMK", w:.30, kind:"confound" },
-    { from:"G",   to:"LC",  w:.30, kind:"confound" },
-    { from:"SMK", to:"LC",  w:.80, kind:"causal" },
+    { from:"ST",to:"SLP",w:.60,kind:"causal" }, { from:"SLP",to:"MIG",w:.60,kind:"causal" },
+    { from:"ST",to:"MIG",w:.30,kind:"bypass" },
+  ],
+  x:"ST", y:"MIG", mediator:"SLP",
+};
+const M_MEL_CONF = {
+  id:"mel_conf", name:"Sunscreen confounding", escape:"rct",
+  rung:"Latent confounder · only an RCT saves you",
+  lesson:`People who use more <b>sunscreen</b> get <i>more</i> <b>melanoma</b> — so sunscreen causes
+    cancer? No. <b>Sun exposure / fair skin</b> is a hidden common cause. You can't measure it, so no
+    adjustment works — only <b>do(sunscreen)</b> (an RCT) reveals the real, protective effect.`,
+  nodes:[
+    { id:"SUN",label:"Sun exposure\n/ fair skin", x:.5, y:.16, type:"latent" },
+    { id:"SS", label:"Sunscreen\nuse",            x:.2, y:.66, type:"treatment" },
+    { id:"MEL",label:"Melanoma",                  x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"SUN",to:"SS", w:1.0, kind:"confound" }, { from:"SUN",to:"MEL",w:1.4, kind:"confound" },
+    { from:"SS", to:"MEL",w:-.40,kind:"causal" },
+  ],
+  x:"SS", y:"MEL", mediator:null,
+};
+const M_ONC_LUNG = {
+  id:"onc_lung", name:"Smoking · Fisher's confounder", escape:"rct",
+  rung:"Confounding that can't explain it away",
+  lesson:`Fisher argued <b>smoking → lung cancer</b> might be a hidden <b>genotype</b> causing both.
+    Grant him the (unmeasurable) confounder: <b>do(smoking)</b> still leaves a large effect.
+    Confounding can bias — but here it can't explain the effect away. Contrast melanoma's sign flip.`,
+  nodes:[
+    { id:"G",  label:"Genotype?\n(Fisher)", x:.5, y:.16, type:"latent" },
+    { id:"SMK",label:"Smoking",             x:.2, y:.66, type:"treatment" },
+    { id:"LC", label:"Lung\ncancer",        x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"G",to:"SMK",w:.30,kind:"confound" }, { from:"G",to:"LC",w:.30,kind:"confound" },
+    { from:"SMK",to:"LC",w:.80,kind:"causal" },
   ],
   x:"SMK", y:"LC", mediator:null,
 };
-
-const M_INF_CHOLERA = {
-  id:"inf_cholera", name:"Snow's natural experiment (1854)",
-  rung:"Rung 2 · The founding story",
-  lesson:`<b>John Snow, 1854</b> — the founding story of causal inference. Cholera tracks the
-    <b>water source</b>, but <b>poverty/district</b> confounds both. Snow's insight: in
-    mixed-supply neighbourhoods the water company was assigned <i>as-if-at-random</i>, approximating
-    <b>do(water)</b> and breaking the confounder — the original natural experiment.
-    <span class="pill">natural experiment</span>`,
+const M_STROKE_MED = {
+  id:"stroke_med", name:"BP → arterial damage", escape:"frontdoor",
+  rung:"Front-door · partial mediation",
+  lesson:`<b>High blood pressure</b> raises <b>stroke</b> risk mostly via <b>arterial damage</b>,
+    partly directly, with <b>age</b> confounding both. Front-door through arterial damage recovers
+    the mediated part from data alone.`,
   nodes:[
-    { id:"U",   label:"Poverty /\ndistrict",    x:.5,  y:.16, type:"latent" },
-    { id:"WS",  label:"Contaminated\nwater",    x:.2,  y:.66, type:"treatment" },
-    { id:"CHO", label:"Cholera",                x:.8,  y:.66, type:"outcome" },
+    { id:"AGE",label:"Age",                  x:.5, y:.14, type:"latent" },
+    { id:"BP", label:"High Blood\nPressure", x:.16,y:.62, type:"treatment" },
+    { id:"ART",label:"Arterial\nDamage",     x:.5, y:.62, type:"mediator" },
+    { id:"STR",label:"Stroke",               x:.84,y:.62, type:"outcome" },
   ],
   edges:[
-    { from:"U",  to:"WS",  w:.40, kind:"confound" },
-    { from:"U",  to:"CHO", w:.50, kind:"confound" },
-    { from:"WS", to:"CHO", w:.70, kind:"causal" },
+    { from:"AGE",to:"BP",w:.50,kind:"confound" }, { from:"AGE",to:"STR",w:.50,kind:"confound" },
+    { from:"BP", to:"ART",w:.60,kind:"causal" },  { from:"ART",to:"STR",w:.70,kind:"causal" },
+    { from:"BP", to:"STR",w:.20,kind:"bypass" },
+  ],
+  x:"BP", y:"STR", mediator:"ART",
+};
+const M_HRT = {
+  id:"cm_hrt", name:"HRT · the WHI reversal", escape:"rct",
+  rung:"Latent confounder · observational reversal",
+  lesson:`Observational studies said <b>hormone therapy</b> <i>protects</i> the heart. The
+    <b>WHI randomized trial</b> found the opposite. The culprit: a <b>healthy-user</b> effect —
+    wealthier, fitter women took HRT. Only <b>do(HRT)</b> exposes the true (harmful) effect.`,
+  nodes:[
+    { id:"HU", label:"Healthy-user\n(wealth, fitness)", x:.5, y:.16, type:"latent" },
+    { id:"HRT",label:"HRT use",       x:.2, y:.66, type:"treatment" },
+    { id:"CHD",label:"Heart\ndisease",x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"HU",to:"HRT",w:.80,kind:"confound" }, { from:"HU",to:"CHD",w:-1.0,kind:"confound" },
+    { from:"HRT",to:"CHD",w:.25,kind:"causal" },
+  ],
+  x:"HRT", y:"CHD", mediator:null,
+};
+const M_STATIN = {
+  id:"cm_statin", name:"Statins → LDL → heart disease", escape:"frontdoor",
+  rung:"Front-door · success (no bypass)",
+  lesson:`<b>Statins</b> cut <b>heart disease</b> almost entirely by lowering <b>LDL</b>.
+    With a healthy-user confounder hiding in the data, the naive number overstates the benefit —
+    but front-door through LDL recovers the true effect <i>from observational data alone</i>.`,
+  nodes:[
+    { id:"HU", label:"Adherence /\nhealthy user", x:.5, y:.14, type:"latent" },
+    { id:"ST", label:"Statin\nuse", x:.16, y:.62, type:"treatment" },
+    { id:"LDL",label:"LDL\nlowering",x:.5, y:.62, type:"mediator" },
+    { id:"CHD",label:"Heart\ndisease",x:.84,y:.62, type:"outcome" },
+  ],
+  edges:[
+    { from:"HU",to:"ST",w:.50,kind:"confound" }, { from:"HU",to:"CHD",w:-.40,kind:"confound" },
+    { from:"ST",to:"LDL",w:-.70,kind:"causal" }, { from:"LDL",to:"CHD",w:.60,kind:"causal" },
+  ],
+  x:"ST", y:"CHD", mediator:"LDL",
+};
+const M_CHOLERA = {
+  id:"inf_cholera", name:"Snow's natural experiment (1854)", escape:"natural",
+  rung:"Natural experiment · as-if randomized",
+  lesson:`<b>John Snow, 1854</b> — the founding story of causal inference. Cholera tracks the
+    <b>water source</b>, but <b>poverty/district</b> confounds both. Snow's insight: in mixed-supply
+    neighbourhoods the water company was assigned <i>as-if-at-random</i> — a natural experiment that
+    approximates <b>do(water)</b>.`,
+  nodes:[
+    { id:"U",  label:"Poverty /\ndistrict", x:.5, y:.16, type:"latent" },
+    { id:"WS", label:"Contaminated\nwater", x:.2, y:.66, type:"treatment" },
+    { id:"CHO",label:"Cholera",             x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"WS",w:.40,kind:"confound" }, { from:"U",to:"CHO",w:.50,kind:"confound" },
+    { from:"WS",to:"CHO",w:.70,kind:"causal" },
   ],
   x:"WS", y:"CHO", mediator:null,
 };
+const M_BIRTHWEIGHT = {
+  id:"per_bw", name:"The birthweight paradox", escape:"collider",
+  rung:"Collider bias · a famous paradox",
+  lesson:`Among <b>low-birthweight</b> babies, those of <b>smoking</b> mothers seem to survive
+    <i>better</i>. Paradox? <b>Birthweight is a collider</b>: both smoking and an unobserved
+    <b>birth defect</b> lower it. Condition on low birthweight and smoking soaks up the blame that
+    really belongs to the hidden defect — inventing a protective effect.`,
+  nodes:[
+    { id:"SMK",label:"Maternal\nsmoking", x:.18, y:.30, type:"treatment" },
+    { id:"DEF",label:"Birth defect\n(unobserved)", x:.5, y:.74, type:"latent" },
+    { id:"BW", label:"Low\nbirthweight",  x:.5,  y:.30, type:"collider" },
+    { id:"MORT",label:"Infant\nmortality",x:.84, y:.52, type:"outcome" },
+  ],
+  edges:[
+    { from:"SMK",to:"BW",w:.70,kind:"causal" }, { from:"DEF",to:"BW",w:.90,kind:"causal" },
+    { from:"DEF",to:"MORT",w:.90,kind:"confound" }, { from:"SMK",to:"MORT",w:.20,kind:"causal" },
+  ],
+  x:"SMK", y:"MORT", mediator:null, conditionOn:"BW",
+};
+const M_BERKELEY = {
+  id:"soc_berkeley", name:"Berkeley admissions (Simpson's)", escape:"backdoor",
+  rung:"Back-door adjustment · Simpson's paradox",
+  lesson:`Berkeley's 1973 data: women were admitted at a <b>lower</b> overall rate — apparent bias.
+    But women applied to <b>more selective departments</b>. Adjust for department (a back-door you
+    <i>can</i> measure) and the gap vanishes. The aggregate was Simpson's paradox, not discrimination.`,
+  nodes:[
+    { id:"GEN", label:"Applicant\ngender (F)", x:.18, y:.5, type:"treatment" },
+    { id:"DEPT",label:"Dept\nselectivity",     x:.5,  y:.5, type:"mediator" },
+    { id:"ADM", label:"Admission",             x:.82, y:.5, type:"outcome" },
+  ],
+  edges:[
+    { from:"GEN",to:"DEPT",w:.80,kind:"causal" }, { from:"DEPT",to:"ADM",w:-.70,kind:"causal" },
+    { from:"GEN",to:"ADM",w:.00,kind:"bypass", label:"direct bias?" },
+  ],
+  x:"GEN", y:"ADM", mediator:"DEPT", adjust:["DEPT"], oracleKind:"direct",
+};
 
-// --- The taxonomy: Domain → Disease → Model(s) -----------------------------
+// --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
 const TAXONOMY = [
   { domain:"Neurology", icon:"🧠", diseases:[
       { disease:"Alzheimer's", models:[ M_ALZ_COLEMAN, M_ALZ_AMYLOID, M_ALZ_CONVERGENT ] },
@@ -364,346 +418,312 @@ const TAXONOMY = [
   ]},
   { domain:"Cardiometabolic", icon:"🫀", diseases:[
       { disease:"Stroke", models:[ M_STROKE_MED ] },
+      { disease:"Heart disease", models:[ M_HRT, M_STATIN ] },
   ]},
   { domain:"Infectious Disease", icon:"🦠", diseases:[
-      { disease:"Cholera", models:[ M_INF_CHOLERA ] },
+      { disease:"Cholera", models:[ M_CHOLERA ] },
+  ]},
+  { domain:"Perinatal", icon:"👶", diseases:[
+      { disease:"Infant mortality", models:[ M_BIRTHWEIGHT ] },
+  ]},
+  { domain:"Society & Policy", icon:"⚖️", diseases:[
+      { disease:"Admissions", models:[ M_BERKELEY ] },
   ]},
 ];
-
-// flatten to id → model map for the engine
 const CASES = {};
 TAXONOMY.forEach(d=>d.diseases.forEach(dis=>dis.models.forEach(m=>{ CASES[m.id]=m; })));
 
-// --- Navigation state ------------------------------------------------------
+// --- State -----------------------------------------------------------------
 let curDomain = 0, curDisease = 0, curId = TAXONOMY[0].diseases[0].models[0].id;
-let cut = new Set();        // node ids the user has do()'d (incoming edges cut)
-let conditioning = false;   // for collider cases
+let cut = new Set();
+let conditioning = false;
 
-// --- Math helpers ----------------------------------------------------------
-function randn() { // Box–Muller
-  let u = 0, v = 0;
-  while (!u) u = Math.random();
-  while (!v) v = Math.random();
-  return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
-}
-function topoOrder(c) {
-  const ids = c.nodes.map(n=>n.id);
-  const indeg = {}; ids.forEach(i=>indeg[i]=0);
+// --- Math: simulation + estimators -----------------------------------------
+function randn(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function topoOrder(c){
+  const ids=c.nodes.map(n=>n.id), indeg={}; ids.forEach(i=>indeg[i]=0);
   c.edges.forEach(e=>indeg[e.to]++);
-  const q = ids.filter(i=>indeg[i]===0), out=[];
-  while (q.length) {
-    const n = q.shift(); out.push(n);
-    c.edges.filter(e=>e.from===n).forEach(e=>{ if(--indeg[e.to]===0) q.push(e.to); });
-  }
+  const q=ids.filter(i=>indeg[i]===0), out=[];
+  while(q.length){ const n=q.shift(); out.push(n);
+    c.edges.filter(e=>e.from===n).forEach(e=>{ if(--indeg[e.to]===0)q.push(e.to); }); }
   return out;
 }
-// Monte-Carlo the SCM. cutSet = nodes whose parents are severed (exogenous).
-function simulate(c, cutSet, cond) {
-  const N = 6000, order = topoOrder(c);
-  const X=[], Y=[];
-  for (let s=0; s<N; s++) {
-    const v = {};
-    for (const id of order) {
-      if (cutSet.has(id)) { v[id] = randn(); continue; } // do(): exogenous
-      let sum = 0;
-      for (const e of c.edges) if (e.to===id) sum += e.w * v[e.from];
-      v[id] = sum + randn();
+// Monte-Carlo: returns one array of samples per node id.
+function sampleCols(c, cutSet, cond, N=6000){
+  const order=topoOrder(c), cols={}; c.nodes.forEach(n=>cols[n.id]=[]);
+  for(let s=0;s<N;s++){
+    const v={};
+    for(const id of order){
+      if(cutSet.has(id)){ v[id]=randn(); continue; }
+      let sum=0; for(const e of c.edges) if(e.to===id) sum+=e.w*v[e.from];
+      v[id]=sum+randn();
     }
-    if (cond && c.conditionOn && v[c.conditionOn] < 0.4) continue; // stratify high
-    X.push(v[c.x]); Y.push(v[c.y]);
+    if(cond && c.conditionOn && v[c.conditionOn]<0.4) continue;
+    for(const id in cols) cols[id].push(v[id]);
   }
-  return slope(X, Y);
+  return cols;
 }
-function slope(X, Y) { // regression coefficient of Y on X
-  const n = X.length, mx = avg(X), my = avg(Y);
-  let sxy=0, sxx=0;
-  for (let i=0;i<n;i++){ sxy += (X[i]-mx)*(Y[i]-my); sxx += (X[i]-mx)**2; }
-  return sxx ? sxy/sxx : 0;
+// Ordinary least squares: y on [intercept, ...Xcols]. Returns coeff array.
+function ols(y, Xcols){
+  const n=y.length, k=Xcols.length, K=k+1;
+  const get=(j,i)=> j===0?1:Xcols[j-1][i];
+  const A=[], B=[];
+  for(let r=0;r<K;r++){ A[r]=[]; let br=0;
+    for(let cc=0;cc<K;cc++){ let s=0; for(let i=0;i<n;i++) s+=get(r,i)*get(cc,i); A[r][cc]=s; }
+    for(let i=0;i<n;i++) br+=get(r,i)*y[i]; B[r]=br; }
+  for(let col=0;col<K;col++){
+    const piv=A[col][col]||1e-9;
+    for(let cc=0;cc<K;cc++) A[col][cc]/=piv; B[col]/=piv;
+    for(let r=0;r<K;r++) if(r!==col){ const f=A[r][col];
+      for(let cc=0;cc<K;cc++) A[r][cc]-=f*A[col][cc]; B[r]-=f*B[col]; }
+  }
+  return B;
 }
-const avg = a => a.reduce((s,x)=>s+x,0)/a.length;
+const simpleSlope = (cols,x,y)=> ols(cols[y],[cols[x]])[1];
+const partial = (cols,y,x,ctrl)=> ols(cols[y],[cols[x],...ctrl.map(id=>cols[id])])[1];
+function frontDoor(cols,c){ const a=simpleSlope(cols,c.x,c.mediator);
+  const b=ols(cols[c.y],[cols[c.mediator],cols[c.x]])[1]; return a*b; }
 
-// Trace all directed paths x->y (causal + bypass edges carry effect).
-function paths(c, from, to, cutSet) {
-  const out = [];
-  (function dfs(node, acc, prod) {
-    if (node===to) { out.push({ nodes:[...acc], prod }); return; }
-    for (const e of c.edges) {
-      if (e.from!==node) continue;
-      if (cutSet.has(e.to)) continue;            // edge into a do()'d node is severed
-      if (acc.includes(e.to)) continue;          // no cycles
-      dfs(e.to, [...acc, e.to], prod*e.w);
-    }
-  })(from, [from], 1);
+// Analytic oracle: trace directed paths through the known weights.
+function paths(c, from, to, cutSet){
+  const out=[];
+  (function dfs(node,acc,prod){
+    if(node===to){ out.push({nodes:[...acc],prod}); return; }
+    for(const e of c.edges){ if(e.from!==node||cutSet.has(e.to)||acc.includes(e.to)) continue;
+      dfs(e.to,[...acc,e.to],prod*e.w); }
+  })(from,[from],1);
   return out;
 }
-function causal(c, cutSet) {
-  return paths(c, c.x, c.y, cutSet).reduce((s,p)=>s+p.prod, 0);
+const causal = (c,cutSet)=> paths(c,c.x,c.y,cutSet).reduce((s,p)=>s+p.prod,0);
+function mediationSplit(c){
+  if(!c.mediator) return null;
+  const all=paths(c,c.x,c.y,new Set()); let total=0,indirect=0;
+  for(const p of all){ total+=p.prod; if(p.nodes.includes(c.mediator)) indirect+=p.prod; }
+  return { total, indirect, direct: total-indirect, pm: total?indirect/total:0 };
 }
-function mediationSplit(c) {
-  if (!c.mediator) return null;
-  const all = paths(c, c.x, c.y, new Set());
-  let total=0, indirect=0;
-  for (const p of all) { total += p.prod; if (p.nodes.includes(c.mediator)) indirect += p.prod; }
-  return { total, indirect, direct: total-indirect, pm: total ? indirect/total : 0 };
+function oracleEffect(c){
+  if(c.oracleKind==="direct"){ const m=mediationSplit(c); return m? m.direct : causal(c,new Set()); }
+  return causal(c, new Set());
 }
 
 // --- Rendering -------------------------------------------------------------
 const svg = document.getElementById("graph");
 const COLORS = { treatment:"#5a8dff", mediator:"#7c5cff", outcome:"#ff6b6b", latent:"#9aa4bf", collider:"#f0c050" };
-const px = f => f*W, py = f => f*H;
-function nodeById(c,id){ return c.nodes.find(n=>n.id===id); }
+const px=f=>f*W, py=f=>f*H;
+const nodeById=(c,id)=>c.nodes.find(n=>n.id===id);
+const lblOf=(c,id)=>nodeById(c,id).label.replace(/\n/g," ");
 
-function render() {
-  const c = CASES[curId];
-  svg.innerHTML = "";
-  const defs = el("defs");
-  defs.appendChild(marker("arr",   "#7f93c9"));
-  defs.appendChild(marker("arrPos","#ff9f43"));
-  defs.appendChild(marker("arrNeg","#6bd1ff"));
-  defs.appendChild(marker("arrCut","#3a4766"));
+function render(){
+  const c=CASES[curId]; svg.innerHTML="";
+  const defs=el("defs");
+  defs.appendChild(marker("arr","#7f93c9")); defs.appendChild(marker("arrPos","#ff9f43"));
+  defs.appendChild(marker("arrNeg","#6bd1ff")); defs.appendChild(marker("arrCut","#3a4766"));
   svg.appendChild(defs);
-
-  for (const e of c.edges) {
-    const a = nodeById(c,e.from), b = nodeById(c,e.to);
-    const isCut = cut.has(e.to);
-    const path = el("path");
-    const x1=px(a.x), y1=py(a.y), x2=px(b.x), y2=py(b.y);
-    const mx=(x1+x2)/2, my=(y1+y2)/2;
-    const bow = e.kind==="confound" ? -46 : (e.kind==="bypass" ? 60 : 0);
-    path.setAttribute("d", `M ${x1} ${y1} Q ${mx} ${my+bow} ${x2} ${y2}`);
-    let stroke, marker_;
-    if (isCut)                    { stroke="#3a4766"; marker_="arrCut"; }
-    else if (e.kind==="confound") { stroke="#9aa4bf"; marker_="arr"; }
-    else if (e.w < 0)             { stroke="#6bd1ff"; marker_="arrNeg"; }
-    else                          { stroke="#ff9f43"; marker_="arrPos"; }
-    path.setAttribute("fill","none");
-    path.setAttribute("stroke", stroke);
-    path.setAttribute("stroke-width", e.kind==="confound"?2:2.6);
-    if (e.kind==="confound" || isCut) path.setAttribute("stroke-dasharray","6 5");
-    path.setAttribute("marker-end", `url(#${marker_})`);
-    path.setAttribute("opacity", isCut?0.5:0.95);
-    path.dataset.from=e.from; path.dataset.to=e.to;
-    path.classList.add("flowpath");
+  for(const e of c.edges){
+    const a=nodeById(c,e.from), b=nodeById(c,e.to), isCut=cut.has(e.to);
+    const x1=px(a.x),y1=py(a.y),x2=px(b.x),y2=py(b.y), mx=(x1+x2)/2,my=(y1+y2)/2;
+    const bow=e.kind==="confound"?-46:(e.kind==="bypass"?60:0);
+    const path=el("path"); path.setAttribute("d",`M ${x1} ${y1} Q ${mx} ${my+bow} ${x2} ${y2}`);
+    let stroke,mk;
+    if(isCut){stroke="#3a4766";mk="arrCut";}
+    else if(e.kind==="confound"){stroke="#9aa4bf";mk="arr";}
+    else if(e.w<0){stroke="#6bd1ff";mk="arrNeg";}
+    else {stroke="#ff9f43";mk="arrPos";}
+    path.setAttribute("fill","none"); path.setAttribute("stroke",stroke);
+    path.setAttribute("stroke-width",e.kind==="confound"?2:2.6);
+    if(e.kind==="confound"||isCut) path.setAttribute("stroke-dasharray","6 5");
+    path.setAttribute("marker-end",`url(#${mk})`); path.setAttribute("opacity",isCut?0.5:0.95);
+    path.dataset.from=e.from; path.dataset.to=e.to; path.classList.add("flowpath");
     svg.appendChild(path);
-
-    if (e.label) {
-      const t = text((x1+x2)/2, my+bow-8, e.label, 11, "#c9b27a");
-      t.setAttribute("text-anchor","middle"); svg.appendChild(t);
-    }
-    if (isCut) {
-      const sc = text(mx, my+bow+4, "✂", 18, "#ff7a7a");
-      sc.setAttribute("text-anchor","middle"); svg.appendChild(sc);
-    }
+    if(e.label){ const t=text(mx,my+bow-8,e.label,11,"#c9b27a"); t.setAttribute("text-anchor","middle"); svg.appendChild(t); }
+    if(isCut){ const sc=text(mx,my+bow+4,"✂",18,"#ff7a7a"); sc.setAttribute("text-anchor","middle"); svg.appendChild(sc); }
   }
-
-  for (const n of c.nodes) {
-    const g = el("g"); g.classList.add("node-grp");
-    g.addEventListener("click", ()=>toggleCut(n.id));
-    const cx=px(n.x), cy=py(n.y), r=38;
-    const circle = el("circle");
-    circle.setAttribute("cx",cx); circle.setAttribute("cy",cy); circle.setAttribute("r",r);
-    circle.setAttribute("fill", "#0e1730");
-    circle.setAttribute("stroke", COLORS[n.type]);
-    circle.setAttribute("stroke-width", cut.has(n.id)?4:2.4);
-    if (n.type==="latent") circle.setAttribute("stroke-dasharray","5 4");
+  for(const n of c.nodes){
+    const g=el("g"); g.classList.add("node-grp"); g.addEventListener("click",()=>toggleCut(n.id));
+    const cx=px(n.x),cy=py(n.y),r=38;
+    const circle=el("circle"); circle.setAttribute("cx",cx);circle.setAttribute("cy",cy);circle.setAttribute("r",r);
+    circle.setAttribute("fill","#0e1730"); circle.setAttribute("stroke",COLORS[n.type]);
+    circle.setAttribute("stroke-width",cut.has(n.id)?4:2.4);
+    if(n.type==="latent") circle.setAttribute("stroke-dasharray","5 4");
     g.appendChild(circle);
-    if (cut.has(n.id)) {
-      const ring = el("circle");
-      ring.setAttribute("cx",cx); ring.setAttribute("cy",cy); ring.setAttribute("r",r+5);
-      ring.setAttribute("fill","none"); ring.setAttribute("stroke","#9fe6b0");
-      ring.setAttribute("stroke-width",1.6); ring.setAttribute("stroke-dasharray","3 4");
+    if(cut.has(n.id)){
+      const ring=el("circle"); ring.setAttribute("cx",cx);ring.setAttribute("cy",cy);ring.setAttribute("r",r+5);
+      ring.setAttribute("fill","none");ring.setAttribute("stroke","#9fe6b0");ring.setAttribute("stroke-width",1.6);ring.setAttribute("stroke-dasharray","3 4");
       g.appendChild(ring);
-      const lbl = text(cx, cy-r-10, "do()", 12, "#9fe6b0"); lbl.setAttribute("text-anchor","middle"); g.appendChild(lbl);
+      const lbl=text(cx,cy-r-10,"do()",12,"#9fe6b0"); lbl.setAttribute("text-anchor","middle"); g.appendChild(lbl);
     }
-    n.label.split("\n").forEach((ln,i,arr)=>{
-      const t = text(cx, cy + (i-(arr.length-1)/2)*14, ln, 12.5, "#e6e8ee");
-      t.setAttribute("text-anchor","middle"); t.setAttribute("font-weight","600");
-      g.appendChild(t);
-    });
+    n.label.split("\n").forEach((ln,i,arr)=>{ const t=text(cx,cy+(i-(arr.length-1)/2)*14,ln,12.5,"#e6e8ee");
+      t.setAttribute("text-anchor","middle");t.setAttribute("font-weight","600"); g.appendChild(t); });
     svg.appendChild(g);
   }
   updateReadout();
 }
+function el(t){return document.createElementNS(SVGNS,t);}
+function text(x,y,s,size,fill){const t=el("text");t.setAttribute("x",x);t.setAttribute("y",y);
+  t.setAttribute("font-size",size);t.setAttribute("fill",fill);t.setAttribute("dominant-baseline","middle");t.textContent=s;return t;}
+function marker(id,color){const m=el("marker");m.setAttribute("id",id);m.setAttribute("viewBox","0 0 10 10");
+  m.setAttribute("refX","9");m.setAttribute("refY","5");m.setAttribute("markerWidth","7");m.setAttribute("markerHeight","7");
+  m.setAttribute("orient","auto-start-reverse");const p=el("path");p.setAttribute("d","M0,0 L10,5 L0,10 z");p.setAttribute("fill",color);m.appendChild(p);return m;}
 
-function el(tag){ return document.createElementNS(SVGNS, tag); }
-function text(x,y,s,size,fill){ const t=el("text"); t.setAttribute("x",x); t.setAttribute("y",y);
-  t.setAttribute("font-size",size); t.setAttribute("fill",fill); t.setAttribute("dominant-baseline","middle");
-  t.textContent=s; return t; }
-function marker(id,color){ const m=el("marker"); m.setAttribute("id",id); m.setAttribute("viewBox","0 0 10 10");
-  m.setAttribute("refX","9"); m.setAttribute("refY","5"); m.setAttribute("markerWidth","7"); m.setAttribute("markerHeight","7");
-  m.setAttribute("orient","auto-start-reverse"); const p=el("path"); p.setAttribute("d","M0,0 L10,5 L0,10 z");
-  p.setAttribute("fill",color); m.appendChild(p); return m; }
+// --- Interaction + readout -------------------------------------------------
+function toggleCut(id){ if(cut.has(id))cut.delete(id); else cut.add(id); render(); }
+const fmt=x=> (x>=0?"+":"")+x.toFixed(2);
 
-// --- Interaction -----------------------------------------------------------
-function toggleCut(id){ if(cut.has(id)) cut.delete(id); else cut.add(id); render(); }
-
-function updateReadout() {
-  const c = CASES[curId];
+function updateReadout(){
+  const c=CASES[curId];
   document.getElementById("lesson").innerHTML = `<span class="pill">${c.rung}</span><br><br>${c.lesson}`;
+  document.getElementById("condWrap").style.display = c.conditionOn ? "flex" : "none";
 
-  const betaObs = simulate(c, new Set(), conditioning);
-  const betaCur = simulate(c, cut, conditioning);
-  document.getElementById("mObs").textContent = fmt(betaObs);
-  document.getElementById("mDo").textContent  = cut.size ? fmt(betaCur) : "—";
+  // simulate observational data once; reuse for every estimator
+  const obs   = sampleCols(c, new Set(), conditioning);
+  const observed = simpleSlope(obs, c.x, c.y);
+  const oracle = c.conditionOn ? causal(c,new Set()) : oracleEffect(c);
 
-  const med = mediationSplit(c);
-  const pmWrap = document.getElementById("pmWrap");
-  if (med && Math.abs(med.total)>1e-6) {
+  // identified-from-data estimate, per escape route
+  let est = identified(c, obs);
+
+  // build metric rows
+  const rows = [];
+  rows.push(metricRow("Observed association", "data", observed, "obs",
+    conditioning ? "with the collider conditioned on" : "naive regression on the data"));
+  if(est) rows.push(metricRow(est.label, est.tag, est.val, "est", est.sub));
+  rows.push(metricRow(c.oracleKind==="direct"?"True direct effect":"True effect", "god", oracle, "oracle",
+    "read off the hidden weights", true));
+  document.getElementById("metrics").innerHTML = rows.join("");
+
+  // mediation bar
+  const med=mediationSplit(c), pmWrap=document.getElementById("pmWrap");
+  if(med && Math.abs(med.total)>1e-6){
     pmWrap.style.display="block";
-    const indPct = Math.max(0,Math.min(100, 100*med.indirect/med.total));
-    document.getElementById("barInd").style.width = indPct+"%";
-    document.getElementById("barDir").style.width = (100-indPct)+"%";
-    document.getElementById("pmTxt").textContent = `proportion mediated ≈ ${(med.pm*100).toFixed(0)}%`;
+    const ip=Math.max(0,Math.min(100,100*med.indirect/med.total));
+    document.getElementById("barInd").style.width=ip+"%";
+    document.getElementById("barDir").style.width=(100-ip)+"%";
+    document.getElementById("pmTxt").textContent=`proportion mediated ≈ ${(med.pm*100).toFixed(0)}%`;
   } else pmWrap.style.display="none";
 
-  document.getElementById("conclusion").innerHTML = conclude(c, betaObs, betaCur, med);
-  document.getElementById("condWrap").style.display = c.conditionOn ? "flex" : "none";
+  document.getElementById("conclusion").innerHTML = conclude(c, observed, est, oracle, med);
   document.getElementById("mathBox").innerHTML = renderMath(c, med);
 }
 
-// Show the path-tracing arithmetic behind the causal effect.
-function renderMath(c, med) {
-  const all = paths(c, c.x, c.y, new Set());
-  const lbl = id => nodeById(c,id).label.replace(/\n/g," ");
-  let html = `<div class="mathline dim">do-effect = Σ over directed paths ${lbl(c.x)} → ${lbl(c.y)}</div>`;
-  if (!all.length) {
-    html += `<div class="mathline">(no directed path → causal effect = 0.000)</div>`;
+function metricRow(label, tagKind, val, cls, sub, oracle){
+  const tag = tagKind==="god" ? `<span class="tag god">◆ oracle</span>`
+            : tagKind==="—"   ? `` : `<span class="tag data">${tagKind==="data≈do"?"data ≈ do":"from data"}</span>`;
+  return `<div class="mrow ${oracle?'oracle':''}">
+    <div><div class="k">${label}${tag}</div><div class="ksub">${sub||""}</div></div>
+    <div class="v ${cls}">${val==null?"—":fmt(val)}</div></div>`;
+}
+
+// What can you recover from data, and how?
+function identified(c, obs){
+  switch(c.escape){
+    case "frontdoor": return { label:"Front-door estimate", tag:"data", val:frontDoor(obs,c),
+        sub:"chain X→mediator→Y, no confounder used" };
+    case "backdoor":  return { label:`Adjusted for ${c.adjust.map(id=>lblOf(c,id)).join(", ")}`, tag:"data",
+        val:partial(obs,c.y,c.x,c.adjust), sub:"back-door adjustment" };
+    case "natural": { const d=sampleCols(c,new Set([c.x]),conditioning);
+        return { label:"Natural experiment", tag:"data≈do", val:simpleSlope(d,c.x,c.y), sub:"as-if randomized assignment" }; }
+    case "rct":
+        if(cut.has(c.x)){ const d=sampleCols(c,cut,conditioning);
+          return { label:"Randomized do()", tag:"data", val:simpleSlope(d,c.x,c.y), sub:"you randomized it" }; }
+        return { label:"Randomized do()", tag:"—", val:null, sub:`tap "${lblOf(c,c.x)}" to run a virtual RCT` };
+    case "collider": { const d=sampleCols(c,new Set(),false);
+        return { label:"Without conditioning", tag:"data", val:simpleSlope(d,c.x,c.y), sub:"don't select on the collider" }; }
   }
-  for (const p of all) {
-    const via = c.mediator && p.nodes.includes(c.mediator);
-    const chain = p.nodes.map(lbl).join(" → ");
-    html += `<div class="mathline">${chain} = <b>${p.prod.toFixed(3)}</b> ` +
-            `<span class="${via?'ind':'dir'}">·${via?'indirect':'direct'}</span></div>`;
+  return null;
+}
+
+function conclude(c, observed, est, oracle, med){
+  if(c.conditionOn){
+    if(conditioning) return `You're <b>conditioning on the collider</b>. The truth is a causal effect of
+      <b>${fmt(oracle)}</b>, yet selection alone manufactures an association of <b>${fmt(observed)}</b>.
+      <b>Lesson:</b> conditioning on a common effect invents correlations.`;
+    return `Not conditioning yet → observed ≈ <b>${fmt(observed)}</b>, close to the true <b>${fmt(oracle)}</b>.
+      Now tick <b>"condition on collider"</b> and watch a phantom effect appear from nothing.`;
   }
-  if (med && Math.abs(med.total) > 1e-6) {
-    html += `<div class="mathline" style="margin-top:6px">total = ${med.total.toFixed(3)} ` +
-            `&nbsp; indirect = <span class="ind">${med.indirect.toFixed(3)}</span> ` +
-            `&nbsp; direct = <span class="dir">${med.direct.toFixed(3)}</span></div>`;
-    html += `<div class="mathline">PM = indirect / total = <b>${(med.pm*100).toFixed(0)}%</b></div>`;
-  } else {
-    html += `<div class="mathline" style="margin-top:6px">total do-effect = <b>${causal(c,new Set()).toFixed(3)}</b></div>`;
+  if(c.escape==="frontdoor" && est){
+    const gap = oracle - est.val;
+    if(Math.abs(gap) < 0.08)
+      return `<b>Front-door wins.</b> Using only observational data — the X→mediator and mediator→Y
+        correlations — it recovers <b>${fmt(est.val)}</b>, matching the true <b>${fmt(oracle)}</b>,
+        while never measuring the hidden confounder. No RCT required.`;
+    return `Front-door recovers <b>${fmt(est.val)}</b> — the part flowing <i>through the mediator</i>.
+      But the true effect is <b>${fmt(oracle)}</b>; the <b>${fmt(gap)}</b> difference leaks through
+      <b>bypass paths</b> that skip the mediator. Front-door assumes the mediator is the only route —
+      when it isn't, it under-counts. <i>(Exactly the SG→NCT bypass critique.)</i>`;
   }
-  if (cut.size) {
-    const ids = [...cut].map(lbl).join(", ");
-    html += `<div class="mathline dim" style="margin-top:6px">with your cut(s) on ${ids}: ` +
-            `effect = <b>${causal(c, cut).toFixed(3)}</b></div>`;
+  if(c.escape==="backdoor" && est)
+    return `Aggregated, the effect looks like <b>${fmt(observed)}</b> — seemingly damning. But that's
+      confounded by department. <b>Adjusting for it</b> gives <b>${fmt(est.val)}</b>, matching the true
+      direct effect <b>${fmt(oracle)}</b>: essentially zero. The aggregate was <b>Simpson's paradox</b>.`;
+  if(c.escape==="natural" && est)
+    return `You can't hand-randomize the water supply, but history did it for you: the natural
+      experiment yields <b>${fmt(est.val)}</b>, recovering the true <b>${fmt(oracle)}</b> despite the
+      poverty confounder. The original causal inference.`;
+  if(c.escape==="rct"){
+    if(!cut.size)
+      return `The observed <b>${fmt(observed)}</b> is poisoned by a confounder you <i>cannot measure</i>.
+        No adjustment can fix an invisible common cause — you must <b>randomize</b>.
+        Tap <b>${lblOf(c,c.x)}</b> to run a virtual RCT.`;
+    return `Randomizing severs the hidden confounder: the true effect is <b>${fmt(est?est.val:oracle)}</b>,
+      versus the misleading observed <b>${fmt(observed)}</b>. ${c.id==="mel_conf"?"Sunscreen is protective — the scary correlation was the sun, not the cream.":""}${c.id==="cm_hrt"?"HRT is harmful — the WHI reversal in one click.":""}${c.id==="onc_lung"?"Even granting Fisher's confounder, the effect survives.":""}`;
   }
+  return `Causal effect with your current cuts: <b>${fmt(causal(c,cut))}</b>.`;
+}
+
+function renderMath(c, med){
+  const all=paths(c,c.x,c.y,new Set()), lbl=id=>lblOf(c,id);
+  let html=`<div class="mathline dim">true do-effect = Σ over directed paths ${lbl(c.x)} → ${lbl(c.y)}</div>`;
+  if(!all.length) html+=`<div class="mathline">(no directed path → causal effect = 0.000)</div>`;
+  for(const p of all){ const via=c.mediator&&p.nodes.includes(c.mediator);
+    html+=`<div class="mathline">${p.nodes.map(lbl).join(" → ")} = <b>${p.prod.toFixed(3)}</b> <span class="${via?'ind':'dir'}">·${via?'indirect':'direct'}</span></div>`; }
+  if(med && Math.abs(med.total)>1e-6){
+    html+=`<div class="mathline" style="margin-top:6px">total = ${med.total.toFixed(3)} &nbsp; indirect = <span class="ind">${med.indirect.toFixed(3)}</span> &nbsp; direct = <span class="dir">${med.direct.toFixed(3)}</span></div>`;
+    html+=`<div class="mathline">PM = indirect / total = <b>${(med.pm*100).toFixed(0)}%</b></div>`;
+  } else html+=`<div class="mathline" style="margin-top:6px">total do-effect = <b>${causal(c,new Set()).toFixed(3)}</b></div>`;
+  if(cut.size) html+=`<div class="mathline dim" style="margin-top:6px">with your cut(s) on ${[...cut].map(lbl).join(", ")}: effect = <b>${causal(c,cut).toFixed(3)}</b></div>`;
   return html;
 }
 
-function fmt(x){ return (x>=0?"+":"") + x.toFixed(2); }
-
-function conclude(c, betaObs, betaCur, med) {
-  if (c.conditionOn) {
-    if (conditioning)
-      return `You're <b>conditioning on the collider</b> (${nodeById(c,c.conditionOn).label.replace("\n"," ")}).
-        Smoking and Parkinson's are truly independent (causal effect = <b>0.00</b>), yet the observed
-        association is <b>${fmt(betaObs)}</b> — a mirage manufactured purely by selecting on a common
-        effect. <b>Lesson:</b> never condition on a collider; it invents correlations.`;
-    return `Right now you're <b>not</b> conditioning on the collider, so the observed association is
-      ≈ <b>${fmt(betaObs)}</b> — essentially zero, which is the truth. Now tick
-      "condition on collider" and watch a fake "smoking protects you" effect appear from nothing.`;
-  }
-  if (!cut.size) {
-    const conf = c.edges.some(e=>e.kind==="confound");
-    return `The <b>observed</b> association is <b>${fmt(betaObs)}</b>. But is it real?
-      ${conf ? `A latent confounder opens a <b>backdoor path</b>, so this number mixes cause with
-      correlation. ` : ``}Tap the <b>${nodeById(c,c.x).label.replace("\n"," ")}</b> node to
-      <b>do()</b> it — sever its incoming arrows — and read the true causal effect.`;
-  }
-  if (cut.has(c.x)) {
-    const gap = betaObs - betaCur;
-    let msg = `After <b>do(${nodeById(c,c.x).label.replace("\n"," ")})</b> the causal effect is
-      <b>${fmt(betaCur)}</b>, versus an observed <b>${fmt(betaObs)}</b>. The gap of
-      <b>${fmt(gap)}</b> was <b>confounding</b> — the backdoor is now closed. `;
-    if (c.id==="mel_conf")
-      msg += `Sunscreen is actually <b>protective</b>; the scary positive correlation was the sun, not the cream.`;
-    if (med) msg += ` Of the real effect, ≈<b>${(med.pm*100).toFixed(0)}%</b> flows through the mediator.`;
-    return msg;
-  }
-  if (c.mediator && cut.has(c.mediator)) {
-    return `By doing <b>do(${nodeById(c,c.mediator).label.replace("\n"," ")})</b> you've blocked the
-      indirect route. What's left, <b>${fmt(betaCur)}</b>, is the <b>direct effect</b> — the part of
-      the story that does <i>not</i> pass through the mediator.`;
-  }
-  return `Causal effect with your current cuts: <b>${fmt(betaCur)}</b>. Try cutting the treatment vs. the mediator to compare.`;
-}
-
 // --- Run animation ---------------------------------------------------------
-let anim = null;
-function runModel() {
-  if (anim) cancelAnimationFrame(anim);
-  const dots = [];
-  svg.querySelectorAll(".flowpath").forEach(p=>{
-    if (cut.has(p.dataset.to)) return;
-    dots.push({ path:p, len:p.getTotalLength(), t:Math.random()*0.4 });
-  });
-  const layer = el("g"); svg.appendChild(layer);
-  const start = performance.now();
+let anim=null;
+function runModel(){
+  if(anim) cancelAnimationFrame(anim);
+  const dots=[];
+  svg.querySelectorAll(".flowpath").forEach(p=>{ if(cut.has(p.dataset.to))return;
+    dots.push({path:p,len:p.getTotalLength(),t:Math.random()*0.4}); });
+  const layer=el("g"); svg.appendChild(layer); const start=performance.now();
   function frame(now){
-    layer.innerHTML="";
-    const elapsed = (now-start)/1400;
-    for (const d of dots) {
-      for (let k=0;k<3;k++){
-        let tt = (d.t + elapsed + k*0.33) % 1;
-        const pt = d.path.getPointAtLength(tt*d.len);
-        const dot = el("circle");
-        dot.setAttribute("cx",pt.x); dot.setAttribute("cy",pt.y); dot.setAttribute("r",3.2);
-        dot.setAttribute("fill","#fff"); dot.setAttribute("opacity", 0.8*(1-Math.abs(tt-0.5)));
-        layer.appendChild(dot);
-      }
-    }
-    if (elapsed < 2.4) anim = requestAnimationFrame(frame);
-    else { layer.remove(); updateReadout(); }
+    layer.innerHTML=""; const elapsed=(now-start)/1400;
+    for(const d of dots) for(let k=0;k<3;k++){ let tt=(d.t+elapsed+k*0.33)%1;
+      const pt=d.path.getPointAtLength(tt*d.len); const dot=el("circle");
+      dot.setAttribute("cx",pt.x);dot.setAttribute("cy",pt.y);dot.setAttribute("r",3.2);
+      dot.setAttribute("fill","#fff");dot.setAttribute("opacity",0.8*(1-Math.abs(tt-0.5))); layer.appendChild(dot); }
+    if(elapsed<2.4) anim=requestAnimationFrame(frame); else { layer.remove(); updateReadout(); }
   }
-  anim = requestAnimationFrame(frame);
-  updateReadout();
+  anim=requestAnimationFrame(frame); updateReadout();
 }
 
-// --- Navigation (Domain → Disease → Model) ---------------------------------
-function buildNav() {
-  const dWrap = document.getElementById("domains");
-  const sWrap = document.getElementById("diseases");
-  const mWrap = document.getElementById("models");
-  dWrap.innerHTML = sWrap.innerHTML = mWrap.innerHTML = "";
-
-  TAXONOMY.forEach((dom, di)=>{
-    dWrap.appendChild(pill(dom.icon+" "+dom.domain, di===curDomain, ()=>{
-      curDomain=di; curDisease=0; curId=TAXONOMY[di].diseases[0].models[0].id;
-      resetState(); buildNav(); render();
-    }));
-  });
-
-  const diseases = TAXONOMY[curDomain].diseases;
-  diseases.forEach((dis, si)=>{
-    sWrap.appendChild(pill(dis.disease, si===curDisease, ()=>{
-      curDisease=si; curId=diseases[si].models[0].id;
-      resetState(); buildNav(); render();
-    }));
-  });
-
-  const models = diseases[curDisease].models;
-  models.forEach(m=>{
-    mWrap.appendChild(pill(m.name, m.id===curId, ()=>{
-      curId=m.id; resetState(); buildNav(); render();
-    }, true));
-  });
+// --- Navigation ------------------------------------------------------------
+function buildNav(){
+  const dW=document.getElementById("domains"), sW=document.getElementById("diseases"), mW=document.getElementById("models");
+  dW.innerHTML=sW.innerHTML=mW.innerHTML="";
+  TAXONOMY.forEach((dom,di)=> dW.appendChild(pill(dom.icon+" "+dom.domain, di===curDomain, ()=>{
+    curDomain=di; curDisease=0; curId=TAXONOMY[di].diseases[0].models[0].id; resetState(); buildNav(); render(); })));
+  const diseases=TAXONOMY[curDomain].diseases;
+  diseases.forEach((dis,si)=> sW.appendChild(pill(dis.disease, si===curDisease, ()=>{
+    curDisease=si; curId=diseases[si].models[0].id; resetState(); buildNav(); render(); })));
+  diseases[curDisease].models.forEach(m=> mW.appendChild(pill(m.name, m.id===curId, ()=>{
+    curId=m.id; resetState(); buildNav(); render(); })));
 }
-function pill(label, active, onclick, isModel) {
-  const b = document.createElement("button");
-  b.className = "pill-btn" + (active?" active":"");
-  b.textContent = label; b.onclick = onclick;
-  return b;
-}
-function resetState() { cut=new Set(); conditioning=false; document.getElementById("condChk").checked=false; }
+function pill(label,active,onclick){ const b=document.createElement("button");
+  b.className="pill-btn"+(active?" active":""); b.textContent=label; b.onclick=onclick; return b; }
+function resetState(){ cut=new Set(); conditioning=false; document.getElementById("condChk").checked=false; }
 
-// --- Boot ------------------------------------------------------------------
-document.getElementById("runBtn").onclick = runModel;
-document.getElementById("resetBtn").onclick = ()=>{ cut=new Set(); render(); };
-document.getElementById("condChk").onchange = e=>{ conditioning=e.target.checked; render(); };
-
-buildNav();
-render();
+document.getElementById("runBtn").onclick=runModel;
+document.getElementById("resetBtn").onclick=()=>{ cut=new Set(); render(); };
+document.getElementById("condChk").onchange=e=>{ conditioning=e.target.checked; render(); };
+buildNav(); render();
 </script>
 </body>
 </html>

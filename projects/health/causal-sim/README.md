@@ -48,14 +48,61 @@ products, and the proportion mediated, so the numbers are never a black box.
 
 ## How to use it
 
-1. Pick a case study (the pills at the top).
-2. Read the **observed association** — the naive correlation.
-3. **Tap a node** to `do()` it: this severs its incoming arrows (you'll see ✂). That's a surgical
-   intervention — exactly Pearl's `do`-operator.
-4. Compare the **causal effect** to the observed one. The gap is the bias (confounding, collider,
-   or an un-blocked mediator).
-5. Hit **▶ Run model** to animate the signal flowing through the graph.
-6. For the Parkinson's case, toggle **condition on collider** to watch a spurious link appear.
+1. Open the **"Behind the scenes"** intro at the top — it explains, in plain language, how every
+   number is produced (virtual patients → regression → path tracing).
+2. Pick a **Domain → Disease → Model**.
+3. Read the three numbers:
+   - **Observed association** *(from data)* — the naive correlation.
+   - **The identified estimate** *(from data)* — front-door, back-door, a natural experiment, or a
+     randomized `do()`, depending on what the case allows.
+   - **True effect** *(◆ oracle)* — the real answer, read straight off the hidden weights. Only a
+     simulator can know this; it's the answer key.
+4. **Tap a node** to `do()` it (✂ severs its incoming arrows) and **▶ Run** to animate the flow.
+5. Expand **"show the math"** to see the path products behind the true effect.
+
+### What "◆ oracle" means
+A number marked **◆** is a *god move*: it uses the ground-truth arrow strengths that, in real life,
+nobody can see. Every number *without* ◆ is earned from the simulated data, exactly like a real
+study. The whole point is to compare the two — to see when an honest, data-only method (front-door,
+back-door, RCT) actually recovers the truth, and when it doesn't.
+
+## The five escape routes from confounding
+
+Each model is tagged with how you can (or can't) recover the truth — a tour of Pearl's toolkit:
+
+| Route | Example | What it shows |
+| --- | --- | --- |
+| **Randomized `do()` (RCT)** | Melanoma, HRT, Lung cancer | When the confounder is *unmeasurable*, only randomizing works |
+| **Natural experiment** | Cholera (Snow 1854) | History randomizes for you |
+| **Front-door** | Coleman, Statins, Stroke, Migraine | Recover the effect *through a mediator* from data alone |
+| **Back-door adjustment** | Berkeley admissions | Adjust for a measured common cause (Simpson's paradox) |
+| **Collider (a trap)** | Parkinson's, Birthweight paradox | Conditioning on a common *effect* invents correlations |
+
+The Alzheimer's trio is the centrepiece: **Coleman's front-door under-counts** (bypass paths leak),
+while the **amyloid** and **convergent** models have no bypass, so front-door recovers them exactly.
+
+## What you can play with
+
+Models are organised as a 3-level drill-down — **Domain → Disease → Model**:
+
+```
+🧠 Neurology
+├── Alzheimer's   ├ Coleman · SG → NCT   ├ Amyloid cascade   └ Convergent inputs
+├── Parkinson's   └ Smoking & the collider trap
+└── Migraine      └ Stress, sleep & the mediator
+🎗️ Oncology
+├── Melanoma      └ Sunscreen confounding (sign flip)
+└── Lung cancer   └ Smoking · Fisher's confounder
+🫀 Cardiometabolic
+├── Stroke        └ BP → arterial damage
+└── Heart disease ├ HRT · the WHI reversal   └ Statins → LDL → CHD
+🦠 Infectious Disease
+└── Cholera       └ Snow's natural experiment (1854)
+👶 Perinatal
+└── Infant mortality   └ The birthweight paradox
+⚖️ Society & Policy
+└── Admissions    └ Berkeley admissions (Simpson's paradox)
+```
 
 ## How it works (architecture)
 
