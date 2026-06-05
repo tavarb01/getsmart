@@ -204,6 +204,24 @@
     .node-grp:hover circle:first-of-type { filter: brightness(1.25) drop-shadow(0 3px 8px rgba(0,0,0,.5)); }
   }
   .node-grp:active { transform: scale(.96); }
+  /* --- Implications panel (Pearl's inference engine) --- */
+  #implBtn { width:100%; margin-top:4px; background:linear-gradient(135deg,#3a2a6a,#2b4a8b);
+    border:1px solid #6a5fb0; color:#fff; font-weight:600; }
+  #implBtn.open { border-color:#a08fe0; box-shadow:0 0 0 1px #a08fe0 inset; }
+  .implbox { margin-top:10px; background:#0e1530; border:1px solid var(--line);
+    border-radius:12px; padding:12px 14px 14px; }
+  .impl-head { font-size:11px; letter-spacing:.04em; text-transform:uppercase; opacity:.55;
+    font-weight:800; margin:0 0 10px; }
+  .impl-note { background:#14233f; border-left:3px solid #4fd08b; border-radius:8px;
+    padding:9px 12px; margin-bottom:12px; font-size:13px; line-height:1.5; }
+  .impl-stage { display:flex; gap:10px; align-items:flex-start; padding:8px 0;
+    border-top:1px solid #1b2643; font-size:13px; line-height:1.5; }
+  .impl-stage:first-of-type { border-top:none; }
+  .impl-stage .bx { flex:none; min-width:34px; text-align:center; font-size:11px; font-weight:800;
+    color:#9fb3ff; background:#1a2547; border:1px solid #2c3c6e; border-radius:7px; padding:3px 5px;
+    line-height:1.3; }
+  .impl-why { margin-top:12px; padding-top:10px; border-top:1px dashed #2a3760;
+    font-size:12.5px; line-height:1.5; color:#cfe3ff; }
 </style>
 </head>
 <body>
@@ -307,6 +325,9 @@
     </details>
 
     <div class="conclusion" id="conclusion"></div>
+
+    <button class="act" id="implBtn">🧠 Implications — run this result through Pearl's engine</button>
+    <div class="implbox" id="implBox" style="display:none"></div>
 
     <details class="math">
       <summary>show the math (path tracing)</summary>
@@ -1536,6 +1557,118 @@ function toggleCut(id){
 }
 const fmt=x=> (x>=0?"+":"")+x.toFixed(2);
 
+// --- "Implications": walk a result through Pearl's Inference Engine (Fig 1.1) -
+// Streamlines the user's questions — what do the numbers mean for the SCM? what
+// to do next? revise assumptions / rework the query / update the DAG? mechanism
+// or mirage? — into one panel, keyed off the model's identification strategy.
+let lastRead = null;  // {observed, est, oracle, conditioning, estIsDo} stashed by updateReadout
+const fv = x => x==null ? "—" : (x>=0?"+":"")+x.toFixed(2);
+
+// Bespoke research notes for the cases that matter most (the Alzheimer's core).
+const IMPL_NOTES = {
+  alz_coleman:`The SG→NCT→AD chain is front-door–identifiable <i>only if NCT is the sole route</i> — but
+    this graph carries <b>six SG→AD bypass paths</b> and aging confounds both ends. So the front-door
+    number is a <b>floor, not the answer</b>: the honest deliverable is a <b>bounded proportion-mediated</b>,
+    not a point estimate. Next experiments should test NCT's <b>necessity</b> (does blocking NCT abolish
+    SG's effect? — Vanneste 2022 hints NCT deficits can arise <i>without</i> SG) and <b>measure the bypass</b>
+    so direct vs mediated shares separate. If a bypass is confirmed, update the DAG and report bounds.`,
+  alz_amyloid:`This clean serial cascade (Aβ→plaques→tau→NCT→AD) <i>is</i> front-door identifiable — but
+    the whole verdict rests on "no shortcut." Its testable implication is sharp: with the chain held fixed,
+    Aβ should not move AD. If anti-amyloid trials clear plaques yet barely move the phenotype, the data are
+    <b>refuting boxes ②③</b> — the linear-cascade graph is wrong/incomplete, and you should revise toward a
+    convergent or bypass structure.`,
+  alz_convergent:`NCT is a <b>convergent bottleneck</b> here: Aβ, tau, oxidative stress and SG each disrupt it.
+    Front-door recovers SG's slice cleanly — but intervening on SG alone <b>caps the benefit at SG's share</b>
+    of NCT disruption. The therapeutic implication: target the <b>bottleneck (NCT)</b>, not one upstream input.
+    The query worth identifying may be <b>do(NCT)</b>, not do(SG).`,
+  cm_hrt:`The flagship observational→RCT reversal. Cohort data said HRT was protective; the randomized WHI
+    said harmful. If your adjusted observational estimate and an RCT <b>disagree</b>, that disagreement is
+    positive evidence of an <i>unmeasured</i> confounder (healthy-user bias) — a reason to trust the
+    experiment and redraw the graph, not split the difference.`,
+  inf_cholera:`Snow couldn't measure the pathogen, yet identified the cause by finding where the water supply
+    was assigned as-if-at-random. The lesson for a hard problem: you don't always need the mechanism in hand —
+    you need a slice of the world where treatment varies independently of the confounders.`,
+};
+
+function implByEscape(c, r){
+  const X=lblOf(c,c.x), Y=lblOf(c,c.y);
+  const Cadj = c.adjust ? c.adjust.map(id=>lblOf(c,id)).join(", ") : "the confounder";
+  const M = c.mediator ? lblOf(c,c.mediator) : "the mediator";
+  const Z = c.iv ? lblOf(c,c.iv) : "the instrument";
+  const S = c.conditionOn ? lblOf(c,c.conditionOn) : "the collider";
+  const U = ((c.nodes.find(n=>n.type==="latent")||{}).label||"a hidden cause").replace(/\n/g," ");
+  const bypass = c.edges.some(e=>e.kind==="bypass");
+  const obs=fv(r.observed), ora=fv(r.oracle);
+  switch(c.escape){
+    case "backdoor": return {
+      assume:`Your DAG says <b>${Cadj}</b> is a common cause of ${X} and ${Y}, and you've left no other back-door path open. That is the load-bearing assumption.`,
+      estimand:`<b>Yes</b> — identified by the <b>back-door criterion</b>: adjust for ${Cadj}. The estimand is do(${X}) ≈ the ${X}→${Y} slope <i>within strata of</i> ${Cadj}.`,
+      estimate:`The naive <b>${obs}</b> is inflated by ${Cadj}; adjusting lands on the model-entailed <b>${ora}</b>. The gap between them <i>is</i> the confounding, made visible.`,
+      mechanism:`The adjusted estimate reflects the true ${X}→${Y} mechanism. The naive number was ${Cadj} leaking through the back door — a mirage of the data, not a cause.`,
+      iterate:`Testable implication: the association should vanish (or stabilise) on adjustment. If it doesn't, or you find an unblocked path, an unmeasured confounder remains — <b>add the missing node/edge and re-identify</b>.`,
+      next:`Measure and adjust for ${Cadj}; audit for other common causes. If you suspect an <i>unmeasured</i> one, you've left back-door land — seek an instrument or an experiment.`,
+      why:`It forces you to name the confounders <i>before</i> touching data, turning a deceptive correlation into a defensible causal claim.` };
+    case "frontdoor": return {
+      assume:`Your DAG claims ${X} reaches ${Y} <b>only</b> through ${M}, with an unmeasured confounder allowed behind ${X} and ${Y}.`,
+      estimand:`If ${M} is the <i>sole</i> route, identified by the <b>front-door formula</b> — even with the confounder unmeasured. ${bypass?`But this graph has a <b>bypass</b> edge, so strict front-door identification is in jeopardy.`:`No bypass here, so the recipe is clean.`}`,
+      estimate:`Front-door recovers <b>${obs!=="—"?fv(r.est):"the mediated effect"}</b> — the part flowing through ${M}. ${bypass?`It falls short of the model-entailed <b>${ora}</b>: the shortfall is the bypass leaking past ${M}, so front-door <b>under-counts</b>.`:`It matches the model-entailed <b>${ora}</b> because ${M} carries the whole effect.`}`,
+      mechanism:`The number reflects the ${X}→${M}→${Y} mechanism. ${bypass?`It is a <b>lower bound</b>, not the full effect — the bypass is real mechanism the front-door cannot see.`:`Here mechanism and estimate coincide.`}`,
+      iterate:`Testable implication: ${M} <i>fully</i> mediates ${X}. If an intervention moves ${Y} via ${X} with ${M} held fixed, the sole-mediator assumption is false — <b>draw the bypass edge</b> and the point estimate becomes a <b>bound</b>.`,
+      next:`${bypass?`Identify and measure the bypass routes (or block them experimentally); until then report a <b>bounded</b> proportion-mediated, not a single number.`:`Stress-test the no-shortcut assumption; if it holds you have a rare confounder-proof estimate.`}`,
+      why:`Front-door is Pearl's proof you can sometimes identify a cause <i>without</i> measuring the confounder — but only if the mediator story is exactly right.` };
+    case "iv": return {
+      assume:`<b>${Z}</b> influences ${Y} <b>only</b> through ${X} (exclusion) and is as-good-as-random — independent of ${U}. Those are the instrument's two promises.`,
+      estimand:`<b>Yes</b> — identified by the <b>instrument</b>: the Wald ratio cov(${Z},${Y})/cov(${Z},${X}) recovers do(${X}) for the compliers.`,
+      estimate:`The naive ${X}–${Y} slope <b>${obs}</b> is confounded by ${U}; the instrument's as-if-random nudge strips that out, landing near the model-entailed <b>${ora}</b>.`,
+      mechanism:`The IV estimate reflects the true mechanism (for those moved by ${Z}); the naive number mixed cause with the back-door confounder.`,
+      iterate:`If ${Z} plausibly affects ${Y} by another path (exclusion violated) or is weak, the estimand breaks — <b>draw the offending edge</b> or find a stronger, cleaner instrument.`,
+      next:`Check instrument strength (the first stage) and defend exclusion; report a <i>local</i> (complier) effect. A weak or leaky instrument is worse than honest uncertainty.`,
+      why:`It shows how a sliver of as-if-random variation in the world can answer a causal question no amount of passive data could.` };
+    case "rct": return {
+      assume:`An <b>unmeasured</b> common cause (${U}) sits behind ${X} and ${Y}. Because it's invisible, no adjustment can reach it.`,
+      estimand:`Observationally <b>not identified</b> — there is no back-door recipe for an unmeasured confounder. The only estimand is to <b>intervene</b>: do(${X}).`,
+      estimate:`${r.estIsDo?`You randomized: cutting ${X}'s incoming arrows severs ${U}, and the estimate snaps to the model-entailed <b>${ora}</b>.`:`Until you randomize, the naive <b>${obs}</b> stays poisoned by ${U}. Tap <b>${X}</b> to run the virtual RCT and watch it correct toward <b>${ora}</b>.`}`,
+      mechanism:`Only the randomized number reflects mechanism; the observational association is ${U} masquerading as an effect.`,
+      iterate:`Testable implication: if the RCT and a confounder-adjusted observational estimate <b>disagree</b>, an unmeasured confounder is confirmed — exactly the HRT / vitamin-D reversals.`,
+      next:`Run (or find) the randomized experiment. Where an RCT is impossible, hunt for a natural experiment or instrument that mimics do(${X}).`,
+      why:`It makes vivid why the RCT is the gold standard: randomization is the one move that defeats a confounder you cannot even see.` };
+    case "collider": return {
+      assume:`<b>${S}</b> is a <b>common effect</b> of ${X} and ${Y} (a collider). The DAG's warning: do <i>not</i> condition on it.`,
+      estimand:`Identified by simply <b>not selecting</b> on ${S}: the unconditioned ${X}–${Y} association already equals the truth (<b>${ora}</b>).`,
+      estimate:`${r.conditioning?`Conditioning on ${S} manufactured an association of <b>${obs}</b> out of nothing — a pure selection artifact.`:`Unconditioned, the association sits at the truth <b>${ora}</b>. Toggle "condition on ${S}" to watch a phantom effect appear.`}`,
+      mechanism:`The conditioned number is <b>not</b> mechanism — it's selection bias. The honest causal effect is the unconditioned one.`,
+      iterate:`Testable implication: ${X} and ${Y} are independent until you stratify on ${S}. If your sample was <i>already</i> selected on ${S} (survivors, hospital controls, responders), the bias is baked in — <b>add the selection node</b> and rethink the query.`,
+      next:`Do <i>not</i> control for or select on ${S}. Audit data collection for hidden selection on a common effect.`,
+      why:`It inverts a deep intuition: sometimes adding a variable — or a "representative" sample — <i>creates</i> bias instead of removing it.` };
+    case "natural": return {
+      assume:`An unmeasured confounder (${U}) sits behind ${X} and ${Y}, but history assigned ${X} <b>as-if-at-random</b> in some subgroup.`,
+      estimand:`Identified by the <b>natural experiment</b>: the as-if-random assignment mimics do(${X}) without you running a trial.`,
+      estimate:`The naive <b>${obs}</b> is confounded by ${U}; the natural-experiment estimate recovers the model-entailed <b>${ora}</b> — the original causal-inference move.`,
+      mechanism:`The natural-experiment number reflects mechanism; the raw correlation was ${U} confounding.`,
+      iterate:`If the assignment wasn't truly as-if-random (it correlates with ${U}), the estimand fails — <b>revise the assumption</b> or find a cleaner shock.`,
+      next:`Defend the as-if-randomness (balance checks); look for the discontinuity or shock that nature provided.`,
+      why:`It shows you don't always need a lab — the world runs experiments if you know where to look.` };
+  }
+  return null;
+}
+
+function implicationsHTML(c){
+  const r = lastRead || {};
+  const E = implByEscape(c, r);
+  if(!E) return `<p class="impl-head">No engine recipe for this case.</p>`;
+  const note = IMPL_NOTES[c.id];
+  const row = (bx,t,body)=>`<div class="impl-stage"><span class="bx">${bx}</span><div><b>${t}</b> ${body}</div></div>`;
+  return `<p class="impl-head">This result, walked through Pearl's inference engine</p>`
+    + (note?`<div class="impl-note"><b>🧬 For your research:</b> ${note}</div>`:"")
+    + row("② ③","Assumptions → causal model.", E.assume)
+    + row("⑤ ⑥","Query → estimand · can it be answered?", E.estimand)
+    + row("⑦ ⑨","Data → estimate.", `Naive <b>${fv(r.observed)}</b> · identified <b>${fv(r.est)}</b> · model-entailed <b>${fv(r.oracle)}</b>. `+E.estimate)
+    + row("④","Mechanism, or mirage?", E.mechanism)
+    + row("🔁","Fit fails? Return to ②③.", E.iterate)
+    + row("→","What to do next.", E.next)
+    + `<div class="impl-why">🎓 <b>Why the exercise is good science:</b> ${E.why}</div>`;
+}
+
 function updateReadout(){
   const c=CASES[curId];
   document.getElementById("lesson").innerHTML = mode==="researcher"
@@ -1556,6 +1689,8 @@ function updateReadout(){
 
   // identified-from-data estimate, per escape route
   let est = identified(c, obs);
+  lastRead = { observed, est: est?est.val:null, oracle: iv.eff.med,
+    conditioning, estIsDo: c.escape==="rct" && cut.has(c.x) };
 
   // build metric rows
   const rows = [];
@@ -1589,6 +1724,8 @@ function updateReadout(){
 
   document.getElementById("conclusion").innerHTML = conclude(c, observed, est, oracle, mediationSplit(c));
   document.getElementById("mathBox").innerHTML = renderMath(c, mediationSplit(c));
+  const ib=document.getElementById("implBox");
+  if(ib && ib.style.display!=="none") ib.innerHTML = implicationsHTML(c);
 }
 
 function metricRow(label, tagKind, val, cls, sub, oracle){
@@ -1730,6 +1867,13 @@ function setField(fi){
 function resetState(){ cut=new Set(); conditioning=false; document.getElementById("condChk").checked=false; }
 
 document.getElementById("runBtn").onclick=runModel;
+document.getElementById("implBtn").onclick=()=>{
+  const ib=document.getElementById("implBox"), btn=document.getElementById("implBtn");
+  const open = ib.style.display!=="none";
+  ib.style.display = open ? "none" : "block";
+  btn.classList.toggle("open", !open);
+  if(!open) ib.innerHTML = implicationsHTML(CASES[curId]);
+};
 document.getElementById("resetBtn").onclick=()=>{ cut=new Set(); render(); };
 document.getElementById("condChk").onchange=e=>{ conditioning=e.target.checked; render(); };
 document.querySelectorAll("#seg button").forEach(b=> b.onclick=()=>{
