@@ -55,16 +55,23 @@ products, and the proportion mediated, so the numbers are never a black box.
    - **Observed association** *(from data)* — the naive correlation.
    - **The identified estimate** *(from data)* — front-door, back-door, a natural experiment, or a
      randomized `do()`, depending on what the case allows.
-   - **True effect** *(◆ oracle)* — the real answer, read straight off the hidden weights. Only a
-     simulator can know this; it's the answer key.
+   - **Model-entailed effect** *(◆ model)* — the effect that *follows necessarily from the assumed
+     arrow-strengths*. Not a measurement; change the assumptions and it changes.
 4. **Tap a node** to `do()` it (✂ severs its incoming arrows) and **▶ Run** to animate the flow.
-5. Expand **"show the math"** to see the path products behind the true effect.
+5. Expand **"show the math"** to see the path products behind the model-entailed effect.
 
-### What "◆ oracle" means
-A number marked **◆** is a *god move*: it uses the ground-truth arrow strengths that, in real life,
-nobody can see. Every number *without* ◆ is earned from the simulated data, exactly like a real
-study. The whole point is to compare the two — to see when an honest, data-only method (front-door,
-back-door, RCT) actually recovers the truth, and when it doesn't.
+### What "◆ model" means (read this — it matters)
+A number marked **◆** is **model-entailed, not measured**: it follows logically from the arrow
+strengths the model *assumes*. It is **not** ground truth about any real disease — and the strengths
+here are **illustrative, chosen for teaching, not estimated from data**. Real research has no such
+answer key; that's precisely what makes causal inference hard.
+
+So this tool is honest about what it is: a demonstration of the *logic* of causal inference (which
+is real and verified), running on *invented parameters* (which are not). The transferable lesson is
+structural — *when* front-door under-counts, *how* a collider manufactures an artifact — never the
+specific numbers on screen. A point estimate of "the truth" is exactly what a careful analysis (see
+the Coleman/NCT perspective that inspired this) refuses to claim; the honest output is a **range
+under stated assumptions**, which the sensitivity mode is being built to show.
 
 ## The five escape routes from confounding
 

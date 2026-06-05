@@ -97,16 +97,17 @@
         epidemiologist does. It blends real cause with confounding, so it can mislead.</li>
       <li><b>do() — a virtual RCT.</b> Tap a node to randomize it: we <b>cut its incoming arrows</b>
         so nothing upstream can bias it. The association is now pure cause.</li>
-      <li><b>The true effect <span class="dia">◆</span>.</b> Because we built the world, we can read
-        the real answer straight off the arrows (multiply strengths along each directed path, then
-        add). No real scientist can do this — it's the answer key.</li>
+      <li><b>The model-entailed effect <span class="dia">◆</span>.</b> Given the arrow-strengths we
+        <i>assumed</i>, we can read off the effect they imply (multiply strengths along each directed
+        path, then add). This is what the model says <i>must</i> follow from its assumptions.</li>
       <li><b>Escaping confounding with data alone.</b> The clever part: <b>front-door</b> (chain
-        X→mediator→Y) and <b>back-door</b> (adjust for a measured common cause) recover the true
-        effect from observational data <i>without</i> an RCT — the heart of Pearl's <i>Book of Why</i>.</li>
+        X→mediator→Y) and <b>back-door</b> (adjust for a measured common cause) recover that effect
+        from observational data <i>without</i> an RCT — the heart of Pearl's <i>Book of Why</i>.</li>
     </ol>
-    <div class="oracle-note"><span class="dia">◆</span> = a "god move": it uses the hidden
-      ground-truth strengths only a simulator can know. Every number <i>without</i> ◆ is earned from
-      the simulated data, just like a real study.</div>
+    <div class="oracle-note"><span class="dia">◆</span> = <b>model-entailed</b>, not measured: it
+      follows necessarily from the <i>assumed</i> strengths — change the assumptions and it changes.
+      It is <b>not</b> ground truth about any real disease, and real research has no such answer key
+      (that's the whole difficulty). The strengths here are illustrative, not estimated from data.</div>
   </div>
 </details>
 
@@ -588,8 +589,8 @@ function updateReadout(){
   rows.push(metricRow("Observed association", "data", observed, "obs",
     conditioning ? "with the collider conditioned on" : "naive regression on the data"));
   if(est) rows.push(metricRow(est.label, est.tag, est.val, "est", est.sub));
-  rows.push(metricRow(c.oracleKind==="direct"?"True direct effect":"True effect", "god", oracle, "oracle",
-    "read off the hidden weights", true));
+  rows.push(metricRow(c.oracleKind==="direct"?"Model-entailed direct effect":"Model-entailed effect", "god", oracle, "oracle",
+    "implied by the assumed strengths", true));
   document.getElementById("metrics").innerHTML = rows.join("");
 
   // mediation bar
@@ -607,7 +608,7 @@ function updateReadout(){
 }
 
 function metricRow(label, tagKind, val, cls, sub, oracle){
-  const tag = tagKind==="god" ? `<span class="tag god">◆ oracle</span>`
+  const tag = tagKind==="god" ? `<span class="tag god">◆ model</span>`
             : tagKind==="—"   ? `` : `<span class="tag data">${tagKind==="data≈do"?"data ≈ do":"from data"}</span>`;
   return `<div class="mrow ${oracle?'oracle':''}">
     <div><div class="k">${label}${tag}</div><div class="ksub">${sub||""}</div></div>
@@ -635,45 +636,46 @@ function identified(c, obs){
 
 function conclude(c, observed, est, oracle, med){
   if(c.conditionOn){
-    if(conditioning) return `You're <b>conditioning on the collider</b>. The truth is a causal effect of
-      <b>${fmt(oracle)}</b>, yet selection alone manufactures an association of <b>${fmt(observed)}</b>.
-      <b>Lesson:</b> conditioning on a common effect invents correlations.`;
-    return `Not conditioning yet → observed ≈ <b>${fmt(observed)}</b>, close to the true <b>${fmt(oracle)}</b>.
-      Now tick <b>"condition on collider"</b> and watch a phantom effect appear from nothing.`;
+    if(conditioning) return `You're <b>conditioning on the collider</b>. This model entails a causal
+      effect of <b>${fmt(oracle)}</b>, yet selection alone manufactures an association of
+      <b>${fmt(observed)}</b>. <b>Lesson:</b> conditioning on a common effect invents correlations.`;
+    return `Not conditioning yet → observed ≈ <b>${fmt(observed)}</b>, near the model-entailed
+      <b>${fmt(oracle)}</b>. Now tick <b>"condition on collider"</b> and watch a phantom effect appear.`;
   }
   if(c.escape==="frontdoor" && est){
     const gap = oracle - est.val;
     if(Math.abs(gap) < 0.08)
       return `<b>Front-door wins.</b> Using only observational data — the X→mediator and mediator→Y
-        correlations — it recovers <b>${fmt(est.val)}</b>, matching the true <b>${fmt(oracle)}</b>,
-        while never measuring the hidden confounder. No RCT required.`;
+        correlations — it recovers <b>${fmt(est.val)}</b>, matching what the model entails
+        (<b>${fmt(oracle)}</b>), while never measuring the hidden confounder. No RCT required.`;
     return `Front-door recovers <b>${fmt(est.val)}</b> — the part flowing <i>through the mediator</i>.
-      But the true effect is <b>${fmt(oracle)}</b>; the <b>${fmt(gap)}</b> difference leaks through
+      But the model entails <b>${fmt(oracle)}</b>; the <b>${fmt(gap)}</b> difference leaks through
       <b>bypass paths</b> that skip the mediator. Front-door assumes the mediator is the only route —
       when it isn't, it under-counts. <i>(Exactly the SG→NCT bypass critique.)</i>`;
   }
   if(c.escape==="backdoor" && est)
     return `Aggregated, the effect looks like <b>${fmt(observed)}</b> — seemingly damning. But that's
-      confounded by department. <b>Adjusting for it</b> gives <b>${fmt(est.val)}</b>, matching the true
-      direct effect <b>${fmt(oracle)}</b>: essentially zero. The aggregate was <b>Simpson's paradox</b>.`;
+      confounded by department. <b>Adjusting for it</b> gives <b>${fmt(est.val)}</b>, matching the
+      model-entailed direct effect <b>${fmt(oracle)}</b>: essentially zero. The aggregate was
+      <b>Simpson's paradox</b>.`;
   if(c.escape==="natural" && est)
     return `You can't hand-randomize the water supply, but history did it for you: the natural
-      experiment yields <b>${fmt(est.val)}</b>, recovering the true <b>${fmt(oracle)}</b> despite the
-      poverty confounder. The original causal inference.`;
+      experiment yields <b>${fmt(est.val)}</b>, recovering the model-entailed <b>${fmt(oracle)}</b>
+      despite the poverty confounder. The original causal inference.`;
   if(c.escape==="rct"){
     if(!cut.size)
       return `The observed <b>${fmt(observed)}</b> is poisoned by a confounder you <i>cannot measure</i>.
         No adjustment can fix an invisible common cause — you must <b>randomize</b>.
         Tap <b>${lblOf(c,c.x)}</b> to run a virtual RCT.`;
-    return `Randomizing severs the hidden confounder: the true effect is <b>${fmt(est?est.val:oracle)}</b>,
-      versus the misleading observed <b>${fmt(observed)}</b>. ${c.id==="mel_conf"?"Sunscreen is protective — the scary correlation was the sun, not the cream.":""}${c.id==="cm_hrt"?"HRT is harmful — the WHI reversal in one click.":""}${c.id==="onc_lung"?"Even granting Fisher's confounder, the effect survives.":""}`;
+    return `Randomizing severs the hidden confounder: the effect this model entails is
+      <b>${fmt(est?est.val:oracle)}</b>, versus the misleading observed <b>${fmt(observed)}</b>. ${c.id==="mel_conf"?"Sunscreen is protective — the scary correlation was the sun, not the cream.":""}${c.id==="cm_hrt"?"HRT is harmful — the WHI reversal in one click.":""}${c.id==="onc_lung"?"Even granting Fisher's confounder, the effect survives.":""}`;
   }
   return `Causal effect with your current cuts: <b>${fmt(causal(c,cut))}</b>.`;
 }
 
 function renderMath(c, med){
   const all=paths(c,c.x,c.y,new Set()), lbl=id=>lblOf(c,id);
-  let html=`<div class="mathline dim">true do-effect = Σ over directed paths ${lbl(c.x)} → ${lbl(c.y)}</div>`;
+  let html=`<div class="mathline dim">model-entailed do-effect = Σ over directed paths ${lbl(c.x)} → ${lbl(c.y)}</div>`;
   if(!all.length) html+=`<div class="mathline">(no directed path → causal effect = 0.000)</div>`;
   for(const p of all){ const via=c.mediator&&p.nodes.includes(c.mediator);
     html+=`<div class="mathline">${p.nodes.map(lbl).join(" → ")} = <b>${p.prod.toFixed(3)}</b> <span class="${via?'ind':'dir'}">·${via?'indirect':'direct'}</span></div>`; }
