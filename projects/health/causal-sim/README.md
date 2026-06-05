@@ -12,15 +12,30 @@ No install, no build. Either:
 
 ## What you can play with
 
-Five case studies, each teaching a different causal lesson:
+Models are organised as a 3-level drill-down — **Domain → Disease → Model** — so the library can
+grow without becoming a flat mess:
 
-| Case study | Lesson | Pearl concept |
-| --- | --- | --- |
-| **Alzheimer's · Stress Granules** | How much of the disease runs *through* NCT vs. bypass paths | Front-door criterion & mediation decomposition |
-| **Melanoma · Sunscreen** | Why "sunscreen → melanoma" is a mirage | Backdoor / common-cause confounding |
-| **Parkinson's · Smoking** | How a fake "protective" effect appears from nothing | Collider bias (Berkson's paradox) |
-| **Stroke · Blood pressure** | Splitting an effect into direct + indirect | Proportion mediated |
-| **Migraine · Stress** | Intervening on the *mediator* instead of the cause | Controlled direct effect |
+```
+Neurodegeneration
+├── Alzheimer's
+│   ├── Coleman · SG → NCT        front-door criterion & mediation decomposition
+│   └── Amyloid cascade           a competing causal DAG for the same disease
+└── Parkinson's
+    └── Smoking & the collider trap   collider bias (Berkson's paradox)
+Oncology
+└── Melanoma
+    └── Sunscreen confounding      backdoor / common-cause confounding
+Cardiovascular
+└── Stroke
+    └── BP → arterial damage       proportion mediated
+Headache & Pain
+└── Migraine
+    └── Stress, sleep & the mediator   controlled direct effect
+```
+
+Alzheimer's deliberately holds **two competing models** side by side: Coleman's stress-granule →
+NCT framework, and the amyloid cascade (where NCT sits *downstream* of tau). Same disease, same
+outcome — different graph, different place to intervene.
 
 ## How to use it
 
