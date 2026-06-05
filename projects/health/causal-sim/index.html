@@ -137,9 +137,10 @@
   label.toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; opacity: .92; min-height:44px; padding:0 10px; background:#16213d; border:1px solid #2a3a5e; border-radius:10px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   label.toggle input { width:18px; height:18px; accent-color:#f0c050; }
 
-  .lesson { font-size: 13px; line-height: 1.55; }
+  .lesson { font-size: 13.5px; line-height: 1.6; }
   .lesson b { color: #ffd58a; }
-  .pill { display: inline-block; background:#1b2a4a; border:1px solid #344b78; border-radius: 999px; padding: 3px 11px; font-size: 11.5px; font-weight:600; color:#bcd0ff; letter-spacing:.2px; }
+  .lesson i { color:#dbe6ff; }
+  .pill { display: inline-block; background:#1b2a4a; border:1px solid #344b78; border-radius: 999px; padding: 4px 12px; font-size: 11.5px; font-weight:700; color:#bcd0ff; letter-spacing:.3px; text-transform:uppercase; }
 
   .mrow { display:flex; justify-content:space-between; align-items:center; gap:10px;
           background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:11px 14px;
@@ -165,14 +166,16 @@
   .pmband { position:absolute; top:0; bottom:0; background:linear-gradient(90deg,rgba(124,92,255,.4),rgba(124,92,255,.7)); transition:left .25s, width .25s; }
   .pmtick { position:absolute; top:-2px; bottom:-2px; width:2px; background:#fff; box-shadow:0 0 4px rgba(255,255,255,.6); transition:left .25s; }
   .rng { opacity:.8; font-size:11px; font-variant-numeric:tabular-nums; }
-  details.assume { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:6px 12px; }
-  details.assume summary { cursor:pointer; font-size:13px; opacity:.8; }
-  .assume .body { font-family:ui-monospace,Menlo,monospace; font-size:12px; line-height:1.6; margin-top:6px; color:#c7d2f0; }
+  details.assume { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:7px 13px; }
+  details.assume summary { cursor:pointer; font-size:13px; opacity:.82; list-style:none; -webkit-tap-highlight-color:transparent; }
+  details.assume summary::-webkit-details-marker { display:none; }
+  .assume .body { font-family:ui-monospace,Menlo,monospace; font-size:12px; line-height:1.7; margin-top:8px; color:#c7d2f0; }
   .moderow { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px; }
-  .modehint { font-size:12px; opacity:.62; }
-  .badge { font-size:11px; padding:2px 8px; border-radius:6px; font-weight:600; }
-  .evblk { font-size:13px; line-height:1.5; margin:6px 0; } .evblk b { color:#ffd58a; }
-  .evcite { font-size:11.5px; opacity:.62; margin-top:6px; }
+  .modehint { font-size:12px; opacity:.66; line-height:1.45; }
+  .badge { display:inline-block; font-size:11px; padding:3px 10px; border-radius:6px; font-weight:700; letter-spacing:.2px; border:1px solid currentColor; }
+  .evblk { font-size:13px; line-height:1.55; margin:8px 0; } .evblk b { color:#ffd58a; }
+  .evblk i { color:#dbe6ff; }
+  .evcite { font-size:11.5px; opacity:.6; margin-top:9px; padding-top:8px; border-top:1px solid var(--line); line-height:1.5; }
   .tag { font-size:10px; padding:1px 5px; border-radius:5px; margin-left:6px; vertical-align:middle; }
   .tag.data { background:#143049; color:#8fd0ff; } .tag.god { background:#123322; color:#9fe6b0; }
   .metnote { font-size:11px; opacity:.6; margin:-2px 2px 0; }
@@ -181,11 +184,15 @@
   .bar .ind { background: #7c5cff; } .bar .dir { background: #ff9f43; }
   .barlbl { font-size: 11px; opacity: .75; display:flex; justify-content:space-between; margin-top:4px; }
 
-  .conclusion { font-size: 13.5px; line-height: 1.55; background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:12px; }
+  .conclusion { font-size: 13.5px; line-height: 1.58; background:#0b1326; border:1px solid #20304f; border-left:3px solid #6bd19a; border-radius:10px; padding:12px 14px; }
   .conclusion b { color:#9fe6b0; }
-  details.math { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:6px 12px; }
-  details.math summary { cursor:pointer; font-size:13px; opacity:.8; }
-  .mathbox { font-family: ui-monospace, Menlo, monospace; font-size:12px; line-height:1.6; margin-top:8px; color:#c7d2f0; }
+  details.math { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:7px 13px; }
+  details.math summary { cursor:pointer; font-size:13px; opacity:.82; list-style:none; -webkit-tap-highlight-color:transparent; }
+  details.math summary::-webkit-details-marker { display:none; }
+  details.assume summary::before, details.math summary::before { content:"▸"; display:inline-block; margin-right:7px; opacity:.6; transition:transform .15s; }
+  details.assume[open] summary::before, details.math[open] summary::before { transform:rotate(90deg); }
+  details.assume[open] summary, details.math[open] summary { opacity:1; }
+  .mathbox { font-family: ui-monospace, Menlo, monospace; font-size:12px; line-height:1.7; margin-top:8px; color:#c7d2f0; }
   .mathline.dim { opacity:.6; } .mathline .ind { color:#9d8bff; } .mathline .dir { color:#ffb168; }
   .hint { font-size:12px; opacity:.6; }
   .hint b { color:#cfe0ff; opacity:.95; }
@@ -261,6 +268,8 @@
       <i><span class="swatch" style="background:#ff6b6b"></span>outcome</i>
       <i><span class="swatch" style="background:#9aa4bf"></span>latent confounder</i>
       <i><span class="swatch" style="background:#8fb3d9"></span>measured confounder</i>
+      <i><span class="swatch" style="background:#f0c050"></span>collider</i>
+      <i><span class="swatch" style="background:#46c79a"></span>instrument</i>
       <i>— solid causal · ┄ confounding · ✂ cut</i>
     </div>
   </div>
@@ -293,14 +302,14 @@
     </div>
 
     <details class="assume">
-      <summary>▸ assumptions (each arrow's strength ± range)</summary>
+      <summary>assumptions (each arrow's strength ± range)</summary>
       <div class="body" id="assumeBox"></div>
     </details>
 
     <div class="conclusion" id="conclusion"></div>
 
     <details class="math">
-      <summary>▸ show the math (path tracing)</summary>
+      <summary>show the math (path tracing)</summary>
       <div class="mathbox" id="mathBox"></div>
     </details>
   </div>
@@ -1459,6 +1468,12 @@ function render(){
   const defs=el("defs");
   defs.appendChild(marker("arr","#7f93c9")); defs.appendChild(marker("arrPos","#ff9f43"));
   defs.appendChild(marker("arrNeg","#6bd1ff")); defs.appendChild(marker("arrCut","#3a4766"));
+  // soft drop-shadow gives nodes physical depth (purely cosmetic)
+  const fl=el("filter"); fl.setAttribute("id","nodeShadow");
+  fl.setAttribute("x","-40%"); fl.setAttribute("y","-40%"); fl.setAttribute("width","180%"); fl.setAttribute("height","180%");
+  const ds=el("feDropShadow"); ds.setAttribute("dx","0"); ds.setAttribute("dy","3");
+  ds.setAttribute("stdDeviation","4"); ds.setAttribute("flood-color","#000"); ds.setAttribute("flood-opacity","0.45");
+  fl.appendChild(ds); defs.appendChild(fl);
   svg.appendChild(defs);
   for(const e of c.edges){
     const a=nodeById(c,e.from), b=nodeById(c,e.to), isCut=cut.has(e.to);
@@ -1482,16 +1497,18 @@ function render(){
   for(const n of c.nodes){
     const g=el("g"); g.classList.add("node-grp"); g.addEventListener("click",()=>toggleCut(n.id));
     const cx=px(n.x),cy=py(n.y),r=38;
+    const isDone=cut.has(n.id);
     const circle=el("circle"); circle.setAttribute("cx",cx);circle.setAttribute("cy",cy);circle.setAttribute("r",r);
-    circle.setAttribute("fill","#0e1730"); circle.setAttribute("stroke",COLORS[n.type]);
-    circle.setAttribute("stroke-width",cut.has(n.id)?4:2.4);
+    circle.setAttribute("fill",isDone?"#0d2018":"#0e1730"); circle.setAttribute("stroke",isDone?"#9fe6b0":COLORS[n.type]);
+    circle.setAttribute("stroke-width",isDone?4:2.4);
+    circle.setAttribute("filter","url(#nodeShadow)");
     if(n.type==="latent") circle.setAttribute("stroke-dasharray","5 4");
     g.appendChild(circle);
-    if(cut.has(n.id)){
+    if(isDone){
       const ring=el("circle"); ring.setAttribute("cx",cx);ring.setAttribute("cy",cy);ring.setAttribute("r",r+5);
       ring.setAttribute("fill","none");ring.setAttribute("stroke","#9fe6b0");ring.setAttribute("stroke-width",1.6);ring.setAttribute("stroke-dasharray","3 4");
       g.appendChild(ring);
-      const lbl=text(cx,cy-r-10,"do()",12,"#9fe6b0"); lbl.setAttribute("text-anchor","middle"); g.appendChild(lbl);
+      const lbl=text(cx,cy-r-11,"✓ do()",12.5,"#9fe6b0"); lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("font-weight","700"); g.appendChild(lbl);
     }
     n.label.split("\n").forEach((ln,i,arr)=>{ const t=text(cx,cy+(i-(arr.length-1)/2)*14,ln,12.5,"#e6e8ee");
       t.setAttribute("text-anchor","middle");t.setAttribute("font-weight","600"); g.appendChild(t); });
