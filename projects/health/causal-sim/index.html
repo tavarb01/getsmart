@@ -76,6 +76,9 @@
     font-size:11.5px; padding: 2px 0; min-height:0; cursor:default;
   }
   .navrow.models.single .pill-btn::before { content:"◆ "; opacity:.7; }
+  .navrow.fields { padding-top: 7px; padding-bottom: 5px; border-bottom: 1px solid var(--line); margin-bottom: 2px; }
+  .navrow.fields .pill-btn { font-size: 13px; padding: 7px 14px; min-height: 36px; font-weight: 600; }
+  .navrow.fields .pill-btn.active { background:#1f5c3a; border-color:#4fd08b; color:#fff; box-shadow: 0 0 0 1px #4fd08b inset; }
 
   details.intro { margin: 10px 14px 0; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:8px 14px; }
   details.intro > summary { cursor:pointer; font-size:13px; font-weight:600; color:#bcd0ff; }
@@ -160,6 +163,7 @@
   <p class="sub">A <i>Book of Why</i> playground — tap a node to <b>do()</b> it and watch correlation turn into causation.</p>
 
   <div class="nav">
+    <div class="navrow fields"><span class="navlabel">Field</span><span id="fields"></span></div>
     <div class="navrow domains"><span class="navlabel">Area</span><span id="domains"></span></div>
     <div class="navrow diseases"><span class="navlabel">Dx</span><span id="diseases"></span></div>
     <div class="navrow models"><span class="navlabel">Model</span><span id="models"></span></div>
@@ -577,7 +581,7 @@ const M_COVID = {
 };
 
 // --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
-const TAXONOMY = [
+const HEALTH_TAX = [
   { domain:"Neurology", icon:"🧠", diseases:[
       { disease:"Alzheimer's", models:[ M_ALZ_COLEMAN, M_ALZ_AMYLOID, M_ALZ_CONVERGENT ] },
       { disease:"Parkinson's", models:[ M_PD_COLLIDER ] },
@@ -605,8 +609,18 @@ const TAXONOMY = [
       { disease:"Admissions", models:[ M_BERKELEY ] },
   ]},
 ];
+
+// --- Fields: top-level epistemic domains -----------------------------------
+// The Causal Ladder, everywhere. Each field carries its own Domain → Topic →
+// Model taxonomy (same shape as health). New fields get appended here and the
+// UI picks them up automatically — see buildFieldBar()/setField().
+const FIELDS = [
+  { id:"health", name:"Health & Life Sciences", icon:"🧬", taxonomy: HEALTH_TAX },
+];
+let curField = 0;
+let TAXONOMY = FIELDS[curField].taxonomy;   // active field's taxonomy (reassigned on field switch)
 const CASES = {};
-TAXONOMY.forEach(d=>d.diseases.forEach(dis=>dis.models.forEach(m=>{ CASES[m.id]=m; })));
+FIELDS.forEach(f=>f.taxonomy.forEach(d=>d.diseases.forEach(dis=>dis.models.forEach(m=>{ CASES[m.id]=m; }))));
 
 // --- Researcher mode: actual real-world evidence & identification status ----
 // strength → badge colour; honest about what is established vs hypothesised.
@@ -1024,6 +1038,16 @@ function buildNav(){
 }
 function pill(label,active,onclick){ const b=document.createElement("button");
   b.className="pill-btn"+(active?" active":""); b.textContent=label; b.onclick=onclick; return b; }
+function buildFieldBar(){
+  const fW=document.getElementById("fields"); fW.innerHTML="";
+  FIELDS.forEach((f,fi)=> fW.appendChild(pill(f.icon+" "+f.name, fi===curField, ()=> setField(fi))));
+}
+function setField(fi){
+  if(fi===curField) return;
+  curField=fi; TAXONOMY=FIELDS[fi].taxonomy;
+  curDomain=0; curDisease=0; curId=TAXONOMY[0].diseases[0].models[0].id;
+  resetState(); buildFieldBar(); buildNav(); render();
+}
 function resetState(){ cut=new Set(); conditioning=false; document.getElementById("condChk").checked=false; }
 
 document.getElementById("runBtn").onclick=runModel;
@@ -1039,7 +1063,7 @@ document.querySelectorAll("#modeSeg button").forEach(b=> b.onclick=()=>{
   document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.toggle("on", x===b));
   updateReadout();
 });
-buildNav(); render();
+buildFieldBar(); buildNav(); render();
 </script>
 </body>
 </html>
