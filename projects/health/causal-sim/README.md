@@ -71,6 +71,22 @@ is real and verified), running on *invented parameters* (which are not). The tra
 structural — *when* front-door under-counts, *how* a collider manufactures an artifact — never the
 specific numbers on screen.
 
+### Two modes: Teacher and Researcher
+A toggle at the top switches the framing without changing the (exact, verified) simulation math:
+
+- **👩‍🏫 Teacher** — intuition first. Plain-language lessons and the interactive `do()` loop. Honest
+  that the *math* is exact while the *numbers* are illustrative.
+- **🔬 Researcher** — honest about each domain's **actual real-world evidence**. The panel reports
+  what is established versus hypothesised, with **citations** and an explicit **identification
+  verdict** (RCT-identified, natural experiment, robust-but-contested, recognised artifact, or
+  *not identified*). The simulated numbers are clearly flagged as a *structural illustration*, not
+  the real effect sizes.
+
+For example, in Researcher mode the **Coleman** model states plainly that the SG→NCT link is *not
+identified* (front-door fails on documented bypass paths), while **smoking → lung cancer**,
+**statins → LDL → CHD**, and **sunscreen → melanoma (Nambour RCT)** are flagged as identified, with
+sources. This keeps the tool easy to learn from *and* honest to a medical researcher.
+
 ### Sensitivity mode: ranges, not points
 Because the strengths are assumptions, the model-entailed effect is reported as a **90% range under
 stated assumptions**, not a single number — exactly the discipline a careful analysis follows (a

@@ -70,6 +70,11 @@
   details.assume { background:#0b1326; border:1px solid #20304f; border-radius:10px; padding:6px 12px; }
   details.assume summary { cursor:pointer; font-size:13px; opacity:.8; }
   .assume .body { font-family:ui-monospace,Menlo,monospace; font-size:12px; line-height:1.6; margin-top:6px; color:#c7d2f0; }
+  .moderow { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .modehint { font-size:12px; opacity:.62; }
+  .badge { font-size:11px; padding:2px 8px; border-radius:6px; font-weight:600; }
+  .evblk { font-size:13px; line-height:1.5; margin:6px 0; } .evblk b { color:#ffd58a; }
+  .evcite { font-size:11.5px; opacity:.62; margin-top:6px; }
   .tag { font-size:10px; padding:1px 5px; border-radius:5px; margin-left:6px; vertical-align:middle; }
   .tag.data { background:#143049; color:#8fd0ff; } .tag.god { background:#123322; color:#9fe6b0; }
   .metnote { font-size:11px; opacity:.6; margin:-2px 2px 0; }
@@ -92,6 +97,12 @@
 <header>
   <h1>🧭 Causal-Sim</h1>
   <p class="sub">An interactive <i>Book of Why</i> playground — tap a node to <b>do()</b> it and watch correlation turn into causation.</p>
+  <div class="moderow">
+    <span class="seg" id="modeSeg">
+      <button data-m="teacher" class="on">👩‍🏫 Teacher</button><button data-m="researcher">🔬 Researcher</button>
+    </span>
+    <span class="modehint" id="modeHint"></span>
+  </div>
 </header>
 
 <details class="intro">
@@ -119,7 +130,10 @@
       It is <b>not</b> ground truth about any real disease, and real research has no such answer key
       (that's the whole difficulty). The strengths here are illustrative, not estimated from data —
       so the model-entailed effect is shown as a <b>range under stated assumptions</b>, and the
-      <b>assumption-width</b> control lets you see how robust (or fragile) each conclusion is.</div>
+      <b>assumption-width</b> control lets you see how robust (or fragile) each conclusion is.
+      <br><br><b>Two modes.</b> <b>👩‍🏫 Teacher</b> keeps it intuitive (the math is exact, the numbers
+      illustrative). <b>🔬 Researcher</b> swaps in each domain's <i>actual</i> real-world evidence and
+      states plainly whether the effect is genuinely <b>identified</b> — or just a hypothesis.</div>
   </div>
 </details>
 
@@ -458,10 +472,76 @@ const TAXONOMY = [
 const CASES = {};
 TAXONOMY.forEach(d=>d.diseases.forEach(dis=>dis.models.forEach(m=>{ CASES[m.id]=m; })));
 
+// --- Researcher mode: actual real-world evidence & identification status ----
+// strength → badge colour; honest about what is established vs hypothesised.
+const EVIDENCE = {
+  alz_coleman:{ status:"Hypothesis · not identified", strength:"weak",
+    real:"Links between stress granules and NCT in AD are largely <b>correlational</b>. The strongest interventional SG→NCT result (Zhang 2018) is in ALS/FTD, not AD; acute-stress work (Vanneste 2022) <i>dissociated</i> SG from NCT. At least six documented paths let SG affect AD without passing through NCT.",
+    ident:"Strict <b>front-door identification fails</b> (bypass paths). No point causal estimate is warranted — the defensible output is a <b>bounded proportion-mediated under explicit assumptions</b>, not a single number.",
+    cites:["Coleman et al. 2025, Alz & Dementia","Morgan et al. 2022, Front Aging Neurosci","Zhang et al. 2018, Cell","Vanneste et al. 2022, Biomedicines"] },
+  alz_amyloid:{ status:"Partially identified · RCT", strength:"moderate",
+    real:"Anti-amyloid <b>RCTs</b> (lecanemab CLARITY-AD; donanemab) slow decline modestly (~25–35% on some scales), lending causal support to the amyloid axis — though absolute clinical effects are small and contested.",
+    ident:"Amyloid removal is randomised, so <i>that step</i> is identified; the full cascade to phenotype is not.",
+    cites:["van Dyck et al. 2023, NEJM","Sims et al. 2023, JAMA"] },
+  alz_convergent:{ status:"Conceptual framing", strength:"weak",
+    real:"Aβ, tau and oxidative stress each have independent literature tying them to NCT disruption; their <b>relative contributions are unquantified</b>.",
+    ident:"A framing device for the upstream-input level — no single identified effect.",
+    cites:["Eftekharzadeh et al. 2018, Neuron","Bansal et al. 2025, eLife"] },
+  pd_collider:{ status:"Robust association · causal contested", strength:"moderate",
+    real:"Meta-analyses find smokers have ~40–60% <b>lower</b> Parkinson's risk (RR≈0.5). Whether this is protective, reverse causation, or selection/collider bias is <b>unresolved</b>; Mendelian-randomization results are mixed.",
+    ident:"The inverse association is real; its causal status is disputed.",
+    cites:["Li et al. 2015, meta-analysis","Breckenridge et al. 2016, PLoS ONE"] },
+  mig_med:{ status:"Observational", strength:"weak",
+    real:"Stress and poor sleep are among the most commonly <b>reported</b> migraine triggers, but the mediation split is not rigorously identified.",
+    ident:"Trigger reports are associational; controlled mediation estimates are lacking.",
+    cites:["Kelman 2007, Cephalalgia"] },
+  mel_conf:{ status:"RCT-identified", strength:"strong",
+    real:"The randomized <b>Nambour trial</b> found regular sunscreen use roughly <b>halved</b> invasive melanoma over long-term follow-up. Observational positive associations are confounded by sun exposure / skin type.",
+    ident:"Randomisation identifies the (protective) effect; the naive observational sign is confounding.",
+    cites:["Green et al. 2011, J Clin Oncol"] },
+  onc_lung:{ status:"Causal · overwhelming", strength:"strong",
+    real:"Heavy smoking raises lung-cancer risk roughly <b>15–30×</b>, with dose-response, reversibility on cessation, and mechanism. Fisher's constitutional-confounder hypothesis was not borne out.",
+    ident:"Among the most firmly <b>identified</b> effects in all of epidemiology.",
+    cites:["Doll & Hill 1954, BMJ","US Surgeon General 1964"] },
+  stroke_med:{ status:"RCT-identified", strength:"strong",
+    real:"Randomized blood-pressure lowering cuts stroke by ~<b>30–40%</b>; arterial/vascular damage is a well-supported mediator.",
+    ident:"The BP→stroke effect is identified by antihypertensive RCTs; the mediated fraction is estimated, not exact.",
+    cites:["Ettehad et al. 2016, Lancet","SPRINT 2015, NEJM"] },
+  cm_hrt:{ status:"RCT-identified · reversal", strength:"strong",
+    real:"Observational cohorts suggested hormone therapy <i>protected</i> the heart; the <b>WHI randomized trial (2002)</b> found increased coronary/stroke risk in the studied population — the canonical <b>healthy-user confounding</b> reversal. A 'timing hypothesis' nuances younger initiators.",
+    ident:"Identified by RCT; the observational estimate was confounded.",
+    cites:["WHI Writing Group 2002, JAMA","Manson et al. 2013, JAMA"] },
+  cm_statin:{ status:"RCT-identified · mediation strong", strength:"strong",
+    real:"CTT meta-analyses: ~<b>22% fewer major vascular events per 1 mmol/L LDL</b> reduction; LDL-as-mediator is backed by both RCTs and Mendelian randomization.",
+    ident:"Both the effect and the LDL mediation are well identified.",
+    cites:["CTT Collaboration 2010, Lancet","Ference et al. 2017, Eur Heart J (MR)"] },
+  inf_cholera:{ status:"Natural experiment · historical", strength:"strong",
+    real:"Snow's 1854 Broad Street and South-London water-supply comparisons tied cholera to contaminated water <b>before germ theory existed</b>.",
+    ident:"Identified by an as-if-random natural experiment — the founding case of the field.",
+    cites:["Snow 1855, On the Mode of Communication of Cholera"] },
+  per_bw:{ status:"Recognised artifact", strength:"strong",
+    real:"The low-birthweight 'paradox' (smoking looks protective <i>among low-BW infants</i>) is now understood as <b>collider-stratification bias</b> from conditioning on birthweight.",
+    ident:"Not a real protective effect — an identified bias once the DAG is drawn.",
+    cites:["Hernández-Díaz et al. 2006, Am J Epidemiol","Wilcox 2001"] },
+  soc_berkeley:{ status:"Resolved · real data", strength:"strong",
+    real:"The 1973 Berkeley data showed a lower female admit rate overall, but after accounting for <b>department</b>, no systematic bias remained — women applied to more competitive departments.",
+    ident:"Adjusting for department (a measured back-door) resolves the aggregate Simpson's reversal.",
+    cites:["Bickel, Hammel & O'Connell 1975, Science"] },
+};
+function evidenceHTML(c){
+  const e=EVIDENCE[c.id]; if(!e) return `<span class="pill">${c.rung}</span><br><br>${c.lesson}`;
+  const col={strong:["#143a25","#7fe0a6"],moderate:["#3a3416","#e6cf6a"],weak:["#3a2416","#e6a86a"]}[e.strength]||["#222","#ccc"];
+  return `<div style="margin-bottom:6px"><span class="badge" style="background:${col[0]};color:${col[1]}">${e.status}</span></div>
+    <div class="evblk"><b>What the real-world evidence says.</b> ${e.real}</div>
+    <div class="evblk"><b>Identification.</b> ${e.ident}</div>
+    <div class="evcite">Sources: ${e.cites.join("; ")}</div>`;
+}
+
 // --- State -----------------------------------------------------------------
 let curDomain = 0, curDisease = 0, curId = TAXONOMY[0].diseases[0].models[0].id;
 let cut = new Set();
 let conditioning = false;
+let mode = "teacher"; // teacher | researcher
 
 // --- Math: simulation + estimators -----------------------------------------
 function randn(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random();
@@ -623,7 +703,12 @@ const fmt=x=> (x>=0?"+":"")+x.toFixed(2);
 
 function updateReadout(){
   const c=CASES[curId];
-  document.getElementById("lesson").innerHTML = `<span class="pill">${c.rung}</span><br><br>${c.lesson}`;
+  document.getElementById("lesson").innerHTML = mode==="researcher"
+    ? evidenceHTML(c)
+    : `<span class="pill">${c.rung}</span><br><br>${c.lesson}`;
+  document.getElementById("modeHint").textContent = mode==="researcher"
+    ? "Honest about the evidence: the panel shows real findings & whether the effect is identified. The simulated numbers below are a structural illustration."
+    : "Intuition first: the simulation math is exact; the numbers are illustrative, not measured.";
   document.getElementById("condWrap").style.display = c.conditionOn ? "flex" : "none";
 
   // simulate observational data once; reuse for every estimator
@@ -646,6 +731,7 @@ function updateReadout(){
   rows.push(`<div class="mrow oracle"><div><div class="k">${orLabel}<span class="tag god">◆ model</span></div>
     <div class="ksub">implied by assumptions · 90% range <span class="rng">[${fmt(iv.eff.lo)}, ${fmt(iv.eff.hi)}]</span></div></div>
     <div class="v oracle">${fmt(iv.eff.med)}</div></div>`);
+  if(mode==="researcher") rows.unshift(`<div class="metnote">↓ structural illustration only — these use illustrative parameters, not the effect sizes in the evidence panel above</div>`);
   document.getElementById("metrics").innerHTML = rows.join("");
 
   // proportion-mediated as a RANGE under the assumed ranges (genuine mediation only)
@@ -791,6 +877,11 @@ document.getElementById("condChk").onchange=e=>{ conditioning=e.target.checked; 
 document.querySelectorAll("#seg button").forEach(b=> b.onclick=()=>{
   uncert=parseFloat(b.dataset.s);
   document.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on", x===b));
+  updateReadout();
+});
+document.querySelectorAll("#modeSeg button").forEach(b=> b.onclick=()=>{
+  mode=b.dataset.m;
+  document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.toggle("on", x===b));
   updateReadout();
 });
 buildNav(); render();
