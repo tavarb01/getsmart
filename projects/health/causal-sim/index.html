@@ -707,6 +707,128 @@ const ECON_TAX = [
   ]},
 ];
 
+// ===========================================================================
+// FIELD 3 — AI & Data Science (where product & model decisions hinge on cause)
+// ===========================================================================
+const M_FEATURE = {
+  id:"ai_feature", name:"The feature that 'caused' conversions", escape:"rct",
+  rung:"Latent confounder · randomize (A/B)",
+  lesson:`Your dashboard says users who adopted the <b>new feature</b> convert far more. Ship it? But
+    <b>engaged users</b> both adopt features <i>and</i> buy — an unmeasured confounder. Self-selected
+    'adopters vs non-adopters' overstates impact 5–10×. Randomize exposure to get the true lift.`,
+  nodes:[
+    { id:"U", label:"User\nengagement", x:.5, y:.16, type:"latent" },
+    { id:"FE",label:"Used new\nfeature", x:.2, y:.66, type:"treatment" },
+    { id:"CNV",label:"Conversion", x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"FE",w:.60,kind:"confound" }, { from:"U",to:"CNV",w:.70,kind:"confound" },
+    { from:"FE",to:"CNV",w:.05,kind:"causal" },
+  ],
+  x:"FE", y:"CNV", mediator:null,
+};
+const M_ABSIMPSON = {
+  id:"ai_absimpson", name:"Simpson's paradox in an A/B test", escape:"backdoor",
+  rung:"Back-door · Simpson's paradox",
+  lesson:`Variant <b>B</b> loses on the aggregate metric — kill it? But during the ramp, B was served
+    more to a <b>low-converting segment</b> (mobile, say). That <b>segment mix</b> confounds the test.
+    Adjust for it (or randomize allocation) and B is actually <i>better</i> in every segment.`,
+  nodes:[
+    { id:"SEG",label:"Segment mix\n(ramp)", x:.5,y:.16, type:"confounder" },
+    { id:"B",  label:"Variant\nB", x:.2,y:.66, type:"treatment" },
+    { id:"CNV",label:"Conversion", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"SEG",to:"B",w:1.0, kind:"confound" }, { from:"SEG",to:"CNV",w:-1.2,kind:"confound" },
+    { from:"B",to:"CNV",w:.15,kind:"causal" },
+  ],
+  x:"B", y:"CNV", mediator:null, adjust:["SEG"],
+};
+const M_ASTHMA = {
+  id:"ai_asthma", name:"The model that called asthma protective", escape:"collider",
+  rung:"Collider bias · a deadly artifact",
+  lesson:`A pneumonia model learned that <b>asthmatic</b> patients <i>die less</i> — so triage them as
+    low-risk? Fatal mistake. <b>ICU admission</b> is a collider: both asthma <i>and</i> hidden
+    <b>severity</b> push patients into intensive care. Learning from treated data inverts the sign.`,
+  nodes:[
+    { id:"AST",label:"Asthma", x:.18, y:.30, type:"treatment" },
+    { id:"SEV",label:"Illness\nseverity", x:.5, y:.74, type:"latent" },
+    { id:"ICU",label:"ICU\nadmission", x:.5, y:.30, type:"collider" },
+    { id:"DTH",label:"Pneumonia\ndeath", x:.84, y:.52, type:"outcome" },
+  ],
+  edges:[
+    { from:"AST",to:"ICU",w:1.0,kind:"causal" }, { from:"SEV",to:"ICU",w:1.2,kind:"causal" },
+    { from:"SEV",to:"DTH",w:1.1,kind:"confound" }, { from:"AST",to:"DTH",w:.15,kind:"causal" },
+  ],
+  x:"AST", y:"DTH", mediator:null, conditionOn:"ICU",
+};
+const M_SHORTCUT = {
+  id:"ai_shortcut", name:"The X-ray model that read the scanner", escape:"backdoor",
+  rung:"Back-door · shortcut learning",
+  lesson:`A pneumonia-detection CNN scores 95% — then fails at a new hospital. It keyed on
+    <b>scanner artifacts</b>, not lungs. The <b>hospital</b> confounds: it sets both the artifact
+    <i>and</i> local disease prevalence. Adjust for site (or test cross-site) and the 'signal' vanishes.`,
+  nodes:[
+    { id:"HOS",label:"Hospital\n(prevalence)", x:.5,y:.16, type:"confounder" },
+    { id:"ART",label:"Scanner\nartifact", x:.2,y:.66, type:"treatment" },
+    { id:"DX", label:"Pneumonia\nlabel", x:.8,y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"HOS",to:"ART",w:1.0, kind:"confound" }, { from:"HOS",to:"DX",w:1.2,kind:"confound" },
+    { from:"ART",to:"DX",w:.05,kind:"causal" },
+  ],
+  x:"ART", y:"DX", mediator:null, adjust:["HOS"],
+};
+const M_ADHOLDOUT = {
+  id:"ai_adholdout", name:"Did the ad cause the click?", escape:"rct",
+  rung:"Latent confounder · randomized holdout",
+  lesson:`Attribution says paid <b>search ads</b> drive huge <b>sales</b>. But <b>high-intent</b>
+    shoppers search for you <i>and</i> buy anyway — they'd convert without the ad. eBay's randomized
+    <b>holdout</b> found incremental return near <b>zero</b>. Randomize who sees ads to measure lift.`,
+  nodes:[
+    { id:"U", label:"Purchase\nintent", x:.5, y:.16, type:"latent" },
+    { id:"AD",label:"Saw search\nad", x:.2, y:.66, type:"treatment" },
+    { id:"BUY",label:"Purchase", x:.8, y:.66, type:"outcome" },
+  ],
+  edges:[
+    { from:"U",to:"AD",w:.65,kind:"confound" }, { from:"U",to:"BUY",w:.70,kind:"confound" },
+    { from:"AD",to:"BUY",w:.03,kind:"causal" },
+  ],
+  x:"AD", y:"BUY", mediator:null,
+};
+const M_SURVIVORSHIP = {
+  id:"ai_survivorship", name:"Wald's bombers (survivorship bias)", escape:"collider",
+  rung:"Collider · selection on survival",
+  lesson:`WWII engineers wanted armor where returning bombers showed the most bullet holes. Abraham
+    Wald said the opposite: <b>returning safely</b> is a collider. Planes hit in the <b>engine</b>
+    didn't come back — so the holes you <i>see</i> mark the survivable spots. Armor the gaps.`,
+  nodes:[
+    { id:"HIT",label:"Engine\nhit", x:.18, y:.30, type:"treatment" },
+    { id:"DMG",label:"Total battle\ndamage", x:.5, y:.74, type:"latent" },
+    { id:"RET",label:"Returned\nto base", x:.5, y:.30, type:"collider" },
+    { id:"DWN",label:"Plane\ndowned", x:.84, y:.52, type:"outcome" },
+  ],
+  edges:[
+    { from:"HIT",to:"RET",w:-1.1,kind:"causal" }, { from:"DMG",to:"RET",w:-1.3,kind:"causal" },
+    { from:"DMG",to:"DWN",w:1.1,kind:"confound" }, { from:"HIT",to:"DWN",w:.30,kind:"causal" },
+  ],
+  x:"HIT", y:"DWN", mediator:null, conditionOn:"RET",
+};
+const AI_TAX = [
+  { domain:"A/B Testing", icon:"🧪", diseases:[
+      { disease:"Feature impact",  models:[ M_FEATURE ] },
+      { disease:"Simpson in A/B",  models:[ M_ABSIMPSON ] },
+  ]},
+  { domain:"ML Pitfalls", icon:"⚠️", diseases:[
+      { disease:"Asthma & triage",   models:[ M_ASTHMA ] },
+      { disease:"Shortcut learning", models:[ M_SHORTCUT ] },
+  ]},
+  { domain:"Impact & Validity", icon:"📊", diseases:[
+      { disease:"Ad attribution", models:[ M_ADHOLDOUT ] },
+      { disease:"Survivorship",   models:[ M_SURVIVORSHIP ] },
+  ]},
+];
+
 // --- Taxonomy: Domain → Disease → Model(s) ---------------------------------
 const HEALTH_TAX = [
   { domain:"Neurology", icon:"🧠", diseases:[
@@ -744,6 +866,7 @@ const HEALTH_TAX = [
 const FIELDS = [
   { id:"health", name:"Health & Life Sciences", icon:"🧬", taxonomy: HEALTH_TAX },
   { id:"econ",   name:"Economics & Policy",      icon:"📈", taxonomy: ECON_TAX },
+  { id:"ai",     name:"AI & Data Science",        icon:"🤖", taxonomy: AI_TAX },
 ];
 let curField = 0;
 let TAXONOMY = FIELDS[curField].taxonomy;   // active field's taxonomy (reassigned on field switch)
@@ -817,6 +940,30 @@ const EVIDENCE = {
     real:"A Swedish nationwide cohort of ~1.7 million (Lei et al., NEJM 2020) linked quadrivalent HPV vaccination to ~<b>88% lower</b> invasive cervical cancer when given <b>before age 17</b> (adjusted IRR 0.12) and ~53% at ages 17–30.",
     ident:"<b>Observational</b> — adjusted for measured confounders, but residual confounding (healthy-vaccinee behaviour, age-related prior exposure) remains; RCT-grade HPV evidence is on precancer endpoints.",
     cites:["Lei et al. 2020, NEJM"] },
+  ai_feature:{ status:"A/B-identified", strength:"strong",
+    real:"Comparing self-selected <b>adopters vs non-adopters</b> routinely overstates a feature's impact several-fold, because engaged users both adopt <i>and</i> convert. Only a randomized A/B exposure isolates the true lift.",
+    ident:"Randomized assignment identifies the effect; observational adopter comparisons are confounded by engagement.",
+    cites:["Kohavi, Tang & Xu 2020, Trustworthy Online Controlled Experiments (Cambridge UP)"] },
+  ai_absimpson:{ status:"Back-door · Simpson trap", strength:"strong",
+    real:"In ramped or unevenly allocated experiments, an aggregate metric can favor <b>B</b> while <i>every segment</i> favors A — a Simpson's reversal driven by traffic-mix confounding. Segment-level (or properly randomized) analysis resolves it.",
+    ident:"Adjust for the segment (or randomize allocation) to recover the true effect — a documented experimentation pitfall.",
+    cites:["Kohavi, Tang & Xu 2020, Trustworthy Online Controlled Experiments"] },
+  ai_asthma:{ status:"Collider · documented artifact", strength:"strong",
+    real:"Caruana et al. (2015) found a pneumonia model ranked <b>asthmatic</b> patients as <b>lower</b> risk — because asthmatics received more aggressive ICU care. Using it to triage would endanger exactly the patients it 'protects'.",
+    ident:"Asthma→ICU is a collider/treatment path; the marginal 'protective' association is real in the data but causally backwards. Conditioning on care intensity inverts the sign.",
+    cites:["Caruana et al. 2015, KDD"] },
+  ai_shortcut:{ status:"Back-door · shortcut learning", strength:"strong",
+    real:"Zech et al. (2018) showed a pneumonia-detection CNN partly keyed on <b>hospital-specific scanner artifacts</b> (prevalence differs by site) rather than pathology, so accuracy collapsed across hospitals. The husky-vs-wolf 'snow detector' (Ribeiro 2016) is the same trap.",
+    ident:"Hospital is a confounder of artifact and label; adjust for / balance site (or test cross-site) and the spurious signal vanishes.",
+    cites:["Zech et al. 2018, PLOS Medicine","Ribeiro, Singh & Guestrin 2016, KDD","Geirhos et al. 2020, Nature Machine Intelligence"] },
+  ai_adholdout:{ status:"Field-experiment-identified", strength:"strong",
+    real:"Blake, Nosko & Tadelis (2015) ran a large-scale eBay <b>holdout</b> experiment and found returns to <b>paid search ads near zero</b> for an established brand — the ads mostly captured high-intent buyers who would have purchased anyway.",
+    ident:"Randomized ad holdout identifies the incremental effect; attribution dashboards confound it with purchase intent.",
+    cites:["Blake, Nosko & Tadelis 2015, Econometrica"] },
+  ai_survivorship:{ status:"Collider · selection on survival", strength:"strong",
+    real:"In WWII, Abraham Wald argued bomber armor belonged where <b>returning</b> planes were <i>not</i> hit: aircraft hit in those areas didn't come back, so survivors' holes mark the survivable spots. (His formal work estimated vulnerability from survivor data; the bullet-hole story is the popular retelling.)",
+    ident:"Survival is a collider; analyzing only returners — selecting on the outcome — is the textbook selection bias.",
+    cites:["Wald 1943, Statistical Research Group memoranda","Mangel & Samaniego 1984, JASA"] },
   econ_minwage:{ status:"Natural experiment · contested magnitude", strength:"moderate",
     real:"Card & Krueger (1994) compared fast-food jobs across the <b>NJ–PA border</b> when NJ raised its minimum wage: employment did <b>not</b> fall (if anything rose), overturning the textbook supply-demand prediction. Naive cross-sectional correlations are confounded by local economic conditions.",
     ident:"The border design approximates as-if-random assignment (difference-in-differences). The exact magnitude of minimum-wage employment effects is still debated, but small/near-zero effects are well-supported.",

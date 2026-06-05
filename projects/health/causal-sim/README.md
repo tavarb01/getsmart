@@ -31,9 +31,20 @@ each field carries its own **Area → Topic → Model** drill-down.
   literature (Card–Krueger 1994, Angrist 1990, Angrist–Krueger 1991, Krueger 1999, Banerjee et al.
   2015, Miguel–Kremer 2004).
 
-> **Roadmap:** three more fields are designed and queued — **🤖 AI & Data Science**, **🌍 Climate &
-> Environment**, **🧩 Mind, Society & the Human Sciences** — each restricted to DAG-honest models
-> (no faked Nash equilibria or feedback loops) and each fact-checked before shipping.
+- **🤖 AI & Data Science** — where product and model decisions hinge on cause vs. correlation:
+  - *A/B Testing* — the feature that "caused" conversions (self-selection vs randomized exposure) ·
+    Simpson's paradox inside an A/B test (segment-mix confounding)
+  - *ML Pitfalls* — the model that called asthma protective (Caruana — collider via ICU care) ·
+    the X-ray model that read the scanner (Zech — shortcut learning / hospital confounder)
+  - *Impact & Validity* — did the ad cause the click? (eBay paid-search holdout) · Wald's bombers
+    (WWII survivorship / selection bias)
+
+  Every AI claim was adversarially fact-checked (Kohavi 2020, Caruana 2015, Zech 2018, Blake–Nosko–
+  Tadelis 2015, Mangel–Samaniego 1984).
+
+> **Roadmap:** two more fields are designed and queued — **🌍 Climate & Environment** and
+> **🧩 Mind, Society & the Human Sciences** — each restricted to DAG-honest models (no faked Nash
+> equilibria or feedback loops) and each fact-checked before shipping.
 
 ## What you can play with
 
