@@ -419,6 +419,9 @@
     <button class="act" id="implBtn">🧠 Implications — run this result through Pearl's engine</button>
     <div class="implbox" id="implBox" style="display:none"></div>
 
+    <button class="act" id="stretchBtn">📈 See the number as a bell curve</button>
+    <div class="implbox" id="stretchBox" style="display:none"></div>
+
     <details class="math">
       <summary>show the math (path tracing)</summary>
       <div class="mathbox" id="mathBox"></div>
@@ -1819,8 +1822,52 @@ function implicationsHTML(c){
     + `<div class="impl-why">🎓 <b>Why the exercise is good science:</b> ${E.why}</div>`;
 }
 
-// --- Boardroom mode: the executive register — the decision + what it's worth,
-//     in plain English (no standard deviations). Computed from the live numbers.
+// --- "SD stretch": the coefficient drawn as bell curves ---------------------
+// In this SCM every edge is effect = β·cause + noise. With the cause standardised
+// to SD 1, the cause-driven part of the effect has SD = |β| — so β IS the factor
+// by which the cause's spread is stretched (>1), compressed (<1) or mirrored (<0)
+// into the effect. Honest caveats baked in: (a) the effect's TOTAL spread also
+// carries its own noise (drawn as a faint wider envelope), and (b) the observed
+// stretch is confounded, so the true causal stretch is shown alongside it.
+function gaussPath(sigma, xmax, W, baseY, topY){
+  sigma=Math.max(Math.abs(sigma),0.06);
+  const peak=1/Math.sqrt(2*Math.PI);                 // σ=1 peak = the reference height
+  const pdf=x=>Math.exp(-x*x/(2*sigma*sigma))/(sigma*Math.sqrt(2*Math.PI));
+  let d=""; const N=72;
+  for(let i=0;i<=N;i++){ const x=-xmax+2*xmax*i/N, v=pdf(x);
+    const px=(x+xmax)/(2*xmax)*W, py=baseY-(v/peak)*(baseY-topY);
+    d+=(i?"L":"M")+px.toFixed(1)+" "+py.toFixed(1); }
+  return d;
+}
+function stretchHTML(c){
+  const r=lastRead||{}, X=lblOf(c,c.x), Y=lblOf(c,c.y);
+  const bObs=r.observed||0, bTrue=(r.oracle==null?0:r.oracle);
+  const W=320, H=150, baseY=H-20, topY=14;
+  const xmax=Math.max(4, 3.4*Math.max(1,Math.abs(bObs),Math.abs(bTrue)));
+  const noiseSig=Math.sqrt(bObs*bObs+1);             // total effect spread incl. its own noise
+  const xpix=x=>((x+xmax)/(2*xmax)*W).toFixed(1);
+  const tick=(x,col,lbl)=>`<line x1="${xpix(x)}" y1="${topY-2}" x2="${xpix(x)}" y2="${baseY}" stroke="${col}" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/><text x="${xpix(x)}" y="${baseY+13}" fill="${col}" font-size="9" text-anchor="middle">${lbl}</text>`;
+  const stretch=Math.abs(bObs), word = stretch>1.08?"stretched":stretch<0.92?"compressed":"≈ unchanged";
+  const mirror = bObs<0 ? " and <b>mirrored</b> (high cause → low effect)" : "";
+  return `<p class="impl-head">What the number means: the cause's spread, reshaped into the effect</p>
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;display:block;margin:2px auto 6px">
+    <line x1="0" y1="${baseY}" x2="${W}" y2="${baseY}" stroke="#2a3550" stroke-width="1"/>
+    <path d="${gaussPath(noiseSig,xmax,W,baseY,topY)}" fill="#6bd1ff10" stroke="#6bd1ff55" stroke-width="1" stroke-dasharray="4 3"/>
+    <path d="${gaussPath(Math.abs(bTrue)||0.06,xmax,W,baseY,topY)}" fill="none" stroke="#7fe0a6" stroke-width="1.8" opacity=".85"/>
+    <path d="${gaussPath(Math.abs(bObs)||0.06,xmax,W,baseY,topY)}" fill="none" stroke="#ff9f43" stroke-width="2.2"/>
+    <path d="${gaussPath(1,xmax,W,baseY,topY)}" fill="none" stroke="#9fb3ff" stroke-width="2.2"/>
+    ${tick(1,"#9fb3ff","cause 1σ")}
+    ${tick(Math.abs(bObs),"#ff9f43","×"+fv(bObs))}
+  </svg>
+  <div style="font-size:11.5px;line-height:1.6;color:#aeb7c7;display:flex;flex-direction:column;gap:3px">
+    <div><span style="color:#9fb3ff;font-weight:700">▬ Cause</span> (${X}), SD = 1 — the upstream spread.</div>
+    <div><span style="color:#ff9f43;font-weight:700">▬ Effect via observed ${fv(bObs)}</span>: the cause's SD ${word} <b>×${Math.abs(bObs).toFixed(2)}</b>${mirror}.</div>
+    <div><span style="color:#7fe0a6;font-weight:700">▬ Effect via <i>true</i> ${fv(bTrue)}</span>: the honest causal stretch — the gap from the orange curve is <b>confounding</b>.</div>
+    <div><span style="color:#6bd1ff">▒ + own noise</span>: the effect's <i>total</i> spread is wider still — it isn't a clean copy of the cause.</div>
+  </div>`;
+}
+
+
 const BOARD_NOTES = {
   ai_adholdout:`<b>$ at stake:</b> on a $20M paid-search budget, if attribution credits ads with the sales they "drove," little of it is truly <i>incremental</i> — a randomized <b>holdout</b> can free most of that spend with no revenue loss. (This is the real eBay finding.)`,
   ai_absimpson:`<b>$ at stake:</b> ship "B" off the aggregate and you may ship the <i>loser</i>. The pooled winner can reverse inside every segment — segment (or randomize allocation) before you roll out.`,
@@ -1931,6 +1978,8 @@ function updateReadout(){
   document.getElementById("mathBox").innerHTML = renderMath(c, mediationSplit(c));
   const ib=document.getElementById("implBox");
   if(ib && ib.style.display!=="none") ib.innerHTML = implicationsHTML(c);
+  const sb=document.getElementById("stretchBox");
+  if(sb && sb.style.display!=="none") sb.innerHTML = stretchHTML(c);
 }
 
 function metricRow(label, tagKind, val, cls, sub, oracle){
@@ -2079,6 +2128,13 @@ document.getElementById("implBtn").onclick=()=>{
   ib.style.display = open ? "none" : "block";
   btn.classList.toggle("open", !open);
   if(!open) ib.innerHTML = implicationsHTML(CASES[curId]);
+};
+document.getElementById("stretchBtn").onclick=()=>{
+  const sb=document.getElementById("stretchBox"), btn=document.getElementById("stretchBtn");
+  const open = sb.style.display!=="none";
+  sb.style.display = open ? "none" : "block";
+  btn.classList.toggle("open", !open);
+  if(!open) sb.innerHTML = stretchHTML(CASES[curId]);
 };
 document.getElementById("resetBtn").onclick=()=>{ cut=new Set(); render(); };
 // each handler ignores out-of-range / spurious change events (iOS fires a stray
