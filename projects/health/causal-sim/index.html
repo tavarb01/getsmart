@@ -426,6 +426,22 @@
   </div>
 </div>
 
+<div id="tutorial" aria-hidden="true">
+  <div class="tut-ambient"></div>
+  <div class="tut-top">
+    <div class="tut-dots" id="tutDots"></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="tut-count" id="tutCount"></span>
+      <button class="tut-close" id="tutClose" aria-label="Close tutorial">✕</button>
+    </div>
+  </div>
+  <div class="tut-scroll" id="tutScroll"><div class="tut-body" id="tutBody"></div></div>
+  <div class="tut-bottom">
+    <button class="tut-prev" id="tutPrev">← Back</button>
+    <button class="tut-next" id="tutNext">Next →</button>
+  </div>
+</div>
+
 <script>
 // ===========================================================================
 //  Causal-Sim — a linear Structural Causal Model (SCM) sandbox.
@@ -2274,20 +2290,5 @@ try {
   }
 } catch(e){ /* tutorial is non-essential — never let it block the app */ }
 </script>
-<div id="tutorial" aria-hidden="true">
-  <div class="tut-ambient"></div>
-  <div class="tut-top">
-    <div class="tut-dots" id="tutDots"></div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span class="tut-count" id="tutCount"></span>
-      <button class="tut-close" id="tutClose" aria-label="Close tutorial">✕</button>
-    </div>
-  </div>
-  <div class="tut-scroll" id="tutScroll"><div class="tut-body" id="tutBody"></div></div>
-  <div class="tut-bottom">
-    <button class="tut-prev" id="tutPrev">← Back</button>
-    <button class="tut-next" id="tutNext">Next →</button>
-  </div>
-</div>
 </body>
 </html>
