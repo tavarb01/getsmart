@@ -1,0 +1,6 @@
+# Everything below holds personal data. Never commit it.
+identity.json
+removal_status.json
+audit_log.md
+outbox/
+followups.ics

@@ -53,6 +53,21 @@ An interactive "Book of Why" playground for Judea Pearl's causal inference, in a
   al. (2025) framework. The user's unpublished manuscripts are reference-only and must never be
   committed — see `.gitignore` (`*.pdf`, `**/uploads/`, `**/_private/`).
 
+### projects/private/data-removal
+A human-in-the-loop CLI toolkit (`optout.py`, Python + Playwright) that audits people-search
+sites and data brokers for the owner's listing and drives their official opt-out flows.
+- **Run:** on the owner's machine — see the project `README.md`. The harness self-tests
+  locally with `OPTOUT_FAST=1 python3 optout.py run --broker test --headless` against
+  `test_fixture.html` (no network, no real data).
+- **Architecture:** `brokers.json` is a data-driven registry (search URL, opt-out endpoint,
+  method form/email/portal, wait days). `optout.py` subcommands map to phases: `audit`
+  (human confirms matches), `plan` (stages endpoints, renders CCPA-style email drafts from
+  `templates/`), `run` (Playwright drives forms with confirm-before-submit gates, CAPTCHA
+  pauses, randomized pacing, resumable state), `report` (summary + `.ics` follow-up reminders).
+- **Privacy note:** `identity.json`, `removal_status.json`, `audit_log.md`, and `outbox/`
+  contain PII and are gitignored — never commit them. It only ever targets the owner's own
+  listing via official opt-out channels; it touches no accounts the owner actually holds.
+
 ## Conventions
 
 - Every project folder has a `README.md` with a "Run it" section.

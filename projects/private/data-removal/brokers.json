@@ -1,0 +1,130 @@
+[
+  {
+    "id": "truepeoplesearch",
+    "name": "TruePeopleSearch",
+    "category": "people-search",
+    "method": "form",
+    "search_url": "https://www.truepeoplesearch.com/results?name={full_name}&citystatezip={city_state_zip}",
+    "optout_url": "https://www.truepeoplesearch.com/removal",
+    "wait_days": 1,
+    "notes": "Search for your record on the removal page, check the confirmation box, then click the link in the email they send you."
+  },
+  {
+    "id": "spokeo",
+    "name": "Spokeo",
+    "category": "people-search",
+    "method": "form",
+    "search_url": "https://www.spokeo.com/{first_name}-{last_name}",
+    "optout_url": "https://www.spokeo.com/optout",
+    "wait_days": 3,
+    "notes": "Paste your profile URL + an email into the opt-out form, solve the CAPTCHA, then click the verification link in the email. Removal within ~72 hours."
+  },
+  {
+    "id": "whitepages",
+    "name": "Whitepages",
+    "category": "people-search",
+    "method": "form",
+    "search_url": "https://www.whitepages.com/name/{first_name}-{last_name}/{city}-{state}",
+    "optout_url": "https://www.whitepages.com/suppression_requests",
+    "wait_days": 2,
+    "notes": "Suppression request flow; may finish with an automated phone-verification call to a number you provide."
+  },
+  {
+    "id": "nuwber",
+    "name": "Nuwber",
+    "category": "people-search",
+    "method": "form",
+    "search_url": "https://nuwber.com/search?name={full_name}",
+    "optout_url": "https://nuwber.com/removal",
+    "wait_days": 3,
+    "notes": "Find your listing, copy its URL, paste it into the removal form. Processed within 24-72 hours."
+  },
+  {
+    "id": "radaris",
+    "name": "Radaris",
+    "category": "people-search",
+    "method": "form",
+    "search_url": "https://radaris.com/p/{first_name}/{last_name}/",
+    "optout_url": "https://radaris.com/control/privacy",
+    "wait_days": 2,
+    "notes": "Paste your profile URL into the privacy-control form; verification code arrives by email or phone."
+  },
+  {
+    "id": "beenverified",
+    "name": "BeenVerified",
+    "category": "people-search",
+    "method": "form",
+    "search_url": "https://www.beenverified.com/app/optout/search",
+    "optout_url": "https://www.beenverified.com/app/optout/search",
+    "wait_days": 7,
+    "notes": "The opt-out page IS the search: enter name + state, pick your record, then confirm via the email they send."
+  },
+  {
+    "id": "mylife",
+    "name": "MyLife",
+    "category": "people-search",
+    "method": "email",
+    "email_to": "removalrequests@mylife.com",
+    "search_url": "https://www.mylife.com/pub-multisearch.pubview?searchWho={full_name}",
+    "optout_url": null,
+    "wait_days": 10,
+    "notes": "Email your profile URL to removalrequests@mylife.com, or call (888) 704-1900 (press 2) and ask to be removed."
+  },
+  {
+    "id": "acxiom",
+    "name": "Acxiom",
+    "category": "aggregator",
+    "method": "portal",
+    "search_url": null,
+    "optout_url": "https://www.acxiom.com/optout/",
+    "wait_days": 14,
+    "notes": "US consumer opt-out portal; choose deletion + opt-out of sale. Processed ~2 weeks after you click their confirmation email."
+  },
+  {
+    "id": "lexisnexis",
+    "name": "LexisNexis",
+    "category": "aggregator",
+    "method": "portal",
+    "search_url": null,
+    "optout_url": "https://optout.lexisnexis.com/",
+    "wait_days": 30,
+    "notes": "Information Suppression Request portal; requires identity verification and sometimes documentation (e.g. ID, proof of address)."
+  },
+  {
+    "id": "epsilon",
+    "name": "Epsilon",
+    "category": "aggregator",
+    "method": "portal",
+    "search_url": null,
+    "optout_url": "https://legal.epsilon.com/dsr",
+    "wait_days": 30,
+    "notes": "Data Subject Request form; choose 'Delete my personal information'. They mark records Do-Not-Share rather than hard-deleting."
+  },
+  {
+    "id": "oracle",
+    "name": "Oracle (Data Cloud / BlueKai / Datalogix)",
+    "category": "aggregator",
+    "method": "email",
+    "email_to": "privacy_ww@oracle.com",
+    "search_url": null,
+    "optout_url": null,
+    "wait_days": 30,
+    "notes": "Oracle shut down its advertising data business in 2024, so this may be unnecessary — email a deletion request covering Datalogix, BlueKai, Grapeshot, and Moat to be safe."
+  },
+  {
+    "id": "test",
+    "name": "Local Test Fixture",
+    "category": "test",
+    "method": "form",
+    "search_url": null,
+    "optout_url": "test_fixture.html",
+    "form_fields": {
+      "#name": "{full_name}",
+      "#email": "{email}",
+      "#url": "{profile_url}"
+    },
+    "submit_selector": "#submit",
+    "wait_days": 1,
+    "notes": "Local HTML form for testing the harness without touching any real site. Run: python3 optout.py run --broker test"
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "full_name": "Jane Q Sample",
+  "first_name": "Jane",
+  "last_name": "Sample",
+  "aliases": ["Janie Sample"],
+  "emails": ["jane.sample@example.com"],
+  "phones": ["555-555-0100"],
+  "addresses": [
+    {
+      "street": "123 Example St",
+      "city": "Springfield",
+      "state": "IL",
+      "zip": "62704",
+      "current": true
+    },
+    {
+      "street": "456 Former Ave",
+      "city": "Peoria",
+      "state": "IL",
+      "zip": "61602",
+      "current": false
+    }
+  ]
+}
