@@ -147,3 +147,17 @@ inspect the exact state, questions, candidates, answers, composition, and observ
 outcome. Separate missing evidence, model errors, code errors, and service failures.
 Treat cookbook thresholds and demo results as examples to evaluate, not universal
 rules or permanent model limitations. Keep API credentials server-side in web apps.
+
+## Working practices
+
+- Talk the design through and review the plan before implementing it.
+- Put the questions and threshold constants in one code file so they are easy to
+  review; expect to edit agent-written questions collaboratively.
+- Validate assumptions rather than taking assertions at face value.
+- To just pick the best option, take the highest-confidence choice instead of a
+  threshold; if you need a statistical algorithm, use probabilities, not confidence.
+- If routing misbehaves, check thresholds (too high → false negatives, too low →
+  false positives) and make the questions more specific.
+- If the agent invents request or response fields, the skill copy may be stale:
+  re-copy the latest `skills/typesafe-ai` directory from
+  https://github.com/typesafe-ai/skills.
