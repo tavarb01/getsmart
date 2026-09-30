@@ -53,6 +53,12 @@ An interactive "Book of Why" playground for Judea Pearl's causal inference, in a
   al. (2025) framework. The user's unpublished manuscripts are reference-only and must never be
   committed — see `.gitignore` (`*.pdf`, `**/uploads/`, `**/_private/`).
 
+### projects/tech/jev-sim
+A mock-only demo of a TypeSafe/Jev-style pipeline (Noul + Choice, confidence thresholds, escalation)
+over a million synthetic camera-frame descriptions, in a single `index.html` (vanilla JS, no
+dependencies). **Run:** open `index.html`. The "Jev" is a fake function (`mockNoul`, `mockChoice`);
+swap those for real API calls once a key exists. Latency and cost figures are invented.
+
 ## Conventions
 
 - Every project folder has a `README.md` with a "Run it" section.

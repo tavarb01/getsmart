@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jev Sim</title>
+<style>
+  body{font:15px/1.5 system-ui,sans-serif;margin:0;background:#0f1419;color:#e6e6e6}
+  main{max-width:820px;margin:0 auto;padding:16px}
+  h1{font-size:20px;margin:8px 0} h2{font-size:16px;margin:18px 0 6px}
+  .note{background:#3a2e12;border:1px solid #7a5f1a;padding:8px 10px;border-radius:6px;font-size:13px}
+  .tabs button{background:#1c2430;color:#e6e6e6;border:0;padding:8px 14px;border-radius:6px 6px 0 0;cursor:pointer}
+  .tabs button.on{background:#2a3648}
+  .panel{background:#2a3648;padding:12px;border-radius:0 6px 6px 6px}
+  label{display:block;margin:8px 0 2px;font-size:13px} input[type=range]{width:100%}
+  button.go{background:#3b82f6;color:#fff;border:0;padding:10px 18px;border-radius:6px;font-size:15px;margin-top:10px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+  .stat{background:#1c2430;padding:8px;border-radius:6px} .stat b{display:block;font-size:20px}
+  .bar{display:flex;align-items:center;margin:4px 0;font-size:13px} .bar span:first-child{width:120px}
+  .bar i{display:block;height:14px;background:#3b82f6;border-radius:3px;margin-right:6px}
+  pre{background:#0b0f14;padding:10px;border-radius:6px;overflow:auto;font-size:13px;white-space:pre-wrap}
+  .u{color:#7dd3fc} .c{color:#86efac} .d{color:#9ca3af}
+</style>
+</head>
+<body>
+<main>
+<h1>Jev Sim: sorting a million camera frames</h1>
+<div class="note"><b>Everything here is fake.</b> The "Jev" below is a mock function with made-up accuracy, latency and price.
+No API, no key, no real photos. It shows the <i>shape</i> of the workflow: cheap judgments, fan-out, thresholds, escalation.
+Frames are synthetic text descriptions of scenes. The segments describe shopping behavior (groups, dwell time), never who someone is. No faces, no identities.</div>
+
+<div class="tabs" style="margin-top:12px">
+  <button id="t1" class="on">Simulator</button><button id="t2">Your keyboard session</button>
+</div>
+
+<div class="panel" id="p1">
+  <label>Frames: <b id="vN"></b><input id="N" type="range" min="4" max="6" step="0.25" value="6"></label>
+  <label>Confidence threshold: <b id="vT"></b> (below this → escalate to a person or reasoning model)<input id="T" type="range" min="0" max="0.9" step="0.05" value="0.3"></label>
+  <label>Parallel requests: <b id="vC"></b><input id="C" type="range" min="1" max="10" step="1" value="8"></label>
+  <button class="go" id="go">Run pipeline</button>
+  <div class="grid" id="stats"></div>
+  <h2>Audience segments (auto-accepted)</h2><div id="bars"></div>
+  <h2>How the pipeline works</h2>
+<pre class="d">frame text ──► Noul  "is a person visible?"        ── no ──► dropped
+      │
+      └─► (asked together, in parallel)
+            Choice "which shopper segment?"  → family | young_adult | senior | commuter | none_of_these
+            Noul   "is the person browsing?" → probability
+      │
+      code: confidence ≥ threshold ? accept : escalate</pre>
+</div>
+
+<div class="panel" id="p2" style="display:none">
+<h2>Phone, Claude Code app, about 15 minutes</h2>
+<pre><span class="d"># one-time, in the environment settings (not in chat)</span>
+Edit environment → add variable  TYPESAFE_API_KEY  → allow docs + API hosts → new session
+
+<span class="u">you ▸</span> Using the TypeSafe skill, read the docs and cookbooks, then propose how to sort
+      1M store-camera frames by shopper segment. Frames come with text captions.
+<span class="c">claude ▸</span> Reads docs. Proposes: Noul "person visible" → Choice "segment" + Noul "browsing",
+         asked together. Threshold escalation. Questions + thresholds in one file.
+
+<span class="u">you ▸</span> Good. Put questions/thresholds in config.py. Test on 200 frames, print cost + latency.
+<span class="c">claude ▸</span> Writes config.py, run.py. Runs 200 cheap calls with your key. Prints:
+         <span class="d">accuracy vs my labels 91%, 6% escalated, ~$0.02, p50 latency 45 ms</span>
+
+<span class="u">you ▸</span> Show 10 wrong ones with the exact state and answers.
+<span class="c">claude ▸</span> Lists them. Two are missing evidence (caption has no dwell time).
+
+<span class="u">you ▸</span> Add dwell_seconds to the caption state, add a "none_of_these" option, rerun.
+<span class="c">claude ▸</span> Accuracy 95%, escalations 4%.
+
+<span class="u">you ▸</span> Now run 100k with 64 parallel requests, checkpoint every 5k, then commit.
+<span class="c">claude ▸</span> Runs, resumes if interrupted, pushes to your branch.</pre>
+<p class="d">Caveats: a session can't outlive its container, so long runs need checkpoints (or a real server).
+Whether Jev accepts images directly is unverified. Assume a vision step makes captions first.
+Rates, prices and accuracy above are invented until you measure them.</p>
+</div>
+</main>
+
+<script>
+// ---- fake world: seeded RNG, frames generated on the fly (nothing stored) ----
+const SEG = ["family","young_adult","senior","commuter"], OPTS = [...SEG,"none_of_these"];
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function frame(i){const r=rng(i*7919+1);
+  const person=r()>0.4, seg=SEG[Math.floor(r()*4)], hard=r()<0.25; // hard = ambiguous scene
+  return {person,seg,hard,dwell:Math.round(r()*300)};}
+
+// ---- mock Jev: returns probabilities, like a typed judgment ----
+function mockNoul(truth,r){const p=truth?0.93-0.05*r():0.07+0.05*r();return p}
+function mockChoice(f,r){
+  const strength=f.hard?0.30+0.30*r():0.75+0.2*r(); // hard scenes → spread-out answer
+  const wrong=r()<(f.hard?0.35:0.03), rest=(1-strength)/(OPTS.length-1);
+  const target=wrong?OPTS[Math.floor(r()*OPTS.length)]:f.seg;
+  const probs=OPTS.map(o=>o===target?strength:rest);
+  const H=-probs.reduce((a,p)=>a+p*Math.log(p),0); // entropy → confidence 0..1
+  return {pick:target,conf:1-H/Math.log(OPTS.length)};}
+
+// ---- controls ----
+const $=id=>document.getElementById(id), fmt=n=>n.toLocaleString();
+const nOf=()=>Math.round(10**$("N").value);
+function labels(){$("vN").textContent=fmt(nOf());$("vT").textContent=$("T").value;$("vC").textContent=2**$("C").value}
+["N","T","C"].forEach(id=>$(id).oninput=labels);labels();
+$("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);
+function tab(n){$("p1").style.display=n==1?"":"none";$("p2").style.display=n==2?"":"none";
+  $("t1").className=n==1?"on":"";$("t2").className=n==2?"on":""}
+
+// ---- run ----
+let running=false;
+$("go").onclick=async()=>{ if(running)return; running=true;
+  const N=nOf(),T=+$("T").value,par=2**$("C").value,CH=20000;
+  let dropped=0,accepted=0,escalated=0,correct=0,calls=0;const seg={};OPTS.forEach(o=>seg[o]=0);
+  const t0=performance.now();
+  for(let i=0;i<N;i+=CH){
+    for(let j=i;j<Math.min(i+CH,N);j++){
+      const f=frame(j),r=rng(j+99);
+      calls++; if(mockNoul(f.person,r)<0.5){dropped++;continue}
+      calls+=2; const c=mockChoice(f,r); // Choice + Noul asked together
+      if(c.conf<T){escalated++;continue}
+      accepted++;seg[c.pick]++; if(c.pick===f.seg)correct++;
+    }
+    render(Math.min(i+CH,N));await new Promise(r=>setTimeout(r));
+  }
+  function render(done){
+    const simSec=calls/par*0.045; // fictional: 45 ms per call
+    const st=[["Processed",fmt(done)],["No person",fmt(dropped)],["Auto-accepted",fmt(accepted)],
+      ["Escalated",fmt(escalated)+" ("+(escalated/Math.max(1,accepted+escalated)*100).toFixed(1)+"%)"],
+      ["Accuracy of accepted",accepted?(correct/accepted*100).toFixed(1)+"%":"-"],
+      ["Model calls",fmt(calls)],["Fake wall-clock",simSec<120?simSec.toFixed(0)+" s":(simSec/60).toFixed(1)+" min"],
+      ["Fake cost","$"+(calls/1e6*2).toFixed(2)],["Real browser time",((performance.now()-t0)/1000).toFixed(1)+" s"]];
+    $("stats").innerHTML=st.map(([a,b])=>`<div class="stat">${a}<b>${b}</b></div>`).join("");
+    const mx=Math.max(1,...Object.values(seg));
+    $("bars").innerHTML=OPTS.map(o=>`<div class="bar"><span>${o}</span><i style="width:${seg[o]/mx*60}%"></i><span>${fmt(seg[o])}</span></div>`).join("");
+  }
+  running=false;
+};
+</script>
+</body>
+</html>
