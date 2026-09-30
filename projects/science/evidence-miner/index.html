@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Evidence Miner</title>
+<style>
+/* Layout: one column. Controls, run stats, then a live ranked list that re-sorts as weights move. */
+:root{--bg:#f6f8f9;--panel:#fff;--tile:#eef2f4;--fg:#15232b;--dim:#5b6b74;--line:#d5dde1;--accent:#0f766e;--accent-fg:#fff;--warn-bg:#fdf3d8;--warn-line:#d9b44a;--good:#15803d;--font-body:"IBM Plex Sans",system-ui,sans-serif;--font-mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e161b;--panel:#16222a;--tile:#1d2c36;--fg:#e4edf1;--dim:#93a5ae;--line:#2b3d48;--accent:#2dd4bf;--accent-fg:#06211e;--warn-bg:#33290f;--warn-line:#7a5f1a;--good:#4ade80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e161b;--panel:#16222a;--tile:#1d2c36;--fg:#e4edf1;--dim:#93a5ae;--line:#2b3d48;--accent:#2dd4bf;--accent-fg:#06211e;--warn-bg:#33290f;--warn-line:#7a5f1a;--good:#4ade80;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:16px 36px}
+h1{font-size:22px;margin:8px 0 6px;text-wrap:balance} h2{font-size:15px;margin:22px 0 8px}
+.sub{color:var(--dim);margin:0 0 12px}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);padding:10px 12px;border-radius:6px;font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:6px;margin-top:12px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 18px}
+label{display:block;margin:8px 0 2px;font-size:13px} input[type=range],select{width:100%;accent-color:var(--accent)}
+select{font:inherit;padding:6px;background:var(--tile);color:var(--fg);border:1px solid var(--line);border-radius:6px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.go{background:var(--accent);color:var(--accent-fg);border:0;padding:10px 18px;border-radius:6px;font:inherit;font-weight:600;margin-top:12px;cursor:pointer}
+button.go:disabled{opacity:.6;cursor:wait}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.stat{background:var(--tile);padding:8px 10px;border-radius:6px;font-size:13px;color:var(--dim);min-width:0}
+.stat b{display:block;font-size:18px;color:var(--fg);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.hit{border-top:1px solid var(--line);padding:10px 0;display:flex;gap:12px;min-width:0}
+.hit:first-child{border-top:0}
+.rk{font:600 18px var(--font-mono);color:var(--accent);width:2ch;flex:none}
+.hit p{margin:0 0 6px;overflow-wrap:anywhere}
+.tags{display:flex;flex-wrap:wrap;gap:6px;font:12px var(--font-mono);color:var(--dim)}
+.tags span{background:var(--tile);padding:2px 6px;border-radius:4px}
+.tags .v{color:var(--good);font-weight:600}
+.pipe{background:var(--tile);padding:12px;border-radius:6px;font:12.5px/1.6 var(--font-mono);overflow-x:auto;white-space:pre}
+.dim{color:var(--dim);font-size:13px}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;600&display=swap">
+</head>
+<body>
+<div class="wrap">
+<h1>Evidence Miner</h1>
+<p class="sub">Find the strongest causal evidence in millions of paper abstracts. Judge each abstract once, then re-rank instantly.</p>
+<div class="note"><b>Everything here is fake.</b> The abstracts are generated sentences, and "Jev" is a mock function with invented accuracy, speed and price. It shows how a real pipeline would be shaped. Real answers would need a TypeSafe key.</div>
+
+<div class="panel">
+  <label for="N">Abstracts: <b id="vN"></b></label><input id="N" type="range" min="5" max="7" step="0.25" value="6.5">
+  <label for="T">Design-confidence threshold: <b id="vT"></b> (below it, a person or reasoning model reads the abstract)</label><input id="T" type="range" min="0" max="0.9" step="0.05" value="0.3">
+  <button class="go" id="go">Judge all abstracts</button>
+  <div class="pipe" style="margin-top:14px">abstract ─► Noul   "does it claim a cause?"      ── no ──► dropped
+   │
+   └─► asked together, in parallel:
+        Choice "study design?"   rct | cohort | case_control | mechanistic | review | none_of_these
+        Noul   "adjusts for confounders?"
+        Score  "strength of evidence" (1 to 5)
+   │
+   code: low design confidence → escalate · store the raw judgments as numbers</div>
+  <div class="grid" id="stats" style="margin-top:14px"></div>
+</div>
+
+<div class="panel">
+  <h2 style="margin-top:0">Re-rank the evidence (no new model calls)</h2>
+  <div class="row">
+    <div><label for="wE">Weight: evidence strength <b id="vE"></b></label><input id="wE" type="range" min="0" max="10" value="5"></div>
+    <div><label for="wA">Weight: adjusts for confounders <b id="vA"></b></label><input id="wA" type="range" min="0" max="10" value="5"></div>
+    <div><label for="wD">Weight: study design quality <b id="vD"></b></label><input id="wD" type="range" min="0" max="10" value="5"></div>
+    <div><label for="fD">Only show design</label><select id="fD"></select></div>
+  </div>
+  <div class="dim" id="rr">Run the pipeline to see results.</div>
+  <div id="hits"></div>
+</div>
+<p class="dim">Idea: the top hits could feed the <code>causal-sim</code> project as candidate edges. Abstracts and judgments are simulated; nothing here is real research.</p>
+</div>
+<script>
+// ---- fake world: seeded RNG; abstracts are generated on demand, never stored ----
+const PAIRS=[["sleep under 6 hours","dementia risk"],["daily walking","type 2 diabetes"],["ultra-processed food","depression"],["hearing aid use","cognitive decline"],["night-shift work","heart disease"],["vitamin D","bone fractures"],["screen time","myopia in children"],["air pollution","asthma"],["social isolation","stroke"],["coffee intake","gout"],["statin use","muscle pain"],["meditation","blood pressure"]];
+const DESIGNS=["rct","cohort","case_control","mechanistic","review","none_of_these"];
+const DQ=[1,0.6,0.4,0.25,0.5,0];              // design-quality weight per design
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function paper(i){const r=rng(i*7919+13),pr=PAIRS[Math.floor(r()*PAIRS.length)];
+  const claim=r()<0.4,design=Math.floor(r()*5),adj=r()<0.55,level=1+Math.floor(r()*5),hard=r()<0.25,n=Math.round(20+r()*r()*90000);
+  return {pr,claim,design,adj,level,hard,n};}
+function text(p){const [x,y]=p.pr;
+  const d=["In a randomized trial","In a cohort study","In a case-control study","In lab models","In a systematic review","In a pilot report"][p.design];
+  const v=p.claim?(p.hard?`${x} may contribute to ${y}`:`${x} causes changes in ${y}`):`${x} was described alongside ${y}`;
+  return `${d} of ${p.n.toLocaleString()} participants, ${v}${p.adj?", adjusting for age, income and smoking":""}.`;}
+
+// ---- mock Jev: typed judgments with probabilities ----
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function noul(truth,hard,r){const spread=hard?0.35:0.06;return clamp((truth?0.92:0.08)+(r()-0.5)*2*spread+(hard&&r()<0.3?(truth?-0.3:0.3):0),0.01,0.99)}
+function choice(p,r){const strength=p.hard?0.3+0.3*r():0.75+0.2*r(),wrong=r()<(p.hard?0.3:0.03);
+  const pick=wrong?Math.floor(r()*6):p.design,rest=(1-strength)/5;
+  const H=-[0,1,2,3,4,5].reduce((a,k)=>{const q=k===pick?strength:rest;return a+q*Math.log(q)},0);
+  return {pick,conf:1-H/Math.log(6)}}
+function score(p,r){return clamp(p.level+(r()-0.5)*(p.hard?3:0.8),1,5)}
+
+// ---- state: raw judgments kept as compact typed arrays ----
+const $=id=>document.getElementById(id),fmt=n=>n.toLocaleString();
+let store=null;
+const nOf=()=>Math.round(10**$("N").value);
+function labels(){$("vN").textContent=fmt(nOf());$("vT").textContent=$("T").value;["E","A","D"].forEach(k=>$("v"+k).textContent=$("w"+k).value)}
+$("fD").innerHTML='<option value="-1">any design</option>'+DESIGNS.slice(0,5).map((d,i)=>`<option value="${i}">${d}</option>`).join("");
+["N","T"].forEach(id=>$(id).oninput=labels);
+["wE","wA","wD","fD"].forEach(id=>$(id).oninput=()=>{labels();rank()});labels();
+
+$("go").onclick=async()=>{const btn=$("go");btn.disabled=true;
+  const N=nOf(),T=+$("T").value,cap=Math.ceil(N*0.5),CH=25000;
+  const ids=new Uint32Array(cap),pc=new Uint8Array(cap),des=new Uint8Array(cap),adj=new Uint8Array(cap),ev=new Uint8Array(cap);
+  let k=0,dropped=0,esc=0,calls=0,dOk=0,dN=0;const t0=performance.now();
+  for(let i=0;i<N;i+=CH){
+    for(let j=i;j<Math.min(i+CH,N);j++){
+      const p=paper(j),r=rng(j+5);calls++;
+      const c=noul(p.claim,p.hard,r); if(c<0.5){dropped++;continue}
+      calls+=3;const ch=choice(p,r);
+      if(ch.conf<T){esc++;continue}
+      ids[k]=j;pc[k]=Math.round(c*255);des[k]=ch.pick;adj[k]=Math.round(noul(p.adj,p.hard,r)*255);ev[k]=Math.round((score(p,r)-1)/4*255);
+      dN++;if(ch.pick===p.design)dOk++;k++;
+    }
+    stats(Math.min(i+CH,N));await new Promise(r=>setTimeout(r));
+  }
+  store={k,ids,pc,des,adj,ev};btn.disabled=false;rank();
+  function stats(done){const sim=calls/512*0.045;
+    const st=[["Abstracts judged",fmt(done)],["No causal claim",fmt(dropped)],["Kept with judgments",fmt(k)],
+      ["Escalated to a reader",fmt(esc)],["Design accuracy (kept)",dN?(dOk/dN*100).toFixed(1)+"%":"-"],["Model calls",fmt(calls)],
+      ["Fake wall-clock @512 parallel",sim<120?sim.toFixed(0)+" s":(sim/60).toFixed(1)+" min"],["Fake cost","$"+(calls/1e6*2).toFixed(2)],
+      ["Chat-model equivalent (fake)","$"+fmt(Math.round(done*600/1e6*3))]];
+    $("stats").innerHTML=st.map(([a,b])=>`<div class="stat">${a}<b>${b}</b></div>`).join("")}
+};
+
+// ---- ranking: pure arithmetic over stored judgments; no model calls ----
+function rank(){if(!store)return;const {k,ids,pc,des,adj,ev}=store,t0=performance.now();
+  const wE=+$("wE").value,wA=+$("wA").value,wD=+$("wD").value,f=+$("fD").value,ws=(wE+wA+wD)||1,top=[];
+  for(let i=0;i<k;i++){if(f>=0&&des[i]!==f)continue;
+    const s=pc[i]/255*(wE*ev[i]/255+wA*adj[i]/255+wD*DQ[des[i]])/ws;
+    if(top.length<8||s>top[top.length-1][0]){top.push([s,i]);top.sort((a,b)=>b[0]-a[0]);if(top.length>8)top.pop()}}
+  const ms=(performance.now()-t0).toFixed(0);
+  $("rr").textContent=`Re-ranked ${fmt(k)} stored judgments in ${ms} ms with 0 new model calls.`;
+  $("hits").innerHTML=top.map(([s,i],n)=>`<div class="hit"><div class="rk">${n+1}</div><div><p>${text(paper(ids[i]))}</p>
+    <div class="tags"><span class="v">score ${s.toFixed(2)}</span><span>design: ${DESIGNS[des[i]]}</span><span>causal p ${(pc[i]/255).toFixed(2)}</span><span>adjusts p ${(adj[i]/255).toFixed(2)}</span><span>evidence ${(1+ev[i]/255*4).toFixed(1)}/5</span></div></div></div>`).join("")}
+</script>
+</body>
+</html>

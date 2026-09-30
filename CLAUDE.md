@@ -59,6 +59,12 @@ over a million synthetic camera-frame descriptions, in a single `index.html` (va
 dependencies). **Run:** open `index.html`. The "Jev" is a fake function (`mockNoul`, `mockChoice`);
 swap those for real API calls once a key exists. Latency and cost figures are invented.
 
+### projects/science/evidence-miner
+A mock-only demo of a Jev-style pipeline over millions of generated paper abstracts (Noul/Choice/Score
+judgments stored as typed arrays, then re-ranked instantly by weight sliders), in a single `index.html`
+(vanilla JS, no dependencies). **Run:** open `index.html`. `noul`, `choice`, `score` are fake functions to swap
+for real API calls later. All figures are invented.
+
 ## Conventions
 
 - Every project folder has a `README.md` with a "Run it" section.
