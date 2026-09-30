@@ -40,6 +40,12 @@ dependencies, no build step).
   `FLAP`, `PIPE_GAP`, `SPEED`, `PIPE_SPACING`) are grouped at the top of the script for easy
   tuning.
 
+### projects/games/picture-plane-faces
+A cartoon-face maker on Scott McCloud's "Big Triangle", in a single `index.html` (SVG + vanilla JS, no
+dependencies). **Run:** open `index.html`. The triangle has 343 snap points (7 bands per side → 49 small
+triangles × 7 points). Each point's barycentric weights (reality, language, picture plane) feed
+`faceSVG(r, l, p, seed)`, which draws the face; `describe()` names the region.
+
 ### projects/health/causal-sim
 An interactive "Book of Why" playground for Judea Pearl's causal inference, in a single
 `index.html` (SVG + vanilla JS, no dependencies, no build step).

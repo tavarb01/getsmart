@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Faces">
+<title>Picture Plane Faces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: two comic panels (triangle map + generated face) on a halftone page; stacked on phones, side by side when wide.
+   Color: process inks. Each vertex owns one: Reality = cyan, Language = magenta, Picture Plane = yellow. */
+:root {
+  --bg: #e9edf1;
+  --dots: #c9d1d9;
+  --fg: #1d2127;
+  --muted: #56606b;
+  --panel: #ffffff;
+  --panel-ink: #1b1b1b;
+  --cyan: #0a8fc7;
+  --magenta: #d6246e;
+  --yellow: #f2c200;
+  --font-display: "Bangers", "Impact", "Arial Black", sans-serif;
+  --font-body: "Comic Neue", "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #14171c; --dots: #232830; --fg: #eef1f4; --muted: #9aa4af; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #14171c; --dots: #232830; --fg: #eef1f4; --muted: #9aa4af; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--dots) 1.1px, transparent 1.3px);
+  background-size: 9px 9px;
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+.page { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 14px 28px; display: grid; gap: 14px; }
+header h1 {
+  font-family: var(--font-display); font-weight: 400; letter-spacing: .04em;
+  font-size: clamp(30px, 7vw, 46px); line-height: 1; margin: 0; text-wrap: balance;
+}
+header h1 .c { color: var(--cyan); } header h1 .m { color: var(--magenta); }
+header p { margin: 6px 0 0; color: var(--muted); font-size: 15px; max-width: 62ch; }
+
+.panels { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .panels { grid-template-columns: 1.1fr 1fr; align-items: start; } }
+
+.panel {
+  background: var(--panel); color: var(--panel-ink);
+  border: 3px solid var(--panel-ink); box-shadow: 5px 5px 0 var(--panel-ink);
+  padding: 10px; min-width: 0;
+}
+.caption {
+  font-family: var(--font-body); font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+  font-size: 13px; background: var(--yellow); color: var(--panel-ink);
+  border: 2px solid var(--panel-ink); display: inline-block; padding: 3px 8px; margin: 0 0 6px;
+}
+#tri { width: 100%; height: auto; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
+#tri text { font-family: var(--font-body); font-weight: 700; fill: var(--panel-ink); }
+#marker { transition: transform .16s cubic-bezier(.3,1.4,.5,1); }
+@media (prefers-reduced-motion: reduce) { #marker { transition: none; } }
+
+.face-body { display: grid; gap: 10px; grid-template-columns: 44% minmax(0, 1fr); align-items: center; }
+.face-wrap { display: grid; place-items: center; min-width: 0; }
+#face { width: 100%; aspect-ratio: 200 / 240; max-width: 360px; }
+@media (min-width: 820px) { .face-body { grid-template-columns: 1fr; } }
+#face svg { width: 100%; height: 100%; display: block; }
+
+.readout { display: grid; gap: 8px; min-width: 0; }
+.name-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+#styleName { font-family: var(--font-display); font-weight: 400; font-size: clamp(22px, 6vw, 30px); letter-spacing: .03em; margin: 0; line-height: 1.05; }
+#styleId { font-family: var(--font-mono); font-size: 13px; color: #56606b; font-variant-numeric: tabular-nums; }
+.bars { display: grid; gap: 5px; }
+.bar { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "lab num" "trk trk"; align-items: center; gap: 2px 8px; font-size: 14px; font-weight: 700; }
+.bar .lab { grid-area: lab; } .bar .track { grid-area: trk; } .bar .num { grid-area: num; }
+@media (min-width: 820px) { .bar { grid-template-columns: 7.5em 1fr 3.2em; grid-template-areas: "lab trk num"; gap: 8px; } }
+.bar .track { height: 12px; border: 2px solid var(--panel-ink); background: #fff; position: relative; overflow: hidden; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; width: 0; transition: width .2s; }
+.bar .num { font-family: var(--font-mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+#blurb { margin: 8px 0 0; font-size: 15px; line-height: 1.4; max-width: 62ch; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+button {
+  font-family: var(--font-body); font-weight: 700; font-size: 15px; text-transform: uppercase;
+  background: var(--panel); color: var(--panel-ink); border: 2px solid var(--panel-ink);
+  box-shadow: 3px 3px 0 var(--panel-ink); padding: 8px 14px; cursor: pointer;
+}
+button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--panel-ink); }
+button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+button[aria-pressed="true"] { background: var(--yellow); }
+@media (max-width: 480px) {
+  header p { font-size: 14px; }
+  .controls { gap: 6px; }
+  button { font-size: 12px; padding: 6px 8px; box-shadow: 2px 2px 0 var(--panel-ink); }
+  .panel { padding: 8px; }
+  #styleId { font-size: 11px; }
+}
+footer { color: var(--muted); font-size: 13px; line-height: 1.45; max-width: 75ch; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <h1><span class="c">Picture</span> Plane <span class="m">Faces</span></h1>
+    <p>Touch anywhere on Scott McCloud's Big Triangle. The dot snaps to one of 343 positions and a face is drawn in exactly that style.</p>
+  </header>
+
+  <div class="panels">
+    <section class="panel" aria-label="The Big Triangle">
+      <div class="caption">Tap or drag on the triangle</div>
+      <svg id="tri" viewBox="0 0 400 362" role="img" aria-label="McCloud's triangle with Reality, Language and Picture Plane corners"></svg>
+      <div class="controls">
+        <button id="btnRandom" type="button">Random</button>
+        <button id="btnTour" type="button" aria-pressed="false">Tour</button>
+        <button id="btnGrid" type="button" aria-pressed="true">343 dots</button>
+        <button id="btnThumbs" type="button" aria-pressed="true">Map faces</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Generated face">
+      <div class="caption">Your face, in this style</div>
+      <div class="face-body">
+      <div class="face-wrap"><div id="face"></div></div>
+      <div class="readout">
+        <div class="name-row"><h2 id="styleName">Stylized</h2><span id="styleId">#000</span></div>
+        <div class="bars">
+          <div class="bar"><span class="lab">Reality</span><span class="track"><span class="fill" id="barR" style="background:var(--cyan)"></span></span><span class="num" id="numR">0%</span></div>
+          <div class="bar"><span class="lab">Language</span><span class="track"><span class="fill" id="barL" style="background:var(--magenta)"></span></span><span class="num" id="numL">0%</span></div>
+          <div class="bar"><span class="lab">Picture plane</span><span class="track"><span class="fill" id="barP" style="background:var(--yellow)"></span></span><span class="num" id="numP">0%</span></div>
+        </div>
+      </div>
+      </div>
+      <p id="blurb"></p>
+    </section>
+  </div>
+
+  <footer>
+    How the 343 positions work: the triangle is cut into 7 bands along each of its three directions, which makes 49 small triangles (7&times;7). Each small triangle holds 7 snap points, so there are 7&times;7&times;7 = 343 styles. The style ID is those three base-7 digits. Every face is drawn from scratch by code from the three weights; nothing is copied from the book. Based on the "Big Triangle" in <i>Understanding Comics</i> (1993) by Scott McCloud.
+  </footer>
+</div>
+
+<script>
+(() => {
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const INK = "#1b1b1b";
+const PAL = ["#e63946", "#0a8fc7", "#f2c200", "#2a9d8f", "#d6246e", "#6a4c93"];
+
+// ---------- small helpers ----------
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const ss = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const mix = (a, b, t) => a + (b - a) * t;
+const f = n => (Math.round(n * 10) / 10).toString();
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+// Blend three colours by the three barycentric weights (reality, language, picture plane).
+function blend3(cR, cL, cP, r, l, p) {
+  const c = [0, 1, 2].map(i => Math.round(cR[i] * r + cL[i] * l + cP[i] * p));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+
+// ---------- the triangle ----------
+const V = { P: [200, 44], R: [30, 318], L: [370, 318] };
+const toXY = (r, l, p) => [r * V.R[0] + l * V.L[0] + p * V.P[0], r * V.R[1] + l * V.L[1] + p * V.P[1]];
+
+// Build the 343 snap points: 7 bands per side -> 49 small triangles -> 7 points each.
+const N = 7, LATTICE = [];
+function addCell(A, B, C, cellIndex) {
+  const G = [0, 1, 2].map(i => (A[i] + B[i] + C[i]) / 3);
+  const toward = (T, k) => G.map((g, i) => g + k * (T[i] - g));
+  const mid = (U, W) => U.map((u, i) => (u + W[i]) / 2);
+  const pts = [G, toward(A, .5), toward(B, .5), toward(C, .5), toward(mid(A, B), .6), toward(mid(B, C), .6), toward(mid(C, A), .6)];
+  pts.forEach((w, sub) => LATTICE.push({ w, cell: cellIndex, sub }));
+}
+const cells = [];
+for (let i = 0; i < N; i++) for (let j = 0; j < N - i; j++) {
+  const k = N - 1 - i - j; // up-pointing: i+j+k = N-1
+  cells.push([[i + 1, j, k], [i, j + 1, k], [i, j, k + 1]]);
+}
+for (let i = 0; i < N - 1; i++) for (let j = 0; j < N - 1 - i; j++) {
+  const k = N - 2 - i - j; // down-pointing: i+j+k = N-2
+  cells.push([[i, j + 1, k + 1], [i + 1, j, k + 1], [i + 1, j + 1, k]]);
+}
+// Number cells top-to-bottom, left-to-right so style IDs read like a page.
+cells.forEach(c => { const cen = [0, 1, 2].map(i => (c[0][i] + c[1][i] + c[2][i]) / 3 / N); c.xy = toXY(cen[0], cen[1], cen[2]); });
+cells.sort((a, b) => (a.xy[1] - b.xy[1]) || (a.xy[0] - b.xy[0]));
+cells.forEach((c, idx) => addCell(c[0].map(v => v / N), c[1].map(v => v / N), c[2].map(v => v / N), idx));
+LATTICE.forEach((pt, idx) => {
+  pt.idx = idx;
+  pt.xy = toXY(pt.w[0], pt.w[1], pt.w[2]);
+  const d1 = Math.floor(pt.cell / 7), d2 = pt.cell % 7;
+  pt.code = `${d1}${d2}${pt.sub}`;
+});
+
+// ---------- the face generator ----------
+let uidCounter = 0;
+/** Draw a face for weights r (reality), l (language), p (picture plane). Returns SVG markup. */
+function faceSVG(r, l, p, seed, attrs = "") {
+  const uid = "f" + (uidCounter++);
+  const R = mulberry32(seed * 9973 + 17);
+  const rnd = (a = 1) => (R() * 2 - 1) * a;          // seeded, so the same dot always gives the same face
+  const J = a => rnd(a) * p;                          // jitter that grows toward the picture plane
+  const out = [];
+
+  const skin = hexRgb("#e8b894"), white = [255, 255, 255];
+  const pal1 = hexRgb(PAL[Math.floor(R() * PAL.length)]);
+  const pal2 = hexRgb(PAL[Math.floor(R() * PAL.length)]);
+  const faceFill = blend3(skin, white, pal1, r, l, p);
+  const hairCol = blend3([74, 48, 32], [27, 27, 27], pal2, r, l, p);
+  const irisCol = blend3([92, 64, 42], [27, 27, 27], [27, 27, 27], r, l, p);
+
+  const hw = 56 * r + 66 * l + 60 * p;               // head half-width
+  const hh = 78 * r + 64 * l + 70 * p;               // head half-height
+  const lw = 1.2 * r + 3.4 * l + 4.2 * p;            // line weight: thin & varied -> bold & uniform
+  const rep = 1 - ss(.45, .85, p);                   // how much is still "representational"
+  const ab = ss(.3, .75, p);                         // how much has become pure shape
+  const smiley = ss(.6, .85, l);                     // stripping down to two eyes + mouth
+  const lang = ss(.88, .95, l);                       // becoming a word
+  const photo = ss(.8, .95, r);                      // becoming a photograph
+  const rot = rnd(24) * p;
+
+  // head outline: ellipse -> jaw (reality) -> circle (language) -> wobbly polygon (picture plane)
+  const sides = Math.max(3, Math.round(8 - 5 * p)), polyT = ss(.25, .8, p), polyRot = R() * 6.283;
+  const ph1 = R() * 6.283, ph2 = R() * 6.283;
+  function headPt(th, scale = 1) {
+    let x = Math.cos(th) * hw, y = Math.sin(th) * hh;
+    if (y > 0) x *= 1 - (.24 * r + .05 * l) * (y / hh) ** 2;
+    const seg = 2 * Math.PI / sides;
+    const a = (((th + polyRot) % seg) + seg) % seg - seg / 2;
+    const poly = Math.cos(Math.PI / sides) / Math.cos(a);
+    const k = mix(1, poly, polyT) * (1 + .13 * p * Math.sin(2 * th + ph1) + .08 * p * Math.sin(3 * th + ph2)) * scale;
+    return [x * k, y * k];
+  }
+  const headD = "M" + Array.from({ length: 72 }, (_, i) => headPt(i / 72 * 2 * Math.PI).map(f).join(" ")).join(" L") + " Z";
+
+  const eyeY = -hh * (.04 * r + .2 * l + .1 * p);
+  const eyeDx = hw * (.38 * r + .36 * l + .42 * p);
+  const noseLen = hh * (.36 * r + .14 * l + .3 * p);
+  const noseY0 = eyeY + hh * .06;
+  const mouthY = hh * (.56 * r + .4 * l + .5 * p) + J(12);
+  const mouthW = hw * (.3 * r + .4 * l + .35 * p);
+
+  out.push(`<svg xmlns="${NS}" viewBox="0 0 200 240" ${attrs}>`);
+  out.push(`<defs>
+    <clipPath id="hc${uid}"><path d="${headD}"/></clipPath>
+    <linearGradient id="sh${uid}" x1="0" x2="1" y1="0" y2=".3"><stop offset="0" stop-color="#4a2a1a" stop-opacity=".55"/><stop offset=".55" stop-color="#4a2a1a" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient>
+    <filter id="gr${uid}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="${seed % 97}"/><feColorMatrix type="saturate" values="0"/></filter>
+  </defs>`);
+  out.push(`<rect width="200" height="240" fill="#fff"/>`);
+
+  // photograph frame (far Reality corner)
+  if (photo > 0) out.push(`<rect x="14" y="8" width="172" height="224" fill="#cfc8bb" stroke="${INK}" stroke-width="3" opacity="${f(photo)}"/>`);
+
+  // picture-plane backdrop: pure shapes and bars that are only themselves
+  const bg = ss(.55, .9, p);
+  if (bg > 0) {
+    for (let i = 0; i < 4; i++) {
+      const c = PAL[Math.floor(R() * PAL.length)], x = 20 + R() * 160, y = 20 + R() * 200, s = 18 + R() * 40;
+      const t = Math.floor(R() * 3);
+      const shape = t === 0 ? `<circle cx="${f(x)}" cy="${f(y)}" r="${f(s / 2)}"/>` : t === 1 ? `<rect x="${f(x - s / 2)}" y="${f(y - s / 2)}" width="${f(s)}" height="${f(s)}" transform="rotate(${f(rnd(40))} ${f(x)} ${f(y)})"/>` : `<path d="M${f(x)} ${f(y - s / 2)} L${f(x + s / 2)} ${f(y + s / 2)} L${f(x - s / 2)} ${f(y + s / 2)}Z"/>`;
+      out.push(`<g fill="${c}" opacity="${f(bg * .8)}">${shape}</g>`);
+    }
+    out.push(`<path d="M0 ${f(60 + R() * 120)} L200 ${f(60 + R() * 120)}" stroke="${INK}" stroke-width="${f(3 + 5 * bg)}" opacity="${f(bg * .7)}"/>`);
+  }
+
+  out.push(`<g opacity="${f(1 - .85 * lang)}" transform="translate(100 116) rotate(${f(rot)})" stroke-linecap="round" stroke-linejoin="round">`);
+
+  // neck + shoulders
+  const neckOp = (1 - smiley) * rep;
+  if (neckOp > .01) {
+    const nx = hw * .36, top = hh * .55, bot = hh * 1.28;
+    out.push(`<g opacity="${f(neckOp)}"><path d="M${f(-nx)} ${f(top)} L${f(-nx * 1.08)} ${f(bot)} Q${f(-hw * .9)} ${f(bot + 8)} ${f(-hw * 1.55)} ${f(bot + 30)} L${f(hw * 1.55)} ${f(bot + 30)} Q${f(hw * .9)} ${f(bot + 8)} ${f(nx * 1.08)} ${f(bot)} L${f(nx)} ${f(top)} Z" fill="${faceFill}" stroke="${INK}" stroke-width="${f(lw)}"/>`);
+    out.push(`<path d="M${f(-hw * 1.55)} ${f(bot + 30)} Q${f(-hw * .5)} ${f(bot + 14)} 0 ${f(bot + 22)} Q${f(hw * .5)} ${f(bot + 14)} ${f(hw * 1.55)} ${f(bot + 30)}" fill="none" stroke="${INK}" stroke-width="${f(lw)}" opacity="${f(.4 + .6 * r)}"/>`);
+    if (r > .3) out.push(`<path d="M${f(-nx * .9)} ${f(top + 10)} Q${f(-nx * .6)} ${f(bot - 10)} ${f(-nx * .2)} ${f(bot)}" fill="none" stroke="${INK}" stroke-width=".8" opacity="${f(ss(.3, .8, r) * .6)}"/></g>`);
+    else out.push(`</g>`);
+  }
+
+  // ears
+  const earOp = (1 - smiley) * rep;
+  if (earOp > .01) {
+    for (const s of [-1, 1]) {
+      const ex = s * hw * .97, ey = eyeY + hh * .14 + J(10), rx = hw * .13, ry = hh * .18;
+      out.push(`<g opacity="${f(earOp)}"><ellipse cx="${f(ex)}" cy="${f(ey)}" rx="${f(rx)}" ry="${f(ry)}" fill="${faceFill}" stroke="${INK}" stroke-width="${f(lw)}"/>`);
+      out.push(`<path d="M${f(ex + s * rx * .1)} ${f(ey - ry * .6)} Q${f(ex + s * rx * .7)} ${f(ey)} ${f(ex)} ${f(ey + ry * .5)}" fill="none" stroke="${INK}" stroke-width="${f(Math.max(.8, lw * .7))}" opacity="${f(ss(.2, .6, r))}"/></g>`);
+    }
+  }
+
+  // head
+  const headStrokeOp = 1 - .75 * ss(.82, .95, p);
+  out.push(`<path d="${headD}" fill="${faceFill}" stroke="${INK}" stroke-width="${f(lw * 1.1)}" stroke-opacity="${f(headStrokeOp)}" fill-opacity="${f(1 - .4 * ss(.8, .95, p))}"/>`);
+
+  // realistic shading + hatching, clipped to the head
+  const shade = ss(.35, .9, r);
+  if (shade > .01) {
+    out.push(`<g clip-path="url(#hc${uid})" opacity="${f(shade)}"><rect x="-120" y="-120" width="240" height="240" fill="url(#sh${uid})"/>`);
+    const n = Math.round(ss(.4, 1, r) * 18);
+    for (let i = 0; i < n; i++) {
+      const y0 = -hh * .7 + i * (hh * 1.5 / Math.max(1, n));
+      out.push(`<path d="M${f(-hw * 1.02)} ${f(y0)} L${f(-hw * .72 + rnd(3))} ${f(y0 - 7)}" stroke="${INK}" stroke-width=".6" opacity=".3"/>`);
+    }
+    out.push(`</g>`);
+  }
+
+  // hair
+  const hairOp = 1 - smiley;
+  if (hairOp > .01) {
+    const outer = [], inner = [];
+    const a0 = Math.PI + .08 - .1 * r, a1 = 2 * Math.PI - .08 + .1 * r;
+    for (let i = 0; i <= 20; i++) { const th = mix(a0, a1, i / 20); const [x, y] = headPt(th, 1.08 + .04 * l); outer.push([x + J(4), y + J(4)]); }
+    const L0 = outer[20], L1 = outer[0];
+    const ctrl = [hw * .2, -hh * (1 + .05 * l)];
+    const amp = 2 + 5 * l * (1 - smiley) + 9 * p;
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12, u = 1 - t;
+      const x = u * u * L0[0] + 2 * u * t * ctrl[0] + t * t * L1[0];
+      const y = u * u * L0[1] + 2 * u * t * ctrl[1] + t * t * L1[1];
+      inner.push([x, y + (i % 2 ? amp : -amp * .3) * (i > 0 && i < 12 ? 1 : 0)]);
+    }
+    const d = "M" + outer.map(q => q.map(f).join(" ")).join(" L") + " L" + inner.map(q => q.map(f).join(" ")).join(" L") + " Z";
+    out.push(`<g opacity="${f(hairOp)}"><path d="${d}" fill="${hairCol}" stroke="${INK}" stroke-width="${f(lw * .9)}"/>`);
+    const strands = Math.round(ss(.25, .8, r) * 26);
+    for (let i = 0; i < strands; i++) {
+      const t = (i + .5) / strands, a = outer[Math.round(t * 20)], b = inner[12 - Math.round(t * 12)];
+      out.push(`<path d="M${f(a[0])} ${f(a[1])} Q${f((a[0] + b[0]) / 2 + rnd(6))} ${f((a[1] + b[1]) / 2 + rnd(6))} ${f(b[0])} ${f(b[1])}" fill="none" stroke="${r > .5 ? "#d7b89a" : INK}" stroke-width=".6" opacity=".7"/>`);
+    }
+    out.push(`</g>`);
+  }
+
+  // brows
+  const browOp = (1 - smiley) * rep;
+  if (browOp > .01) {
+    for (const s of [-1, 1]) {
+      const bx = s * eyeDx, by = eyeY - hh * (.13 + .04 * l) + J(10), bw = hw * (.2 + .06 * r), tilt = J(12) * s;
+      out.push(`<path d="M${f(bx - bw)} ${f(by + 3 + tilt)} Q${f(bx)} ${f(by - 5 - 4 * r)} ${f(bx + bw)} ${f(by + 2 - tilt)}" fill="none" stroke="${hairCol}" stroke-width="${f(lw * 1.1 + 2.2 * r)}" opacity="${f(browOp)}"/>`);
+    }
+  }
+
+  // eyes
+  for (const s of [-1, 1]) {
+    const ex = s * eyeDx + J(10), ey = eyeY + J(14), sc = 1 + rnd(.5) * p;
+    const ew = hw * (.19 * r + .085 * l + .17 * p) * sc;
+    const eh = ew * (.42 * r + 1.1 * l + .8 * p);
+    const ir = (r * eh * .85 + l * ew * .75 + p * ew * .5);
+    out.push(`<g opacity="${f(rep)}">`);
+    const almond = ss(.15, .45, r);
+    if (almond > .01) out.push(`<path d="M${f(ex - ew)} ${f(ey)} Q${f(ex)} ${f(ey - eh * 1.3)} ${f(ex + ew)} ${f(ey)} Q${f(ex)} ${f(ey + eh * 1.1)} ${f(ex - ew)} ${f(ey)}Z" fill="#fff" stroke="${INK}" stroke-width="${f(Math.max(.8, lw))}" opacity="${f(almond)}"/>`);
+    out.push(`<ellipse cx="${f(ex + ew * .05 * r)}" cy="${f(ey)}" rx="${f(ir)}" ry="${f(ir * (1 + .45 * l))}" fill="${irisCol}"/>`);
+    const pupil = ss(.2, .5, r);
+    if (pupil > .01) out.push(`<circle cx="${f(ex + ew * .05)}" cy="${f(ey)}" r="${f(ir * .45)}" fill="${INK}" opacity="${f(pupil)}"/>`);
+    const hl = Math.max(ss(.2, .5, r), (1 - smiley) * ss(.2, .45, l));
+    if (hl > .01) out.push(`<circle cx="${f(ex + ir * .35)}" cy="${f(ey - ir * .4)}" r="${f(ir * .3)}" fill="#fff" opacity="${f(hl)}"/>`);
+    const lid = ss(.4, .8, r);
+    if (lid > .01) out.push(`<path d="M${f(ex - ew * 1.08)} ${f(ey + 1)} Q${f(ex)} ${f(ey - eh * 1.5)} ${f(ex + ew * 1.08)} ${f(ey - eh * .1)}" fill="none" stroke="${INK}" stroke-width="${f(lw * 1.8)}" opacity="${f(lid)}"/>`);
+    const under = ss(.6, .95, r);
+    if (under > .01) out.push(`<path d="M${f(ex - ew * .8)} ${f(ey + eh * 1.3)} Q${f(ex)} ${f(ey + eh * 1.9)} ${f(ex + ew * .9)} ${f(ey + eh * 1.2)}" fill="none" stroke="${INK}" stroke-width=".7" opacity="${f(under * .6)}"/>`);
+    out.push(`</g>`);
+    // picture-plane eye: circle, square or triangle
+    if (ab > .01) {
+      const t = Math.floor(R() * 3), size = hw * .24 * (1 + rnd(.4)), x = ex + J(22), y = ey + J(22), c = R() < .5 ? INK : PAL[Math.floor(R() * PAL.length)];
+      const g = t === 0 ? `<circle cx="${f(x)}" cy="${f(y)}" r="${f(size / 2)}" fill="#fff" stroke="${INK}" stroke-width="${f(lw)}"/><circle cx="${f(x + rnd(4))}" cy="${f(y)}" r="${f(size / 5)}" fill="${c}"/>`
+        : t === 1 ? `<rect x="${f(x - size / 2)}" y="${f(y - size / 2)}" width="${f(size)}" height="${f(size)}" fill="${c}" transform="rotate(${f(rnd(30))} ${f(x)} ${f(y)})"/>`
+        : `<path d="M${f(x - size / 2)} ${f(y + size / 3)} L${f(x + size / 2)} ${f(y + size / 3)} L${f(x)} ${f(y - size / 2)}Z" fill="${c}"/>`;
+      out.push(`<g opacity="${f(ab)}">${g}</g>`);
+    }
+  }
+
+  // nose: one path that morphs from a modelled nose to a small hook, then disappears
+  const noseOp = (1 - smiley) * rep;
+  const nx = J(8), L = noseLen;
+  if (noseOp > .01) {
+    out.push(`<path d="M${f(nx)} ${f(noseY0)} C${f(nx + L * .05)} ${f(noseY0 + L * .5)} ${f(nx + L * .32)} ${f(noseY0 + L * .8)} ${f(nx + L * .22)} ${f(noseY0 + L)} Q${f(nx + L * .05)} ${f(noseY0 + L * 1.12)} ${f(nx - L * .2)} ${f(noseY0 + L * .98)}" fill="none" stroke="${INK}" stroke-width="${f(Math.max(.9, lw * .9))}" opacity="${f(noseOp * (1 - .5 * ss(.4, .9, r)))}"/>`);
+    const nos = ss(.3, .7, r) * noseOp;
+    if (nos > .01) {
+      out.push(`<path d="M${f(nx - L * .32)} ${f(noseY0 + L * .88)} q${f(-L * .08)} ${f(L * .1)} ${f(L * .06)} ${f(L * .14)} M${f(nx + L * .38)} ${f(noseY0 + L * .86)} q${f(L * .08)} ${f(L * .1)} ${f(-L * .04)} ${f(L * .14)}" fill="none" stroke="${INK}" stroke-width="1" opacity="${f(nos)}"/>`);
+      out.push(`<ellipse cx="${f(nx - L * .15)}" cy="${f(noseY0 + L * 1.12)}" rx="${f(L * .3)}" ry="${f(L * .07)}" fill="#4a2a1a" opacity="${f(nos * .25)}"/>`);
+    }
+  }
+  if (ab > .01) {
+    const s = hw * .32, x = nx + J(20), y = noseY0 + L * .6;
+    out.push(`<path d="M${f(x)} ${f(y - s * .6)} L${f(x + s * .5)} ${f(y + s * .4)} L${f(x - s * .4)} ${f(y + s * .4)}Z" fill="${PAL[Math.floor(R() * PAL.length)]}" stroke="${INK}" stroke-width="${f(lw * .6)}" opacity="${f(ab)}"/>`);
+  }
+
+  // mouth
+  const curve = hh * (.03 * r + .16 * l) + rnd(.2) * p * hh;
+  out.push(`<path d="M${f(-mouthW)} ${f(mouthY)} Q0 ${f(mouthY + curve * 2)} ${f(mouthW)} ${f(mouthY)}" fill="none" stroke="${INK}" stroke-width="${f(Math.max(1, lw * 1.1))}" opacity="${f(rep)}"/>`);
+  const lips = ss(.35, .75, r) * rep;
+  if (lips > .01) {
+    const m = mouthW, y = mouthY;
+    out.push(`<path d="M${f(-m)} ${f(y)} C${f(-m * .5)} ${f(y - 6)} ${f(-m * .2)} ${f(y - 7)} 0 ${f(y - 4.5)} C${f(m * .2)} ${f(y - 7)} ${f(m * .5)} ${f(y - 6)} ${f(m)} ${f(y)} Z" fill="#b8645a" opacity="${f(lips * .55)}"/>`);
+    out.push(`<path d="M${f(-m * .8)} ${f(y + 1)} Q0 ${f(y + 12)} ${f(m * .8)} ${f(y + 1)} Z" fill="#b8645a" opacity="${f(lips * .4)}"/>`);
+    out.push(`<path d="M${f(-m * .35)} ${f(y + hh * .26)} Q0 ${f(y + hh * .3)} ${f(m * .35)} ${f(y + hh * .26)}" fill="none" stroke="${INK}" stroke-width=".8" opacity="${f(ss(.5, .9, r) * .6)}"/>`);
+  }
+  if (ab > .01) {
+    const w = mouthW * 2.2, h = 6 + 8 * p, c = R() < .5 ? INK : PAL[Math.floor(R() * PAL.length)];
+    out.push(`<rect x="${f(-w / 2 + J(15))}" y="${f(mouthY - h / 2 + J(10))}" width="${f(w)}" height="${f(h)}" fill="${c}" transform="rotate(${f(rnd(25))} 0 ${f(mouthY)})" opacity="${f(ab)}"/>`);
+  }
+
+  // extra lines of a lived-in face (only near Reality)
+  const lines = ss(.55, .95, r) * rep;
+  if (lines > .01) {
+    for (const s of [-1, 1]) {
+      out.push(`<path d="M${f(nx + s * L * .42)} ${f(noseY0 + L * .8)} Q${f(s * mouthW * 1.25)} ${f(mouthY - 6)} ${f(s * mouthW * 1.15)} ${f(mouthY + 7)}" fill="none" stroke="${INK}" stroke-width=".8" opacity="${f(lines * .55)}"/>`);
+      out.push(`<path d="M${f(s * hw * .55)} ${f(eyeY + hh * .3)} q${f(s * 6)} ${f(6)} ${f(s * 4)} ${f(14)}" fill="none" stroke="${INK}" stroke-width=".7" opacity="${f(lines * .45)}"/>`);
+    }
+    out.push(`<path d="M${f(-hw * .3)} ${f(eyeY - hh * .3)} Q0 ${f(eyeY - hh * .34)} ${f(hw * .3)} ${f(eyeY - hh * .3)}" fill="none" stroke="${INK}" stroke-width=".7" opacity="${f(lines * .4)}"/>`);
+  }
+  out.push(`</g>`);
+
+  // photo grain over the frame
+  if (photo > 0) out.push(`<rect x="14" y="8" width="172" height="224" filter="url(#gr${uid})" opacity="${f(photo * .28)}" style="mix-blend-mode:multiply"/>`);
+
+  // Language corner: the face becomes the word
+  if (lang > .01) {
+    out.push(`<g opacity="${f(lang)}" fill="${INK}" text-anchor="middle" font-family="Bangers, Impact, 'Arial Black', sans-serif">
+      <text x="100" y="128" font-size="64" letter-spacing="2">FACE</text>
+      <text x="100" y="156" font-size="13" font-family="'Comic Neue','Comic Sans MS',sans-serif" font-weight="700">TWO EYES, ONE NOSE,</text>
+      <text x="100" y="172" font-size="13" font-family="'Comic Neue','Comic Sans MS',sans-serif" font-weight="700">ONE MOUTH</text></g>`);
+  }
+  out.push(`</svg>`);
+  return out.join("");
+}
+
+// ---------- words for each region ----------
+function describe(r, l, p) {
+  let name;
+  if (p > .72) name = "Pure Picture Plane";
+  else if (p > .45) name = r >= l ? "Expressionist" : "Graphic Abstraction";
+  else if (l > .88) name = "The Word";
+  else if (r > .82) name = "Photograph";
+  else if (r > .6) name = p > .2 ? "Moody Realism" : "Realistic";
+  else if (l > .66) name = "Iconic Symbol";
+  else if (l > .45) name = p > .2 ? "Stylized Cartoon" : "Simplified Cartoon";
+  else if (p > .25) name = "Fantastic";
+  else name = "Classic Cartoon";
+
+  const bits = [];
+  if (r > .6) bits.push("Resemblance is winning. The drawing looks like one specific person, with shading, lids and lines of age.");
+  else if (r > .35) bits.push("Enough detail to feel like someone in particular, but already simplified.");
+  if (l > .6) bits.push("Amplification through simplification: every remaining line carries meaning, so the face could be anyone, including you.");
+  else if (l > .35) bits.push("Iconic abstraction is stripping out detail while keeping the meaning of a face.");
+  if (p > .6) bits.push("Shapes, lines and colours are becoming themselves and no longer pretend to be a face.");
+  else if (p > .3) bits.push("Non-iconic abstraction is pulling features apart into shapes and bold marks.");
+  if (!bits.length) bits.push("A balanced middle: part portrait, part symbol, part pure mark.");
+  return { name, blurb: bits.join(" ") };
+}
+
+// ---------- the triangle UI ----------
+const tri = document.getElementById("tri");
+const el = (tag, attrs = {}, parent = tri) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+
+// faint 7-band grid lines
+const gridG = el("g", { stroke: "#b9c2cc", "stroke-width": ".8" });
+for (let k = 1; k < N; k++) {
+  const t = k / N;
+  const lines = [
+    [toXY(t, 1 - t, 0), toXY(t, 0, 1 - t)],   // constant reality
+    [toXY(1 - t, t, 0), toXY(0, t, 1 - t)],   // constant language
+    [toXY(1 - t, 0, t), toXY(0, 1 - t, t)],   // constant picture plane
+  ];
+  for (const [a, b] of lines) el("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1] }, gridG);
+}
+el("path", { d: `M${V.R} L${V.L} L${V.P} Z`, fill: "none", stroke: INK, "stroke-width": 2.2, "stroke-dasharray": "7 6" });
+for (const [c, xy] of [["#0a8fc7", V.R], ["#d6246e", V.L], ["#f2c200", V.P]]) el("circle", { cx: xy[0], cy: xy[1], r: 6, fill: c, stroke: INK, "stroke-width": 2 });
+
+const lbl = (x, y, txt, anchor, size = 17) => { const t = el("text", { x, y, "text-anchor": anchor, "font-size": size }); t.textContent = txt; return t; };
+lbl(200, 22, "THE PICTURE PLANE", "middle");
+lbl(200, 36, "abstraction", "middle", 11).setAttribute("fill", "#56606b");
+lbl(18, 342, "REALITY", "start");
+lbl(18, 356, "resemblance", "start", 11).setAttribute("fill", "#56606b");
+lbl(382, 342, "LANGUAGE", "end");
+lbl(382, 356, "meaning", "end", 11).setAttribute("fill", "#56606b");
+
+// little reference faces along the edges, like McCloud's own chart
+const thumbsG = el("g", { opacity: ".33", "pointer-events": "none" });
+const THUMBS = [[.93, .04, .03], [.72, .25, .03], [.5, .47, .03], [.28, .69, .03], [.07, .9, .03], [.62, .04, .34], [.36, .04, .6], [.14, .04, .82], [.3, .3, .4]];
+THUMBS.forEach(([r, l, p], i) => {
+  const [x, y] = toXY(r, l, p);
+  thumbsG.insertAdjacentHTML("beforeend", faceSVG(r, l, p, 900 + i, `x="${x - 15}" y="${y - 30}" width="30" height="36"`));
+});
+
+const dotsG = el("g", { fill: "#7d8894" });
+LATTICE.forEach(pt => el("circle", { cx: f(pt.xy[0]), cy: f(pt.xy[1]), r: 1.35 }, dotsG));
+
+const marker = el("g", { id: "marker", "pointer-events": "none" });
+el("circle", { r: 12, fill: "none", stroke: "#d6246e", "stroke-width": 2.5 }, marker);
+el("circle", { r: 6.5, fill: INK, stroke: "#fff", "stroke-width": 2 }, marker);
+
+// ---------- selecting a style ----------
+const faceBox = document.getElementById("face");
+let current = -1;
+function select(idx) {
+  if (idx === current) return;
+  current = idx;
+  const pt = LATTICE[idx], [r, l, p] = pt.w;
+  marker.style.transform = `translate(${pt.xy[0]}px, ${pt.xy[1]}px)`;
+  faceBox.innerHTML = faceSVG(r, l, p, idx + 1, `role="img" aria-label="Generated face"`);
+  const d = describe(r, l, p);
+  document.getElementById("styleName").textContent = d.name;
+  document.getElementById("styleId").textContent = `style ${pt.code} (base 7) · #${idx + 1} of 343`;
+  document.getElementById("blurb").textContent = d.blurb;
+  for (const [k, v] of [["R", r], ["L", l], ["P", p]]) {
+    document.getElementById("bar" + k).style.width = (v * 100).toFixed(1) + "%";
+    document.getElementById("num" + k).textContent = Math.round(v * 100) + "%";
+  }
+  try { history.replaceState(null, "", "#s" + (idx + 1)); } catch (e) { /* ignore */ }
+}
+function nearest(x, y) {
+  let best = 0, bd = Infinity;
+  for (const pt of LATTICE) { const d = (pt.xy[0] - x) ** 2 + (pt.xy[1] - y) ** 2; if (d < bd) { bd = d; best = pt.idx; } }
+  return best;
+}
+function svgPoint(evt) {
+  const m = tri.getScreenCTM(); if (!m) return null;
+  const pt = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(m.inverse());
+  return [pt.x, pt.y];
+}
+let dragging = false;
+tri.addEventListener("pointerdown", e => { stopTour(); dragging = true; try { tri.setPointerCapture(e.pointerId); } catch (_) {} const q = svgPoint(e); if (q) select(nearest(q[0], q[1])); e.preventDefault(); });
+tri.addEventListener("pointermove", e => { if (!dragging) return; const q = svgPoint(e); if (q) select(nearest(q[0], q[1])); });
+const end = () => { dragging = false; };
+tri.addEventListener("pointerup", end); tri.addEventListener("pointercancel", end);
+
+// ---------- buttons ----------
+document.getElementById("btnRandom").addEventListener("click", () => { stopTour(); select(Math.floor(Math.random() * LATTICE.length)); });
+
+const btnTour = document.getElementById("btnTour");
+let tourTimer = null;
+function stopTour() { if (tourTimer) clearInterval(tourTimer); tourTimer = null; btnTour.setAttribute("aria-pressed", "false"); }
+btnTour.addEventListener("click", () => {
+  if (tourTimer) return stopTour();
+  const corners = [[.95, .025, .025], [.025, .95, .025], [.025, .025, .95]];
+  const path = [];
+  for (let s = 0; s < 3; s++) for (let i = 0; i < 24; i++) {
+    const a = corners[s], b = corners[(s + 1) % 3], t = i / 24;
+    const w = a.map((v, k) => mix(v, b[k], t));
+    const [x, y] = toXY(w[0], w[1], w[2]);
+    const n = nearest(x, y); if (path[path.length - 1] !== n) path.push(n);
+  }
+  let i = Math.max(0, path.indexOf(current));
+  btnTour.setAttribute("aria-pressed", "true");
+  tourTimer = setInterval(() => { i = (i + 1) % path.length; select(path[i]); }, 260);
+});
+
+function toggle(btnId, group) {
+  const b = document.getElementById(btnId);
+  b.addEventListener("click", () => { const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(on)); group.style.display = on ? "" : "none"; });
+}
+toggle("btnGrid", dotsG);
+toggle("btnThumbs", thumbsG);
+
+// ---------- start ----------
+const m = /^#s(\d+)$/.exec(location.hash);
+const startIdx = m ? clamp(parseInt(m[1], 10) - 1, 0, 342) : nearest(...toXY(.45, .35, .2));
+select(startIdx);
+})();
+</script>
+</body>
+</html>
