@@ -10,10 +10,27 @@ exactly that style.
 - **The Picture Plane** (top, yellow): non-iconic abstraction. Features break into circles, squares,
   triangles and bars that are only themselves.
 
+## Modes (the round 0 / 1 / 2 dial)
+
+- **Mode 0: Generated face.** Code draws an original face for each of the 343 positions.
+- **Mode 1: McCloud's canon (7×7 starter).** Like McCloud's own chart, each of the 49 small triangles
+  holds a famous cartoon character (e.g. *Kenny McCormick by Trey Parker & Matt Stone*,
+  *Popeye by E. C. Segar*). The picture and the creator's photo load live from Wikipedia. The
+  placements are an approximation in the spirit of McCloud's chart, not a copy of it. Edit
+  `CANON_ROWS` in the script to move or swap characters (row 0 = top, left = Reality).
+  If a picture can't load, a generated face in that cell's style is shown instead, labelled "stand-in".
+- **Mode 2: AI prompts.** One image-generator prompt for every one of the 343 positions. Copy one,
+  or copy all 343 as JSON. The same list is saved in `prompts-343.json`. The prompts describe the
+  style position and don't name real characters or artists, so the results are original faces.
+
 ## Run it
 
 Open `index.html` in a browser (works on iPhone too: AirDrop/Files → open, or host it).
 Or serve the folder: `python3 -m http.server 8000` and visit http://localhost:8000.
+
+**On iPhone with the Mode 1 pictures:** open
+https://raw.githack.com/tavarb01/getsmart/claude/picture-plane-faces/projects/games/picture-plane-faces/index.html
+(the Claude artifact preview blocks outside images, so there Mode 1 shows stand-ins).
 
 No install, no build, no dependencies (Google Fonts are used when online, with fallbacks offline).
 

@@ -44,7 +44,9 @@ dependencies, no build step).
 A cartoon-face maker on Scott McCloud's "Big Triangle", in a single `index.html` (SVG + vanilla JS, no
 dependencies). **Run:** open `index.html`. The triangle has 343 snap points (7 bands per side → 49 small
 triangles × 7 points). Each point's barycentric weights (reality, language, picture plane) feed
-`faceSVG(r, l, p, seed)`, which draws the face; `describe()` names the region.
+`faceSVG(r, l, p, seed)`, which draws the face; `describe()` names the region. A round mode dial switches between mode 0 (generated faces), mode 1 (`CANON_ROWS`: 49
+famous characters, one per small triangle, with images fetched live from the Wikipedia API) and mode 2
+(`promptFor()`: one image-generator prompt per style, also saved as `prompts-343.json`).
 
 ### projects/health/causal-sim
 An interactive "Book of Why" playground for Judea Pearl's causal inference, in a single

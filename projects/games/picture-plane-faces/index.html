@@ -31,6 +31,7 @@
 :root[data-theme="dark"] { --bg: #14171c; --dots: #232830; --fg: #eef1f4; --muted: #9aa4af; color-scheme: dark; }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { min-height: 100%; }
 body {
   margin: 0;
@@ -103,6 +104,39 @@ button[aria-pressed="true"] { background: var(--yellow); }
   .panel { padding: 8px; }
   #styleId { font-size: 11px; }
 }
+.modes { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; flex-wrap: wrap; }
+.modes .lab { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.dial { display: flex; gap: 6px; }
+.dial button {
+  width: 46px; height: 46px; border-radius: 50%; padding: 0; display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 22px; font-weight: 400; text-transform: none;
+}
+.dial button[aria-checked="true"] { background: var(--magenta); color: #fff; }
+.mode-name { font-weight: 700; font-size: 14px; min-width: 0; }
+.canon { display: grid; gap: 8px; width: 100%; max-width: 360px; }
+.canon-img {
+  width: 100%; aspect-ratio: 1 / 1; border: 2px solid var(--panel-ink); background: #f4f6f8;
+  display: grid; place-items: center; overflow: hidden; position: relative;
+}
+.canon-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.canon-img .stand-in { width: 80%; }
+.canon-img .tag {
+  position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  background: var(--yellow); color: var(--panel-ink); border: 1.5px solid var(--panel-ink); padding: 1px 5px;
+}
+.credit { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.credit .who { min-width: 0; }
+.credit img, .credit .noimg {
+  width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--panel-ink); flex: none; background: #e6e9ed;
+}
+#canonChar { font-family: var(--font-display); font-weight: 400; font-size: clamp(22px, 6vw, 30px); letter-spacing: .03em; margin: 0; line-height: 1.05; }
+#canonBy { margin: 2px 0 0; font-size: 15px; }
+.note { font-size: 13px; color: #56606b; margin: 0; line-height: 1.4; }
+.note a, #canonLinks a { color: #0a6fa0; font-weight: 700; }
+#promptText {
+  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; background: #f4f6f8; border: 2px solid var(--panel-ink);
+  padding: 8px; margin: 8px 0 0; white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow: auto;
+}
 footer { color: var(--muted); font-size: 13px; line-height: 1.45; max-width: 75ch; }
 </style>
 </head>
@@ -116,7 +150,15 @@ footer { color: var(--muted); font-size: 13px; line-height: 1.45; max-width: 75c
 
   <div class="panels">
     <section class="panel" aria-label="The Big Triangle">
-      <div class="caption">Tap or drag on the triangle</div>
+      <div class="modes">
+        <span class="lab">Mode</span>
+        <div class="dial" role="radiogroup" aria-label="Mode">
+          <button type="button" role="radio" id="mode0" aria-checked="true" title="Generated faces">0</button>
+          <button type="button" role="radio" id="mode1" aria-checked="false" title="McCloud's canon">1</button>
+          <button type="button" role="radio" id="mode2" aria-checked="false" title="AI prompts">2</button>
+        </div>
+        <span class="mode-name" id="modeName">Generated face (343 styles)</span>
+      </div>
       <svg id="tri" viewBox="0 0 400 362" role="img" aria-label="McCloud's triangle with Reality, Language and Picture Plane corners"></svg>
       <div class="controls">
         <button id="btnRandom" type="button">Random</button>
@@ -127,9 +169,13 @@ footer { color: var(--muted); font-size: 13px; line-height: 1.45; max-width: 75c
     </section>
 
     <section class="panel" aria-label="Generated face">
-      <div class="caption">Your face, in this style</div>
+      <div class="caption" id="rightCaption">Your face, in this style</div>
       <div class="face-body">
-      <div class="face-wrap"><div id="face"></div></div>
+      <div class="face-wrap"><div id="face"></div>
+        <div class="canon" id="canonBox" hidden>
+          <div class="canon-img" id="canonImg"></div>
+        </div>
+      </div>
       <div class="readout">
         <div class="name-row"><h2 id="styleName">Stylized</h2><span id="styleId">#000</span></div>
         <div class="bars">
@@ -139,12 +185,28 @@ footer { color: var(--muted); font-size: 13px; line-height: 1.45; max-width: 75c
         </div>
       </div>
       </div>
+      <div id="canonInfo" hidden>
+        <div class="credit">
+          <span id="artistPic" class="noimg" aria-hidden="true"></span>
+          <div class="who"><h2 id="canonChar"></h2><p id="canonBy"></p></div>
+        </div>
+        <p class="note" id="canonLinks"></p>
+      </div>
+      <div id="promptBox" hidden>
+        <pre id="promptText"></pre>
+        <div class="controls">
+          <button type="button" id="btnCopyPrompt">Copy prompt</button>
+          <button type="button" id="btnCopyAll">Copy all 343</button>
+        </div>
+        <p class="note" id="copyNote">Paste into any image generator (Stable Diffusion, Midjourney, DALL&middot;E, Flux). The prompts describe the style position, not real characters, so results are original.</p>
+      </div>
       <p id="blurb"></p>
     </section>
   </div>
 
   <footer>
     How the 343 positions work: the triangle is cut into 7 bands along each of its three directions, which makes 49 small triangles (7&times;7). Each small triangle holds 7 snap points, so there are 7&times;7&times;7 = 343 styles. The style ID is those three base-7 digits. Every face is drawn from scratch by code from the three weights; nothing is copied from the book. Based on the "Big Triangle" in <i>Understanding Comics</i> (1993) by Scott McCloud.
+    Mode 1 places 49 well-known characters, one per small triangle, in the spirit of McCloud's own chart; the placements are my approximation, not his exact ones. Their pictures load live from Wikipedia and stay the property of their creators.
   </footer>
 </div>
 
@@ -193,6 +255,9 @@ for (let i = 0; i < N - 1; i++) for (let j = 0; j < N - 1 - i; j++) {
 // Number cells top-to-bottom, left-to-right so style IDs read like a page.
 cells.forEach(c => { const cen = [0, 1, 2].map(i => (c[0][i] + c[1][i] + c[2][i]) / 3 / N); c.xy = toXY(cen[0], cen[1], cen[2]); });
 cells.sort((a, b) => (a.xy[1] - b.xy[1]) || (a.xy[0] - b.xy[0]));
+// Row (0 = top band) and position (left to right) of each small triangle, for the 7x7 canon.
+cells.forEach(c => { c.row = N - 1 - Math.min(c[0][2], c[1][2], c[2][2]); });
+for (let row = 0; row < N; row++) cells.filter(c => c.row === row).sort((a, b) => a.xy[0] - b.xy[0]).forEach((c, i) => { c.pos = i; });
 cells.forEach((c, idx) => addCell(c[0].map(v => v / N), c[1].map(v => v / N), c[2].map(v => v / N), idx));
 LATTICE.forEach((pt, idx) => {
   pt.idx = idx;
@@ -453,6 +518,112 @@ function describe(r, l, p) {
   return { name, blurb: bits.join(" ") };
 }
 
+
+// ---------- Mode 1: the canon, 7 rows x (1,3,...,13) = 49 characters ----------
+// Left = Reality, right = Language, top = Picture Plane. [character, creator(s), year, Wikipedia article, creator article]
+const CANON_ROWS = [
+  [["Life of the Party", "Mary Fleener", 1996, "Mary Fleener", "Mary Fleener"]],
+  [["The Joker, Arkham Asylum", "Dave McKean (with Grant Morrison)", 1989, "Arkham Asylum: A Serious House on Serious Earth", "Dave McKean"],
+   ["Jimbo", "Gary Panter", 1978, "Gary Panter", "Gary Panter"],
+   ["Line people, The New Yorker", "Saul Steinberg", 1941, "Saul Steinberg", "Saul Steinberg"]],
+  [["Elektra, Elektra: Assassin", "Bill Sienkiewicz (with Frank Miller)", 1986, "Elektra: Assassin", "Bill Sienkiewicz"],
+   ["Fires", "Lorenzo Mattotti", 1984, "Lorenzo Mattotti", "Lorenzo Mattotti"],
+   ["Fear and Loathing in Las Vegas", "Ralph Steadman", 1971, "Ralph Steadman", "Ralph Steadman"],
+   ["Krazy Kat", "George Herriman", 1913, "Krazy Kat", "George Herriman"],
+   ["Jimmy Corrigan", "Chris Ware", 2000, "Jimmy Corrigan, the Smartest Kid on Earth", "Chris Ware"]],
+  [["Marv, Sin City", "Frank Miller", 1991, "Sin City", "Frank Miller"],
+   ["Hellboy", "Mike Mignola", 1993, "Hellboy", "Mike Mignola"],
+   ["Galactus", "Jack Kirby (with Stan Lee)", 1966, "Galactus", "Jack Kirby"],
+   ["Mr. Natural", "Robert Crumb", 1967, "Mr. Natural", "Robert Crumb"],
+   ["Zippy the Pinhead", "Bill Griffith", 1971, "Zippy the Pinhead", "Bill Griffith"],
+   ["The Cat in the Hat", "Dr. Seuss", 1957, "The Cat in the Hat", "Dr. Seuss"],
+   ["Moomintroll", "Tove Jansson", 1945, "Moomintroll", "Tove Jansson"]],
+  [["Swamp Thing", "Bernie Wrightson (with Len Wein)", 1971, "Swamp Thing", "Bernie Wrightson"],
+   ["Blueberry", "Jean Giraud (Moebius)", 1963, "Blueberry (comics)", "Jean Giraud"],
+   ["Spider-Man", "Steve Ditko (with Stan Lee)", 1962, "Spider-Man", "Steve Ditko"],
+   ["Kaneda, Akira", "Katsuhiro Otomo", 1982, "Akira (manga)", "Katsuhiro Otomo"],
+   ["The Spirit", "Will Eisner", 1940, "The Spirit", "Will Eisner"],
+   ["Corto Maltese", "Hugo Pratt", 1967, "Corto Maltese", "Hugo Pratt"],
+   ["Usagi Yojimbo", "Stan Sakai", 1984, "Usagi Yojimbo", "Stan Sakai"],
+   ["Fone Bone", "Jeff Smith", 1991, "Bone (comics)", "Jeff Smith (cartoonist)"],
+   ["Felix the Cat", "Otto Messmer", 1919, "Felix the Cat", "Otto Messmer"]],
+  [["Prince Valiant", "Hal Foster", 1937, "Prince Valiant", "Hal Foster"],
+   ["Flash Gordon", "Alex Raymond", 1934, "Flash Gordon", "Alex Raymond"],
+   ["Steve Canyon", "Milton Caniff", 1947, "Steve Canyon", "Milton Caniff"],
+   ["Superman", "Joe Shuster (with Jerry Siegel)", 1938, "Superman", "Joe Shuster"],
+   ["Batman", "Bob Kane & Bill Finger", 1939, "Batman", "Bob Kane"],
+   ["Dick Tracy", "Chester Gould", 1931, "Dick Tracy", "Chester Gould"],
+   ["Popeye", "E. C. Segar", 1929, "Popeye", "E. C. Segar"],
+   ["Asterix", "Albert Uderzo (with René Goscinny)", 1959, "Asterix (character)", "Albert Uderzo"],
+   ["Homer Simpson", "Matt Groening", 1987, "Homer Simpson", "Matt Groening"],
+   ["Astro Boy", "Osamu Tezuka", 1952, "Astro Boy", "Osamu Tezuka"],
+   ["Dennis the Menace", "Hank Ketcham", 1951, "Dennis the Menace (U.S. comics)", "Hank Ketcham"]],
+  [["Superman, Kingdom Come", "Alex Ross (with Mark Waid)", 1996, "Kingdom Come (comics)", "Alex Ross"],
+   ["Ra's al Ghul", "Neal Adams (with Dennis O'Neil)", 1971, "Ra's al Ghul", "Neal Adams"],
+   ["Rorschach, Watchmen", "Dave Gibbons (with Alan Moore)", 1986, "Rorschach (character)", "Dave Gibbons"],
+   ["Archie Andrews", "Bob Montana", 1941, "Archie Andrews", "Bob Montana"],
+   ["Little Orphan Annie", "Harold Gray", 1924, "Little Orphan Annie", "Harold Gray"],
+   ["Tintin", "Hergé", 1929, "Tintin (character)", "Hergé"],
+   ["Mickey Mouse", "Ub Iwerks & Walt Disney", 1928, "Mickey Mouse", "Ub Iwerks"],
+   ["Nancy", "Ernie Bushmiller", 1938, "Nancy (comic strip)", "Ernie Bushmiller"],
+   ["Doraemon", "Fujiko F. Fujio", 1969, "Doraemon", "Fujiko F. Fujio"],
+   ["Charlie Brown, Peanuts", "Charles M. Schulz", 1950, "Charlie Brown", "Charles M. Schulz"],
+   ["Kenny McCormick, South Park", "Trey Parker & Matt Stone", 1997, "Kenny McCormick", "Trey Parker"],
+   ["Hello Kitty", "Yuko Shimizu (Sanrio)", 1974, "Hello Kitty", "Sanrio"],
+   ["Smiley", "Harvey Ball", 1963, "Smiley", "Harvey Ball"]],
+];
+const canonAt = (row, pos) => { const e = CANON_ROWS[row][pos]; return { char: e[0], by: e[1], year: e[2], wiki: e[3], artistWiki: e[4] }; };
+
+// One batched Wikipedia API call per 50 titles; results cached for the session.
+const WIKI = new Map();          // title -> { thumb, url } | null
+let wikiState = "idle";          // idle | loading | ok | blocked
+async function wikiBatch(titles) {
+  const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1" +
+    "&prop=pageimages&piprop=thumbnail&pithumbsize=480&pilicense=any&titles=" + encodeURIComponent(titles.join("|"));
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const q = (await res.json()).query || {};
+  const alias = new Map();
+  for (const n of q.normalized || []) alias.set(n.from, n.to);
+  for (const r of q.redirects || []) alias.set(r.from, r.to);
+  const byTitle = new Map(Object.values(q.pages || {}).map(pg => [pg.title, pg]));
+  for (const t of titles) {
+    let final = t; for (let i = 0; i < 3 && alias.has(final); i++) final = alias.get(final);
+    const pg = byTitle.get(final);
+    WIKI.set(t, pg && !("missing" in pg) ? { thumb: pg.thumbnail ? pg.thumbnail.source : null, title: final } : null);
+  }
+}
+async function loadWiki() {
+  if (wikiState !== "idle") return;
+  wikiState = "loading";
+  const all = CANON_ROWS.flat();
+  const chars = [...new Set(all.map(e => e[3]))], artists = [...new Set(all.map(e => e[4]))].filter(t => !chars.includes(t));
+  try {
+    for (const list of [chars, artists]) for (let i = 0; i < list.length; i += 50) await wikiBatch(list.slice(i, i + 50));
+    wikiState = "ok";
+  } catch (e) { wikiState = "blocked"; }
+  if (mode === 1) renderCanon();
+}
+const wikiLink = t => "https://en.wikipedia.org/wiki/" + encodeURIComponent(t.replace(/ /g, "_"));
+
+// ---------- Mode 2: one image-generator prompt per style (all 343) ----------
+const R_WORDS = ["no realistic detail", "barely any realistic detail", "light anatomical hints", "believable anatomy with some shading",
+  "realistic proportions with cross-hatched shading", "detailed realistic illustration, rendered skin and hair", "near-photographic rendering, subtle film grain"];
+const L_WORDS = ["no simplification", "slightly simplified forms", "clean simplified features", "classic cartoon simplification with bold even outlines",
+  "strongly simplified, very few lines, big eyes", "minimal icon: dot eyes and a single-line mouth", "pure symbol, close to a smiley face"];
+const P_WORDS = ["features stay in natural positions", "slightly expressive, wobbly linework", "expressive, distorted features",
+  "exaggerated, rearranged features and bold marks", "cubist fragmentation with flat colour shapes", "mostly geometric shapes and colour fields",
+  "pure abstract composition of shapes, lines and colour where the face almost disappears"];
+const lvl = w => Math.min(6, Math.floor(w * 7));
+function promptFor(pt) {
+  const [r, l, p] = pt.w;
+  return `Head-and-shoulders portrait of an original cartoon character, front view, centred on a plain white background. ` +
+    `Style: ${R_WORDS[lvl(r)]}; ${L_WORDS[lvl(l)]}; ${P_WORDS[lvl(p)]}. ` +
+    `Position on Scott McCloud's picture-plane triangle: ${Math.round(r * 100)}% resemblance, ${Math.round(l * 100)}% iconic meaning, ${Math.round(p * 100)}% pure abstraction. ` +
+    `Ink line art${p > .4 ? " with bold flat colours" : r > .5 ? " with naturalistic colour" : " with simple flat colour"}. ` +
+    `No text, no signature, not resembling any existing character.`;
+}
+
 // ---------- the triangle UI ----------
 const tri = document.getElementById("tri");
 const el = (tag, attrs = {}, parent = tri) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
@@ -490,6 +661,8 @@ THUMBS.forEach(([r, l, p], i) => {
 const dotsG = el("g", { fill: "#7d8894" });
 LATTICE.forEach(pt => el("circle", { cx: f(pt.xy[0]), cy: f(pt.xy[1]), r: 1.35 }, dotsG));
 
+const cellHi = el("path", { fill: "#f2c200", "fill-opacity": ".45", stroke: INK, "stroke-width": 2, "pointer-events": "none", display: "none" });
+tri.insertBefore(cellHi, dotsG);
 const marker = el("g", { id: "marker", "pointer-events": "none" });
 el("circle", { r: 12, fill: "none", stroke: "#d6246e", "stroke-width": 2.5 }, marker);
 el("circle", { r: 6.5, fill: INK, stroke: "#fff", "stroke-width": 2 }, marker);
@@ -497,12 +670,45 @@ el("circle", { r: 6.5, fill: INK, stroke: "#fff", "stroke-width": 2 }, marker);
 // ---------- selecting a style ----------
 const faceBox = document.getElementById("face");
 let current = -1;
-function select(idx) {
-  if (idx === current) return;
+let mode = 0;
+const $ = id => document.getElementById(id);
+function renderCanon() {
+  const pt = LATTICE[current], cell = cells[pt.cell], e = canonAt(cell.row, cell.pos);
+  const w = WIKI.get(e.wiki), a = WIKI.get(e.artistWiki);
+  $("canonChar").textContent = e.char;
+  $("canonBy").textContent = `by ${e.by}, ${e.year}`;
+  const box = $("canonImg");
+  if (w && w.thumb) {
+    box.innerHTML = "";
+    const img = new Image(); img.alt = `${e.char} by ${e.by}`; img.src = w.thumb; img.referrerPolicy = "no-referrer";
+    img.onerror = () => standIn(box, pt, "Picture blocked here");
+    box.appendChild(img);
+  } else {
+    standIn(box, pt, wikiState === "loading" ? "Loading picture…" : wikiState === "blocked" ? "Stand-in (pictures can't load here)" : "Stand-in (no picture found)");
+  }
+  const pic = $("artistPic");
+  if (a && a.thumb) { const img = new Image(); img.src = a.thumb; img.alt = e.by; img.referrerPolicy = "no-referrer"; img.onerror = () => img.replaceWith(Object.assign(document.createElement("span"), { className: "noimg", id: "artistPic" })); pic.replaceWith(img); img.id = "artistPic"; }
+  else if (pic.tagName === "IMG") { const sp = document.createElement("span"); sp.className = "noimg"; sp.id = "artistPic"; pic.replaceWith(sp); }
+  let links = `Read about <a href="${wikiLink(e.wiki)}" target="_blank" rel="noopener">${e.char}</a>` +
+    (e.artistWiki !== e.wiki ? ` and <a href="${wikiLink(e.artistWiki)}" target="_blank" rel="noopener">${e.artistWiki}</a>` : "") + ` on Wikipedia.`;
+  if (wikiState === "blocked") links += ` Pictures load from Wikipedia, which this viewer blocks. Open the standalone page (link in the README) to see them.`;
+  $("canonLinks").innerHTML = links;
+  $("styleId").textContent = `cell ${cell.row + 1}·${cell.pos + 1} of 7×7 = 49`;
+}
+function standIn(box, pt, label) {
+  box.innerHTML = `<div class="stand-in">${faceSVG(pt.w[0], pt.w[1], pt.w[2], pt.idx + 1)}</div><span class="tag">${label}</span>`;
+}
+function select(idx, force) {
+  if (idx === current && !force) return;
   current = idx;
   const pt = LATTICE[idx], [r, l, p] = pt.w;
-  marker.style.transform = `translate(${pt.xy[0]}px, ${pt.xy[1]}px)`;
-  faceBox.innerHTML = faceSVG(r, l, p, idx + 1, `role="img" aria-label="Generated face"`);
+  const cell = cells[pt.cell];
+  const at = mode === 1 ? cell.xy : pt.xy;
+  marker.style.transform = `translate(${at[0]}px, ${at[1]}px)`;
+  if (mode === 1) {
+    cellHi.setAttribute("d", "M" + [cell[0], cell[1], cell[2]].map(c => toXY(c[0] / N, c[1] / N, c[2] / N).map(f).join(" ")).join(" L") + " Z");
+  }
+  if (mode !== 1) faceBox.innerHTML = faceSVG(r, l, p, idx + 1, `role="img" aria-label="Generated face"`);
   const d = describe(r, l, p);
   document.getElementById("styleName").textContent = d.name;
   document.getElementById("styleId").textContent = `style ${pt.code} (base 7) · #${idx + 1} of 343`;
@@ -511,8 +717,39 @@ function select(idx) {
     document.getElementById("bar" + k).style.width = (v * 100).toFixed(1) + "%";
     document.getElementById("num" + k).textContent = Math.round(v * 100) + "%";
   }
+  if (mode === 1) renderCanon();
+  if (mode === 2) $("promptText").textContent = promptFor(pt);
   try { history.replaceState(null, "", "#s" + (idx + 1)); } catch (e) { /* ignore */ }
 }
+
+// ---------- the mode dial ----------
+const MODE_NAMES = ["Generated face (343 styles)", "McCloud's canon (7×7 = 49 characters)", "AI prompts (343 styles)"];
+const CAPTIONS = ["Your face, in this style", "The cartoon master at this spot", "Prompt for this exact style"];
+function setMode(m) {
+  mode = m;
+  [0, 1, 2].forEach(i => $("mode" + i).setAttribute("aria-checked", String(i === m)));
+  $("modeName").textContent = MODE_NAMES[m];
+  $("rightCaption").textContent = CAPTIONS[m];
+  $("face").hidden = m === 1;
+  $("canonBox").hidden = $("canonInfo").hidden = m !== 1;
+  $("promptBox").hidden = m !== 2;
+  cellHi.setAttribute("display", m === 1 ? "inline" : "none");
+  thumbsG.style.display = (m === 1 || $("btnThumbs").getAttribute("aria-pressed") !== "true") ? "none" : "";
+  if (m === 1) loadWiki();
+  try { localStorage.setItem("ppf-mode", String(m)); } catch (e) { /* ignore */ }
+  select(current, true);
+}
+[0, 1, 2].forEach(i => $("mode" + i).addEventListener("click", () => setMode(i)));
+
+async function copyText(text, btn) {
+  const old = btn.textContent;
+  try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+  catch (e) { const pre = $("promptText"); const rg = document.createRange(); rg.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); btn.textContent = "Selected, copy it"; }
+  setTimeout(() => { btn.textContent = old; }, 1600);
+}
+$("btnCopyPrompt").addEventListener("click", e => copyText(promptFor(LATTICE[current]), e.currentTarget));
+$("btnCopyAll").addEventListener("click", e => copyText(JSON.stringify(LATTICE.map(pt => ({ style: pt.code, n: pt.idx + 1, reality: +pt.w[0].toFixed(3), language: +pt.w[1].toFixed(3), picturePlane: +pt.w[2].toFixed(3), prompt: promptFor(pt) })), null, 1), e.currentTarget));
+window.__ppf = { LATTICE, promptFor, cells, canonAt };
 function nearest(x, y) {
   let best = 0, bd = Infinity;
   for (const pt of LATTICE) { const d = (pt.xy[0] - x) ** 2 + (pt.xy[1] - y) ** 2; if (d < bd) { bd = d; best = pt.idx; } }
@@ -561,6 +798,9 @@ toggle("btnThumbs", thumbsG);
 const m = /^#s(\d+)$/.exec(location.hash);
 const startIdx = m ? clamp(parseInt(m[1], 10) - 1, 0, 342) : nearest(...toXY(.45, .35, .2));
 select(startIdx);
+let savedMode = 0;
+try { savedMode = parseInt(localStorage.getItem("ppf-mode") || "0", 10) || 0; } catch (e) { /* ignore */ }
+if (savedMode) setMode(clamp(savedMode, 0, 2));
 })();
 </script>
 </body>
