@@ -198,14 +198,19 @@ footer { color: var(--muted); font-size: 13px; line-height: 1.45; max-width: 75c
           <button type="button" id="btnCopyPrompt">Copy prompt</button>
           <button type="button" id="btnCopyAll">Copy all 343</button>
         </div>
-        <p class="note" id="copyNote">Paste into any image generator (Stable Diffusion, Midjourney, DALL&middot;E, Flux). The prompts describe the style position, not real characters, so results are original.</p>
+        <div class="controls">
+          <label for="gotoId" class="note">Have an ID?</label>
+          <input id="gotoId" inputmode="numeric" maxlength="12" placeholder="e.g. 452" style="width:7em;font:inherit;padding:6px 8px;border:2px solid var(--panel-ink);background:#fff;color:var(--panel-ink)">
+          <button type="button" id="btnGoto">Go</button>
+        </div>
+        <p class="note" id="copyNote">Paste into any image generator (Stable Diffusion, Midjourney, DALL&middot;E, Flux). The prompts describe the style position, not real characters, so results are original. Each prompt ends with its ID (111 to 777) on a separate line, marked as a filing code, so you can send the picture back with its ID. If your generator still draws the number, delete that last line before generating.</p>
       </div>
       <p id="blurb"></p>
     </section>
   </div>
 
   <footer>
-    How the 343 positions work: the triangle is cut into 7 bands along each of its three directions, which makes 49 small triangles (7&times;7). Each small triangle holds 7 snap points, so there are 7&times;7&times;7 = 343 styles. The style ID is those three base-7 digits. Every face is drawn from scratch by code from the three weights; nothing is copied from the book. Based on the "Big Triangle" in <i>Understanding Comics</i> (1993) by Scott McCloud.
+    How the 343 positions work: the triangle is cut into 7 bands along each of its three directions, which makes 49 small triangles (7&times;7). Each small triangle holds 7 snap points, so there are 7&times;7&times;7 = 343 styles. The style ID is three digits from 1 to 7 (111 to 777): the first two pick the small triangle, counted top to bottom and left to right, and the third picks one of its 7 points. Every face is drawn from scratch by code from the three weights; nothing is copied from the book. Based on the "Big Triangle" in <i>Understanding Comics</i> (1993) by Scott McCloud.
     Mode 1 places 49 well-known characters, one per small triangle, in the spirit of McCloud's own chart; the placements are my approximation, not his exact ones. Their pictures load live from Wikipedia and stay the property of their creators.
   </footer>
 </div>
@@ -263,7 +268,7 @@ LATTICE.forEach((pt, idx) => {
   pt.idx = idx;
   pt.xy = toXY(pt.w[0], pt.w[1], pt.w[2]);
   const d1 = Math.floor(pt.cell / 7), d2 = pt.cell % 7;
-  pt.code = `${d1}${d2}${pt.sub}`;
+  pt.code = `${d1 + 1}${d2 + 1}${pt.sub + 1}`; // ID 111..777: small triangle (2 digits) + point inside it
 });
 
 // ---------- the face generator ----------
@@ -619,9 +624,16 @@ function promptFor(pt) {
   const [r, l, p] = pt.w;
   return `Head-and-shoulders portrait of an original cartoon character, front view, centred on a plain white background. ` +
     `Style: ${R_WORDS[lvl(r)]}; ${L_WORDS[lvl(l)]}; ${P_WORDS[lvl(p)]}. ` +
-    `Position on Scott McCloud's picture-plane triangle: ${Math.round(r * 100)}% resemblance, ${Math.round(l * 100)}% iconic meaning, ${Math.round(p * 100)}% pure abstraction. ` +
+    `Overall it leans ${["toward realism", "toward a simple iconic cartoon", "toward pure abstract shapes"][[r, l, p].indexOf(Math.max(r, l, p))]}. ` +
     `Ink line art${p > .4 ? " with bold flat colours" : r > .5 ? " with naturalistic colour" : " with simple flat colour"}. ` +
-    `No text, no signature, not resembling any existing character.`;
+    `Do not put any text, letters, numbers, captions, labels, signature or watermark anywhere in the image. Not resembling any existing character.` +
+    `\n\n---\nRef ${pt.code} (filing code for my own notes; it is not part of the picture, do not draw it)`;
+}
+// Paste-back helper: "ID 452", "Ref 452" or just "452" jumps to that style.
+function idToIndex(text) {
+  const m = /([1-7])([1-7])([1-7])/.exec(String(text)); if (!m) return -1;
+  const code = m[1] + m[2] + m[3];
+  return LATTICE.findIndex(pt => pt.code === code);
 }
 
 // ---------- the triangle UI ----------
@@ -711,7 +723,7 @@ function select(idx, force) {
   if (mode !== 1) faceBox.innerHTML = faceSVG(r, l, p, idx + 1, `role="img" aria-label="Generated face"`);
   const d = describe(r, l, p);
   document.getElementById("styleName").textContent = d.name;
-  document.getElementById("styleId").textContent = `style ${pt.code} (base 7) · #${idx + 1} of 343`;
+  document.getElementById("styleId").textContent = `ID ${pt.code} · #${idx + 1} of 343`;
   document.getElementById("blurb").textContent = d.blurb;
   for (const [k, v] of [["R", r], ["L", l], ["P", p]]) {
     document.getElementById("bar" + k).style.width = (v * 100).toFixed(1) + "%";
@@ -748,7 +760,9 @@ async function copyText(text, btn) {
   setTimeout(() => { btn.textContent = old; }, 1600);
 }
 $("btnCopyPrompt").addEventListener("click", e => copyText(promptFor(LATTICE[current]), e.currentTarget));
-$("btnCopyAll").addEventListener("click", e => copyText(JSON.stringify(LATTICE.map(pt => ({ style: pt.code, n: pt.idx + 1, reality: +pt.w[0].toFixed(3), language: +pt.w[1].toFixed(3), picturePlane: +pt.w[2].toFixed(3), prompt: promptFor(pt) })), null, 1), e.currentTarget));
+$("btnCopyAll").addEventListener("click", e => copyText(JSON.stringify(LATTICE.map(pt => ({ id: pt.code, n: pt.idx + 1, reality: +pt.w[0].toFixed(3), language: +pt.w[1].toFixed(3), picturePlane: +pt.w[2].toFixed(3), prompt: promptFor(pt) })), null, 1), e.currentTarget));
+$("btnGoto").addEventListener("click", () => { const i = idToIndex($("gotoId").value); if (i >= 0) { stopTour(); select(i); $("gotoId").value = ""; } else { $("gotoId").value = ""; $("gotoId").placeholder = "use digits 1-7"; } });
+$("gotoId").addEventListener("keydown", e => { if (e.key === "Enter") $("btnGoto").click(); });
 window.__ppf = { LATTICE, promptFor, cells, canonAt };
 function nearest(x, y) {
   let best = 0, bd = Infinity;

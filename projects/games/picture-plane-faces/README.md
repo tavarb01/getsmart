@@ -20,7 +20,8 @@ exactly that style.
   `CANON_ROWS` in the script to move or swap characters (row 0 = top, left = Reality).
   If a picture can't load, a generated face in that cell's style is shown instead, labelled "stand-in".
 - **Mode 2: AI prompts.** One image-generator prompt for every one of the 343 positions. Copy one,
-  or copy all 343 as JSON. The same list is saved in `prompts-343.json`. The prompts describe the
+  or copy all 343 as JSON. The same list is saved in `prompts-343.json`. Every prompt ends with a separate line `Ref 452 (...do not draw it)`,
+  so you can send a generated picture back with its ID. The "Have an ID?" box jumps to any ID. The prompts describe the
   style position and don't name real characters or artists, so the results are original faces.
 
 ## Run it
@@ -39,7 +40,8 @@ No install, no build, no dependencies (Google Fonts are used when online, with f
 The triangle is cut into 7 bands along each of its three directions. Those lines make
 49 small triangles (7×7), and each small triangle holds 7 snap points (its centre, 3 toward
 its corners, 3 toward its edges), so there are 7×7×7 = **343** positions. The style ID shown
-is those three base-7 digits (e.g. `455`).
+is three digits from 1 to 7, so it runs from `111` to `777` (e.g. `452`): the first two digits pick
+the small triangle (counted top to bottom, left to right) and the third picks one of its 7 points.
 
 Each snap point has three weights `r + l + p = 1` (how close it is to each corner).
 `faceSVG(r, l, p, seed)` turns those weights into drawing parameters: head shape, line weight,
