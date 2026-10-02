@@ -65,6 +65,13 @@ judgments stored as typed arrays, then re-ranked instantly by weight sliders), i
 (vanilla JS, no dependencies). **Run:** open `index.html`. `noul`, `choice`, `score` are fake functions to swap
 for real API calls later. All figures are invented.
 
+### projects/games/last-light
+A playable 3D storm-coast survival game for the iPhone, in a single `index.html` (Three.js r128 from cdnjs,
+no build step). **Run:** open `index.html`, or serve the folder and open it on the phone (see its README).
+- **Architecture:** six Gerstner waves are summed in the water shader *and* mirrored on the CPU (`sea()`),
+  so the boat, buoys, foam and spray ride the real surface. A fixed 1/60 s `simStep` drives weather, day/night,
+  boat physics (`stepBoat`) and the lighthouse/harbour/rescue loop. `LL` on `window` is a dev hook for screenshots.
+
 ## Conventions
 
 - Every project folder has a `README.md` with a "Run it" section.
