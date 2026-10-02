@@ -16,7 +16,8 @@
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
   #ui{position:fixed;inset:0;pointer-events:auto;touch-action:none}
   #vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.45) 100%)}
-  .hud{position:fixed;pointer-events:none;text-shadow:0 0 6px rgba(0,0,0,.8)}
+  .hud{position:fixed;pointer-events:none;text-shadow:0 0 6px rgba(0,0,0,.8);transition:opacity .3s}
+  body.photo #tl,body.photo #bars,body.photo #compass,body.photo #tr,body.photo #thr,body.photo #prompt{opacity:0!important}
   #tl{top:calc(10px + env(safe-area-inset-top));left:calc(14px + env(safe-area-inset-left))}
   #tr{top:calc(10px + env(safe-area-inset-top));right:calc(14px + env(safe-area-inset-right));text-align:right}
   #lights{font-size:15px;letter-spacing:.35em}
@@ -176,7 +177,7 @@ vec3 skyBase(vec3 d){
   float s=max(dot(d,uSunDir),0.);
   c+=uSunCol*(pow(s,6.)*.18+pow(s,80.)*.45)*uSunAmt;
   float m=max(dot(d,uMoonDir),0.);
-  c+=vec3(.5,.6,.8)*pow(m,14.)*.22*uMoonAmt;
+  c+=vec3(.5,.6,.8)*(pow(m,14.)*.22+pow(m,200.)*.5)*uMoonAmt;
   c+=vec3(.62,.68,.9)*uFlash*.5;
   return c;
 }`;
@@ -203,8 +204,8 @@ void main(){
   float md=dot(d,uMoonDir); back+=vec3(.85,.9,1.)*smoothstep(.99935,.9997,md)*uMoonAmt*2.2*(.93+.07*vnoise(d.xz*180.))+vec3(.5,.6,.85)*smoothstep(.992,.9997,md)*uMoonAmt*.12;
   c=c+back*(1.-a);
   c=mix(c,cc,a);
-  c=mix(c,uFogCol,1.-smoothstep(0.,.08+.9*uFogAmt,d.y));
-  gl_FragColor=vec4(c,1.);
+  c=mix(c,uFogCol,1.-smoothstep(0.,.2+.8*uFogAmt,d.y));
+  c+=(hash21(gl_FragCoord.xy+fract(uTime))-.5)*.008; gl_FragColor=vec4(c,1.);
 }`;
 
 const WATER_VS = `
@@ -246,6 +247,8 @@ void main(){
   float n0=vnoise(q*1.7), n1=vnoise(q*1.7+vec2(e,0.)), n2=vnoise(q*1.7+vec2(0.,e));
   vec2 q2=vBase*3.1-uWind*uTime*.6; float m0=vnoise(q2), m1=vnoise(q2+vec2(e,0.)), m2=vnoise(q2+vec2(0.,e));
   N.xz+=((vec2(n1-n0,n2-n0)/e)*.10+(vec2(m1-m0,m2-m0)/e)*.05)*(.35+uSea*.9)*dn;
+  vec2 q3=mat2(.8,-.6,.6,.8)*vBase*.37+uWind*uTime*.12; float o0=vnoise(q3), o1=vnoise(q3+vec2(e,0.)), o2=vnoise(q3+vec2(0.,e));
+  N.xz+=(vec2(o1-o0,o2-o0)/e)*.11*(.4+uSea)*(1.-smoothstep(60.,700.,vDist));
   // rain dimples
   if(uRain>.02){ vec2 rp=vBase*1.4; vec2 id=floor(rp); vec2 fr=fract(rp)-.5; float rnd=hash21(id); float tt=fract(uTime*1.4+rnd);
     vec2 off=(vec2(hash21(id+3.),hash21(id+8.))-.5)*.5; vec2 dd=fr-off; float rad=length(dd);
@@ -253,7 +256,7 @@ void main(){
     N.xz+=normalize(dd+1e-4)*ring*.22*(1.-smoothstep(25.,90.,vDist)); }
   N=normalize(N);
 
-  float fogF=1.-exp(-d*d*uFogDen*uFogDen);
+  float fogF=max(1.-exp(-d*d*uFogDen*uFogDen),(1.-exp(-d*uFogDen*.5))*.75);
   float lum=uLight;
   if(!gl_FrontFacing){
     // seen from below: refracted sky window + dark water
@@ -266,7 +269,7 @@ void main(){
   }
   float ndv=max(dot(N,V),0.);
   float F=.02+.98*pow(1.-ndv,5.);
-  F=clamp(F,0.,1.);
+  F=clamp(F,0.,1.); F=mix(F,max(F,.14),uSea*.6);
   vec3 R=reflect(-V,N); R.y=max(R.y,.012);
   float cn=vnoise(R.xz/(R.y+.25)*1.6+uWind*uTime*.01);
   vec3 refl=skyBase(R)*(.86+.28*cn);
@@ -274,11 +277,11 @@ void main(){
   float brk=1.-uCover;
   float spatch=smoothstep(.55,.78,vnoise(vBase*.0022+uWind*uTime*.012))*brk*uSunAmt;
   float hn=h/max(uAmpSum,.1);
-  vec3 deep=vec3(.012,.024,.027), shal=vec3(.034,.056,.054);
+  vec3 deep=vec3(.03,.052,.058), shal=vec3(.085,.12,.115);
   vec3 body=mix(deep,shal,clamp(hn*.55+.45,0.,1.)*.65+(1.-N.y)*2.5);
   body*=(lum*.95+uFlash*.7+spatch*1.6);
   body+=vec3(.004,.007,.008);
-  body+=uHor*vec3(.8,1.,.97)*(.075+.09*clamp(hn*.5+.5,0.,1.))*(.55+.45*N.y)*(1.+spatch*2.);
+  body+=uHor*vec3(.8,1.,.97)*(.14+.14*clamp(hn*.5+.5,0.,1.))*(.55+.45*N.y)*(1.+spatch*2.);
   vec3 col=body*(1.-F)+refl*F;
   col+=vec3(1.,.93,.8)*pow(max(dot(R,uSunDir),0.),260.)*uSunAmt*(.4+brk*3.)*F*4.;
   col+=vec3(.6,.72,1.)*pow(max(dot(R,uMoonDir),0.),110.)*uMoonAmt*2.2;
@@ -292,7 +295,7 @@ void main(){
     col+=vec3(1.,.9,.7)*cone*uBoatLamp*(.5/(1.+dl*.04))*(.5+.5*pow(max(dot(R,Lv),0.),6.)*3.)*(1.-lum*.7); }
   // foam: crests from the Jacobian, lingering streaks, never uniform
   float Jf=1.-sy*1.8;
-  float thr=mix(.30,.62,uSea);
+  float thr=mix(.36,.70,uSea);
   float core=smoothstep(thr,thr-.22,Jf);
   vec2 fp=vBase*.6;
   float lace=fbm3(fp*1.7+vec2(uTime*.12,0.))*.65+vnoise(fp*8.+uTime*.4)*.35;
@@ -300,13 +303,14 @@ void main(){
   float streak=fbm3(vec2(sp.x*.05,sp.y*.7)+uTime*.05);
   float trail=smoothstep(thr+.3,thr-.05,Jf)*smoothstep(.3,.65,streak);
   float foam=clamp(core*(lace*2.2-.2)+trail*.55*(lace*1.6)*smoothstep(.2,.6,uSea),0.,1.);
-  foam=smoothstep(.12,.7,foam)*(1.-smoothstep(150.,900.,vDist)*.7);
-  vec3 fc=vec3(.78,.83,.84)*(lum*.9+.015+uFlash*.8+spatch*.8);
-  fc*=(.5+.5*lace)*(.55+.45*smoothstep(.0,.8,foam));
+  foam=smoothstep(.1,.65,foam+uSea*uSea*.12*lace)*(1.-smoothstep(300.,1800.,vDist)*.7);
+  vec3 fc=vec3(.86,.89,.9)*(lum*.95+.03+uFlash*.8+spatch*.8)+uHor*.3;
+  fc*=(.62+.38*lace)*(.7+.3*smoothstep(.0,.8,foam));
   col=mix(col,fc,foam*.92);
   float haze=smoothstep(.06,0.,V.y)*(.55+.4*(1.-uSea));
   col=mix(col,uFogCol*(.92+.1*vnoise(vBase*.004+uTime*.02)),haze);
   col=mix(col,uFogCol,fogF);
+  col+=(hash21(gl_FragCoord.xy+fract(uTime))-.5)*.008;
   gl_FragColor=vec4(col,1.);
 }`;
 
@@ -500,15 +504,14 @@ const winMat = new THREE.MeshBasicMaterial({ color: 0x0b0e10 }); const cw = new 
 const warmWin = new THREE.Mesh(new THREE.PlaneGeometry(1.7, .4), new THREE.MeshBasicMaterial({ color: 0xffa44a })); warmWin.position.set(0, 1.42, 1.51); boatTilt.add(warmWin); windowMats.push(warmWin.material);
 const mast = new THREE.Mesh(new THREE.CylinderGeometry(.05, .09, 7.4, 6), new THREE.MeshLambertMaterial({ color: 0x8a8886 })); mast.position.set(0, 4.5, 1.7); boatTilt.add(mast);
 const sailPivot = new THREE.Group(); sailPivot.position.set(0, 1.6, 1.7); boatTilt.add(sailPivot);
-const sailGeo = new THREE.PlaneGeometry(1, 1, 6, 6); sailGeo.translate(0, .5, -.5);
-const sailMesh = new THREE.Mesh(sailGeo, new THREE.MeshLambertMaterial({ color: 0xa8a69c, side: THREE.DoubleSide })); sailMesh.scale.set(1, 6.2, 3.9); sailMesh.rotation.y = PI / 2; sailPivot.add(sailMesh);
-sailMesh.rotation.set(0, PI / 2, 0);
+const sailGeo = new THREE.PlaneGeometry(1, 1, 6, 6); sailGeo.translate(.5, .5, 0); sailGeo.rotateY(PI / 2);
+const sailMesh = new THREE.Mesh(sailGeo, new THREE.MeshLambertMaterial({ color: 0xa8a69c, side: THREE.DoubleSide })); sailMesh.scale.set(1, 6.2, 3.9); sailPivot.add(sailMesh);
 const boom = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 4.4, 5), new THREE.MeshLambertMaterial({ color: 0x555352 })); boom.rotation.x = PI / 2; boom.position.set(0, 0, -2.2); sailPivot.add(boom);
 const navR = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: 0xff2a20, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); navR.position.set(1.3, 1.1, 2.2); navR.scale.set(1.2, 1.2, 1); boatTilt.add(navR);
 const navG = navR.clone(); navG.material = navR.material.clone(); navG.material.color.set(0x20ff60); navG.position.x = -1.3; boatTilt.add(navG);
 const spot = new THREE.SpotLight(0xffe2b8, 0, 160, .5, .55, 1.2); spot.position.set(0, 2.6, 3.8); boatTilt.add(spot); const spotT = new THREE.Object3D(); spotT.position.set(0, -2, 40); boatTilt.add(spotT); spot.target = spotT;
 
-const boat = { x: 0, z: 0, yaw: 0, u: 0, v: 0, r: 0, y: 0, vy: 0, pitch: 0, pv: 0, roll: 0, rv: 0, thr: 0, rud: 0, sail: 0, fuel: 1, hull: 1, warm: 1, cans: 3, deck: 0, lampOn: false, capT: 0, slamCD: 0, sailRot: 0 };
+const boat = { x: 0, z: 0, yaw: 0, u: 0, v: 0, r: 0, y: 0, vy: 0, pitch: 0, pv: 0, roll: 0, rv: 0, thr: 0, rud: 0, sail: 1, fuel: 1, hull: 1, warm: 1, cans: 3, deck: 0, lampOn: false, capT: 0, slamCD: 0, sailRot: 0 };
 function spawnBoat() { const d = harbour.dock; boat.x = d.x + Math.cos(d.a) * 8; boat.z = d.z + Math.sin(d.a) * 8; boat.yaw = Math.atan2(Math.cos(d.a), Math.sin(d.a)) ; boat.u = 0; boat.y = 0; }
 
 /* ───────────────────────── foam patches, spray, rain, kelp, fish, shafts ───────────────────────── */
@@ -542,7 +545,7 @@ function emitSpray(x, y, z, vx, vy, vz, n, size) { for (let k = 0; k < n; k++) {
   spray.v[i * 3] = vx + (Math.random() - .5) * 3; spray.v[i * 3 + 1] = vy * (.5 + Math.random()); spray.v[i * 3 + 2] = vz + (Math.random() - .5) * 3; spray.l[i] = 1; spray.s[i] = size * (.6 + Math.random() * .8); } }
 
 // rain
-const RAIN_N = 5000; let rainMesh;
+const RAIN_N = 9000; let rainMesh;
 (function () {
   const pos = new Float32Array(RAIN_N * 2 * 3), end = new Float32Array(RAIN_N * 2), rnd = new Float32Array(RAIN_N * 2);
   for (let i = 0; i < RAIN_N; i++) { const x = (Math.random() - .5) * 70, y = Math.random() * 45, z = (Math.random() - .5) * 70, r = Math.random();
@@ -552,12 +555,12 @@ const RAIN_N = 5000; let rainMesh;
     vertexShader: `attribute float aEnd; attribute float aRnd; uniform float uTime, uRain; uniform vec3 uCamPos; uniform vec2 uWind; varying float vA;
       void main(){ if(aRnd>uRain){ gl_Position=vec4(2.,2.,2.,1.); return; }
         vec3 p=position; float fall=20.+7.*aRnd; p.y=mod(p.y-uTime*fall,45.);
-        vec2 hv=uWind*(8.+uRain*10.)*.5; p.xz+=hv*(45.-p.y)*.12;
+        vec2 hv=uWind*(8.+uRain*24.)*.6; p.xz+=hv*(45.-p.y)*.12;
         vec3 w; w.xz=mod(p.xz-uCamPos.xz+35.,70.)-35.+uCamPos.xz; w.y=uCamPos.y+p.y-22.;
         vec3 vel=vec3(hv.x,-fall,hv.y); if(aEnd>.5) w-=vel*.034;
         vA=(aEnd>.5?.0:1.)*(.5+.5*aRnd);
         gl_Position=projectionMatrix*viewMatrix*vec4(w,1.); }`,
-    fragmentShader: `uniform float uLight, uFlash; uniform float uRainLit; varying float vA; void main(){ float l=uLight*.9+uFlash+uRainLit; gl_FragColor=vec4(vec3(.55,.6,.65)*l+.02,vA*.32*clamp(.35+l,0.,1.)); }` });
+    fragmentShader: `uniform float uLight, uFlash; uniform float uRainLit; varying float vA; void main(){ float l=uLight*.9+uFlash+uRainLit; gl_FragColor=vec4(vec3(.55,.6,.65)*l+.02,vA*.5*clamp(.4+l,0.,1.)); }` });
   rainMesh = new THREE.LineSegments(g, m); rainMesh.frustumCulled = false; scene.add(rainMesh);
 })();
 
@@ -641,7 +644,7 @@ function applyAtmosphere() {
   const moonAlt = -sunAlt, mv = Math.max(moonVis, (1 - W.cover) * 1.1), moonAmt = smooth(.02, .3, moonAlt) * (1 - dayAmt) * Math.min(1, mv);
   const z = U.uZen.value, h = U.uHor.value;
   const zd = [.27 * dark, .30 * dark, .33 * dark], hd = [.52 * dark, .55 * dark, .57 * dark];
-  z.set(lerp(.005, zd[0], dayAmt), lerp(.008, zd[1], dayAmt), lerp(.018, zd[2], dayAmt)); h.set(lerp(.016, hd[0], dayAmt), lerp(.022, hd[1], dayAmt), lerp(.038, hd[2], dayAmt));
+  z.set(lerp(.012, zd[0], dayAmt), lerp(.018, zd[1], dayAmt), lerp(.034, zd[2], dayAmt)); h.set(lerp(.034, hd[0], dayAmt), lerp(.046, hd[1], dayAmt), lerp(.078, hd[2], dayAmt));
   const warm = dusk * (1 - W.cover * .35) * (1 - W.fog * .6); h.x += .26 * warm; h.y += .11 * warm; h.z += .05 * warm; z.x += .02 * warm;
   h.x += .06 * moonAmt; h.y += .085 * moonAmt; h.z += .13 * moonAmt; z.x += .008 * moonAmt; z.y += .014 * moonAmt; z.z += .035 * moonAmt;
   U.uMoonAmt.value = moonAmt; U.uSunAmt.value = dayAmt * (.35 * (1 - W.cover) + .1) + dusk * .08 * (1 - W.cover);
@@ -654,7 +657,7 @@ function applyAtmosphere() {
   U.uFogDen.value = .00046 + W.fog * .0034 + W.rain * .0006;
   U.uWind.value.set(Math.cos(WIND_ANG), Math.sin(WIND_ANG)).multiplyScalar(.5 + W.wind);
   U.uRain.value = W.rain; U.uSea.value = W.sea;
-  const light = .06 + dayAmt * .85 * dark + moonAmt * .07; U.uLight.value = light;
+  const light = .09 + dayAmt * .85 * dark + moonAmt * .1; U.uLight.value = light;
   U.uFlash.value = G.flash;
   // object lighting
   hemi.color.setRGB(h.x * 1.5 + .02, h.y * 1.5 + .02, h.z * 1.6 + .03); hemi.groundColor.setRGB(.03, .035, .035);
@@ -934,7 +937,7 @@ function cycleSail() { boat.sail = (boat.sail + 1) % 3; }
 function cycleView() { G.view = (G.view + 1) % 3; showToast(['CHASE', 'UNDER THE SEA', 'BOW'][G.view], 1.5); }
 function togglePhoto() {
   if (G.mode === 'intro' || G.over) return;
-  G.photo = !G.photo; G.freeze = G.photo; G.mode = G.photo ? 'photo' : 'play';
+  G.photo = !G.photo; G.freeze = G.photo; document.body.classList.toggle('photo', G.photo); G.mode = G.photo ? 'photo' : 'play';
   if (G.photo) { cam.free.x = camera.position.x; cam.free.y = camera.position.y; cam.free.z = camera.position.z; const d = camera.getWorldDirection(new THREE.Vector3()); cam.free.yaw = Math.atan2(d.x, d.z); cam.free.pitch = Math.asin(d.y); }
   else { G.blend = .9; cam.p.copy(camera.position); }
   ['bUp', 'bDn', 'bFast'].forEach(i => $(i).classList.toggle('hide', !G.photo)); ['bSail', 'bView'].forEach(i => $(i).classList.toggle('hide', G.photo)); $('bPhoto').classList.toggle('on', G.photo);
@@ -1004,7 +1007,7 @@ function updateAudio(dt) {
 
 /* ───────────────────────── intro + game flow ───────────────────────── */
 function endIntro() { if (G.mode !== 'intro') return; G.mode = 'play'; G.blend = Math.min(G.blend, .0); cam.p.copy(camera.position); cam.look.copy(cam.look); cam.yaw = boat.yaw; $('title').style.opacity = 0; ['bAct', 'bSail', 'bView', 'bPhoto', 'bSnd'].forEach(i => $(i).style.visibility = 'visible'); $('btns').style.opacity = 1;
-  showToast('RELIGHT THE DARK LAMPS · TAP THE COMPASS MARKS', 4); G.started = true; G.blend = 0; }
+  showToast('LEFT THUMB STEERS · UP IS THROTTLE · SAIL TO THE HOLLOW ○ LAMPS', 7); G.started = true; G.blend = 0; }
 function gameOver() {
   G.over = true; G.mode = 'over'; $('overT').textContent = boat.dead; $('overS').innerHTML = 'NIGHTS SURVIVED ' + G.nights + '<br>SHIPS SAVED ' + distress.saved + '<br>LIGHTS STILL BURNING ' + LIGHTS.filter(l => l.lit).length;
   $('over').style.display = 'flex'; $('over').addEventListener('pointerup', () => { location.href = location.pathname + '?skip=1'; }, { once: true });
