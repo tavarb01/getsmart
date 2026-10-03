@@ -21,7 +21,9 @@ exactly that style.
   If a picture can't load, a generated face in that cell's style is shown instead, labelled "stand-in".
 - **Mode 2: AI prompts.** One image-generator prompt for every one of the 343 positions. Copy one,
   or copy all 343 as JSON. The same list is saved in `prompts-343.json`. Every prompt ends with a separate line `Ref 452 (...do not draw it)`,
-  so you can send a generated picture back with its ID. The "Have an ID?" box jumps to any ID. The prompts describe the
+  so you can send a generated picture back with its ID. The "Have an ID?" box jumps to any ID.
+  `GEMINI_PROMPTS.md` has everything for Gemini in one file: the setup message, a test batch, a correction
+  message and all 49 batches of 7. The prompts describe the
   style position and don't name real characters or artists, so the results are original faces.
 
 ## Run it
